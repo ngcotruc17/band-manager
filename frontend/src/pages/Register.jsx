@@ -2,23 +2,26 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import { UserPlus, User, Lock, Mail, ArrowRight } from "lucide-react";
+import toast from 'react-hot-toast'; // Import thông báo
 
 const Register = () => {
   const [formData, setFormData] = useState({ fullName: "", username: "", password: "" });
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    const toastId = toast.loading('Đang tạo tài khoản...');
+
     try {
-      // SỬA LINK RENDER CỦA BẠN Ở ĐÂY NẾU CẦN
+      // LINK RENDER CỦA BẠN (Sửa nếu cần thiết)
       await axios.post('https://band-manager-s9tm.onrender.com/api/auth/register', formData);
-      alert("🎉 Đăng ký thành công! Hãy đăng nhập.");
+      toast.success("Đăng ký thành công! Hãy đăng nhập.", { id: toastId });
       navigate("/");
     } catch (err) {
-      setError("Lỗi đăng ký: " + (err.response?.data?.message || err.message));
+      const msg = err.response?.data?.message || err.message;
+      toast.error("Lỗi: " + msg, { id: toastId });
     } finally {
       setLoading(false);
     }
@@ -37,12 +40,6 @@ const Register = () => {
           <h2 className="text-3xl font-extrabold text-gray-800 tracking-tight">Tạo tài khoản</h2>
           <p className="text-gray-500 mt-2 text-sm">Tham gia cùng ban nhạc của bạn</p>
         </div>
-
-        {error && (
-          <div className="mb-6 p-4 bg-red-50/80 border border-red-200 text-red-600 text-sm font-semibold rounded-xl">
-            {error}
-          </div>
-        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="relative group">

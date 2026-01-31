@@ -2,22 +2,26 @@ import { useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { Music, Lock, User, ArrowRight, Sparkles } from "lucide-react";
+import toast from 'react-hot-toast'; // Import thông báo
 
 const Login = () => {
   const [formData, setFormData] = useState({ username: "", password: "" });
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    // Tạo một promise toast để hiển thị trạng thái đang xử lý
+    const toastId = toast.loading('Đang đăng nhập...');
+
     try {
       await login(formData.username, formData.password);
+      toast.success("Chào mừng trở lại! 🎉", { id: toastId });
       navigate("/dashboard");
     } catch (err) {
-      setError("❌ Sai tài khoản hoặc mật khẩu");
+      toast.error("Sai tài khoản hoặc mật khẩu! 😭", { id: toastId });
     } finally {
       setLoading(false);
     }
@@ -25,7 +29,6 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-gray-50">
-      {/* Background Blobs */}
       <div className="absolute top-0 left-0 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
       <div className="absolute top-0 right-0 w-72 h-72 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
       <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
@@ -40,12 +43,6 @@ const Login = () => {
             Quản lý Band nhạc chuyên nghiệp <Sparkles size={14} className="text-yellow-500"/>
           </p>
         </div>
-
-        {error && (
-          <div className="mb-6 p-4 bg-red-50/80 border border-red-200 text-red-600 text-sm font-semibold rounded-xl flex items-center gap-2 animate-pulse">
-            {error}
-          </div>
-        )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="relative group">
