@@ -55,7 +55,7 @@ const Dashboard = () => {
           <p className="text-gray-500 mt-2">Hôm nay bạn có lịch trình gì không?</p>
         </div>
         {user?.role === 'admin' && (
-          <Link to="/booking-manager" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl flex items-center gap-2 shadow-lg shadow-blue-500/30 transition">
+          <Link to="/bookings" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl flex items-center gap-2 shadow-lg shadow-blue-500/30 transition">
             <PlusCircle size={18} /> Tạo Show Mới
           </Link>
         )}
