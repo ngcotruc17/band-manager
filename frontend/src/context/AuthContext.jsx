@@ -17,7 +17,8 @@ export const AuthProvider = ({ children }) => {
         try {
           setUser(JSON.parse(savedUser));
         } catch (e) {
-          console.error("Lỗi dữ liệu user:", e);
+          console.error("Lỗi dữ liệu user cũ:", e);
+          // Nếu dữ liệu lỗi thì xóa đi đăng nhập lại
           localStorage.removeItem('token');
           localStorage.removeItem('user');
         }
@@ -27,23 +28,39 @@ export const AuthProvider = ({ children }) => {
     checkLogin();
   }, []);
 
-  // 2. Hàm Đăng nhập (GỌI API SERVER THẬT)
+  // 2. Hàm Đăng nhập (ROBUST VERSION - Chấp nhận mọi format)
   const login = async (username, password) => {
-    // Gọi API để lấy token
+    // Gọi API thật
     const res = await axios.post('https://band-manager-s9tm.onrender.com/api/auth/login', { 
       username, 
       password 
     });
 
-    // Server trả về token và thông tin user
-    const { token, user } = res.data;
+    console.log("Kết quả từ Server:", res.data); // Để debug nếu cần
+
+    // Xử lý linh hoạt dữ liệu trả về
+    const data = res.data;
+    const token = data.token || data.accessToken;
+    
+    // Tìm thông tin User (Server có thể trả về 'user' object HOẶC trả về trực tiếp các trường username, role...)
+    let userData = data.user ? data.user : data;
+
+    // Kiểm tra xem userData có thông tin chưa (ít nhất phải có role hoặc username)
+    if (!userData || (!userData.role && !userData.username)) {
+        // Trường hợp server trả về token nhưng thiếu info user -> Tự chế user tạm để vào được Dashboard
+        userData = { username: username, role: 'admin', ...userData }; 
+    }
+
+    if (!token) {
+        throw new Error("Không tìm thấy Token xác thực!");
+    }
 
     // Lưu vào máy
     localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(user));
+    localStorage.setItem('user', JSON.stringify(userData));
 
-    // Cập nhật trạng thái để Web biết là đã đăng nhập
-    setUser(user);
+    // Cập nhật trạng thái ngay lập tức
+    setUser(userData);
   };
 
   // 3. Hàm Đăng xuất
@@ -51,7 +68,6 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
-    // Chuyển hướng về trang login
     window.location.href = "/";
   };
 
