@@ -86,10 +86,10 @@ const Navbar = () => {
 
   const navItems = [
     { name: "Dashboard", path: "/dashboard" },
-    { name: "Kho Nhạc", path: "/song-library" },
+    { name: "Kho Nhạc", path: "/library" },
     { name: "Lịch Tập", path: "/rehearsals" },
-    { name: "Quản lý Booking", path: "/booking-manager" },
-    { name: "Nhân sự", path: "/human-resources" },
+    { name: "Quản lý Booking", path: "/bookings" },
+    { name: "Nhân sự", path: "/members" },
   ];
 
   const isActive = (path) => location.pathname === path;
