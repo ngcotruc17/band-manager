@@ -31,6 +31,7 @@ app.use('/api/events', eventRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/library', libraryRoutes);
 app.use('/api/comments', commentRoutes); // <--- 2. ĐĂNG KÝ
+app.use('/api/rehearsals', require('./routes/rehearsals')); // <--- 3. ĐĂNG KÝ ROUTE LỊCH TẬP
 
 const PORT = process.env.PORT || 5000;
 

@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import BookingManager from "./pages/BookingManager";
 import EventDetail from "./pages/EventDetail";
 import SongLibrary from "./pages/SongLibrary"; 
+import RehearsalManager from "./pages/RehearsalManager";
 
 // Import Navbar
 import Navbar from "./components/Navbar";
@@ -77,6 +78,7 @@ function App() {
           <Route path="/bookings" element={<ProtectedRoute><Layout><BookingManager /></Layout></ProtectedRoute>} />
           <Route path="/events/:id" element={<ProtectedRoute><Layout><EventDetail /></Layout></ProtectedRoute>} />
           <Route path="/library" element={<ProtectedRoute><Layout><SongLibrary /></Layout></ProtectedRoute>} />
+          <Route path="/rehearsals" element={<ProtectedRoute><Layout><RehearsalManager /></Layout></ProtectedRoute>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
