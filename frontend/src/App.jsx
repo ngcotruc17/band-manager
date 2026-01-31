@@ -22,7 +22,7 @@ const NotificationBell = () => {
   const fetchNotis = async () => {
     if (!user) return;
     try {
-      const res = await axios.get('https://band-api.onrender.com/api/notifications', {
+      const res = await axios.get('https://band-manager-s9tm.onrender.com/api/notifications', {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setNotifications(res.data.notifications);
@@ -47,7 +47,7 @@ const NotificationBell = () => {
   const handleRead = async (noti) => {
     if (!noti.isRead) {
       try {
-        await axios.put(`https://band-api.onrender.com/api/notifications/${noti._id}/read`, {}, {
+        await axios.put(`https://band-manager-s9tm.onrender.com/api/notifications/${noti._id}/read`, {}, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
         setUnreadCount(prev => Math.max(0, prev - 1));
@@ -60,7 +60,7 @@ const NotificationBell = () => {
 
   const handleReadAll = async () => {
     try {
-      await axios.put(`https://band-api.onrender.com/api/notifications/read-all`, {}, {
+      await axios.put(`https://band-manager-s9tm.onrender.com/api/notifications/read-all`, {}, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setUnreadCount(0);
@@ -174,7 +174,7 @@ const Dashboard = () => {
       try {
         const token = localStorage.getItem("token");
         // SỬA LINK RENDER CỦA BẠN
-        const res = await axios.get("https://band-api.onrender.com/api/events", {
+        const res = await axios.get("https://band-manager-s9tm.onrender.com/api/events", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setEvents(res.data);

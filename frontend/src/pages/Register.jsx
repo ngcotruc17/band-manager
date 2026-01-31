@@ -14,7 +14,7 @@ const Register = () => {
     setLoading(true);
     try {
       // SỬA LINK RENDER CỦA BẠN Ở ĐÂY NẾU CẦN
-      await axios.post('https://band-api.onrender.com/api/auth/register', formData);
+      await axios.post('https://band-manager-s9tm.onrender.com/api/auth/register', formData);
       alert("🎉 Đăng ký thành công! Hãy đăng nhập.");
       navigate("/");
     } catch (err) {
