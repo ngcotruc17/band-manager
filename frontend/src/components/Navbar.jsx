@@ -16,6 +16,7 @@ const NotificationBell = () => {
   const fetchNotis = async () => {
     if (!user) return;
     try {
+      // LINK RENDER CỦA BẠN
       const res = await axios.get('https://band-manager-s9tm.onrender.com/api/notifications', {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
@@ -105,7 +106,7 @@ const NotificationBell = () => {
   );
 };
 
-// --- COMPONENT NAVBAR CHÍNH ---
+// --- NAVBAR CHÍNH ---
 const Navbar = () => {
   const { user } = useContext(AuthContext);
   return (
