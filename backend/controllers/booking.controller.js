@@ -18,7 +18,7 @@ exports.createBooking = async (req, res) => {
     await newBooking.save();
 
     await Event.create({
-      title: `Show: ${newBooking.customerName}`,
+      title: `${newBooking.customerName}`,
       date: newBooking.date,
       location: 'Chưa cập nhật (Cập nhật sau)',
       bookingRef: newBooking._id
