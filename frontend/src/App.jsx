@@ -9,6 +9,7 @@ import EventDetail from "./pages/EventDetail";
 import Register from './pages/Register';
 import SongLibrary from "./pages/SongLibrary"; 
 import CommentSection from './components/CommentSection'; // Đảm bảo đã import component này nếu dùng
+import Dashboard from "./pages/Dashboard";
 
 // --- COMPONENT: NOTIFICATION BELL (Giữ nguyên logic, chỉnh style) ---
 const NotificationBell = () => {
@@ -276,7 +277,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          
+          <Route path="/dashboard" element={<ProtectedRoute><div className="min-h-screen bg-gray-50"><Navbar /><Dashboard /></div></ProtectedRoute>} />
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           
           <Route path="/bookings" element={<ProtectedRoute><div className="min-h-screen bg-gray-50"><Navbar /><BookingManager /></div></ProtectedRoute>} />
