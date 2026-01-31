@@ -1,69 +1,83 @@
-import { useState, useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
-import axios from 'axios';
+import { useState, useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
+import { useNavigate, Link } from "react-router-dom";
+import { Music, Lock, User, ArrowRight, Sparkles } from "lucide-react";
 
 const Login = () => {
-  const [formData, setFormData] = useState({ username: '', password: '' });
+  const [formData, setFormData] = useState({ username: "", password: "" });
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e) => {
-    e.preventDefault(); // Chặn hành động reload trang mặc định của Form
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
     try {
-      const res = await axios.post('https://band-manager-s9tm.onrender.com/api/auth/login', formData);
-      
-      // Lưu token và thông tin user
-      login(res.data.token, res.data); 
-      
-      // Thông báo và chuyển hướng
-      alert("✅ Đăng nhập thành công!");
-      navigate('/dashboard'); 
+      await login(formData.username, formData.password);
+      navigate("/dashboard");
     } catch (err) {
-      alert("❌ Lỗi: " + (err.response?.data?.message || "Sai tài khoản hoặc mật khẩu"));
+      setError("❌ Sai tài khoản hoặc mật khẩu");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-96">
-        <h2 className="text-2xl font-bold text-center text-blue-600 mb-2">Band Manager</h2>
-        <p className="text-center text-gray-500 mb-6">Đăng nhập hệ thống</p>
-        
-        {/* --- QUAN TRỌNG: Thẻ form giúp ấn Enter để submit --- */}
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label className="block text-gray-700 font-medium mb-1">Tên đăng nhập</label>
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-gray-50">
+      {/* Background Blobs */}
+      <div className="absolute top-0 left-0 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
+      <div className="absolute top-0 right-0 w-72 h-72 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
+      <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
+
+      <div className="relative w-full max-w-md bg-white/80 backdrop-blur-xl border border-white/20 rounded-3xl shadow-2xl p-8 z-10">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 to-purple-600 text-white shadow-lg mb-4 transform rotate-3 hover:rotate-6 transition">
+            <Music size={32} />
+          </div>
+          <h2 className="text-3xl font-extrabold text-gray-800 tracking-tight">Chào mừng!</h2>
+          <p className="text-gray-500 mt-2 text-sm flex items-center justify-center gap-1">
+            Quản lý Band nhạc chuyên nghiệp <Sparkles size={14} className="text-yellow-500"/>
+          </p>
+        </div>
+
+        {error && (
+          <div className="mb-6 p-4 bg-red-50/80 border border-red-200 text-red-600 text-sm font-semibold rounded-xl flex items-center gap-2 animate-pulse">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="relative group">
+            <User className="absolute left-4 top-3.5 text-gray-400 group-focus-within:text-blue-600 transition" size={20} />
             <input
               type="text"
-              required
-              className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
-              value={formData.username}
+              placeholder="Tên đăng nhập"
+              className="w-full pl-12 pr-4 py-3.5 bg-gray-50/50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition shadow-sm font-medium"
               onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-              placeholder="Nhập username..."
             />
           </div>
-          <div>
-            <label className="block text-gray-700 font-medium mb-1">Mật khẩu</label>
+          <div className="relative group">
+            <Lock className="absolute left-4 top-3.5 text-gray-400 group-focus-within:text-blue-600 transition" size={20} />
             <input
               type="password"
-              required
-              className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
-              value={formData.password}
+              placeholder="Mật khẩu"
+              className="w-full pl-12 pr-4 py-3.5 bg-gray-50/50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition shadow-sm font-medium"
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              placeholder="Nhập mật khẩu..."
             />
           </div>
           
-          {/* Nút submit mặc định của form */}
-          <button type="submit" className="w-full bg-blue-600 text-white font-bold py-2 rounded hover:bg-blue-700 transition">
-            Đăng Nhập
+          <button disabled={loading} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-500/30 transform active:scale-95 transition-all flex items-center justify-center gap-2">
+            {loading ? "Đang xử lý..." : <>Đăng Nhập <ArrowRight size={20}/></>}
           </button>
         </form>
 
-        <div className="mt-4 text-center text-sm">
-          Chưa có tài khoản? <Link to="/register" className="text-blue-600 hover:underline">Đăng ký ngay</Link>
-        </div>
+        <p className="text-center mt-8 text-gray-600 text-sm">
+          Chưa có tài khoản?{" "}
+          <Link to="/register" className="text-blue-600 font-bold hover:text-purple-600 transition">
+            Đăng ký ngay
+          </Link>
+        </p>
       </div>
     </div>
   );
