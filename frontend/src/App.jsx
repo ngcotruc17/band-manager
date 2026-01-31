@@ -118,7 +118,7 @@ const Navbar = () => {
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-6">
-            <span className="text-xl font-bold text-yellow-500">🎸 BandManager</span>
+            <span className="text-xl font-bold text-yellow-500">🎸 Quản lý</span>
             <Link to="/dashboard" className="hover:text-yellow-400 font-medium transition">🏠 Dashboard</Link>
             <Link to="/library" className="hover:text-yellow-400 font-medium transition">📚 Kho Nhạc</Link>
             {user?.role === 'admin' && (
