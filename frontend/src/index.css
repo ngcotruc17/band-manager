@@ -1,0 +1,5 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Bạn có thể thêm css tùy chỉnh ở dưới nếu muốn, nhưng tạm thời chỉ cần 3 dòng trên */
