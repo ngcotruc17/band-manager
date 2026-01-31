@@ -15,7 +15,7 @@ const BookingManager = () => {
   // Load danh sách
   const fetchBookings = async () => {
     try {
-      const res = await axios.get('https://band-api.onrender.co/api/bookings', getHeaders());
+      const res = await axios.get('https://band-manager-s9tm.onrender.com/api/bookings', getHeaders());
       setBookings(res.data);
     } catch (error) { console.error(error); }
   };
@@ -26,7 +26,7 @@ const BookingManager = () => {
   const handleCreate = async () => {
     if (!formData.customerName || !formData.date) return alert("Vui lòng điền đủ thông tin");
     try {
-      await axios.post('https://band-api.onrender.co/api/bookings', formData, getHeaders());
+      await axios.post('https://band-manager-s9tm.onrender.com/api/bookings', formData, getHeaders());
       alert('✅ Tạo booking thành công!');
       setFormData({ customerName: '', contactInfo: '', date: '' });
       fetchBookings();
@@ -37,7 +37,7 @@ const BookingManager = () => {
   const handleChangeStatus = async (id, newStatus) => {
     if (!window.confirm(`Đổi trạng thái thành "${newStatus}"?`)) return;
     try {
-      await axios.put(`https://band-api.onrender.co/api/bookings/${id}/status`, { status: newStatus }, getHeaders());
+      await axios.put(`https://band-manager-s9tm.onrender.com/api/bookings/${id}/status`, { status: newStatus }, getHeaders());
       fetchBookings(); // Load lại để thấy màu thay đổi
     } catch (error) { alert('Lỗi cập nhật'); }
   };
@@ -46,7 +46,7 @@ const BookingManager = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("⚠️ CẢNH BÁO: Bạn chắc chắn muốn xóa vĩnh viễn booking này?")) return;
     try {
-      await axios.delete(`https://band-api.onrender.co/api/bookings/${id}`, getHeaders());
+      await axios.delete(`https://band-manager-s9tm.onrender.com/api/bookings/${id}`, getHeaders());
       alert('🗑️ Đã xóa booking!');
       fetchBookings();
     } catch (error) { alert('Lỗi xóa'); }

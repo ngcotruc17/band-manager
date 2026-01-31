@@ -24,7 +24,7 @@ const EventDetail = () => {
 
   const loadData = async () => {
     try {
-      const res = await axios.get(`https://band-api.onrender.co/api/events/${id}`, getHeaders());
+      const res = await axios.get(`https://band-manager-s9tm.onrender.com/api/events/${id}`, getHeaders());
       setData(res.data);
       setEditEventData({
         title: res.data.event.title,
@@ -40,7 +40,7 @@ const EventDetail = () => {
 
   const handleJoin = async () => {
     try {
-      await axios.post(`https://band-api.onrender.co/api/events/${id}/join`, {}, getHeaders());
+      await axios.post(`https://band-manager-s9tm.onrender.com/api/events/${id}/join`, {}, getHeaders());
       alert("🎉 Đã đăng ký tham gia show!");
       loadData();
     } catch (err) { alert(err.response?.data?.message || "Lỗi tham gia"); }
@@ -48,7 +48,7 @@ const EventDetail = () => {
 
   const handleTogglePerformer = async (userId) => {
     try {
-      await axios.put(`https://band-api.onrender.co/api/events/${id}/performer`, { userId }, getHeaders());
+      await axios.put(`https://band-manager-s9tm.onrender.com/api/events/${id}/performer`, { userId }, getHeaders());
       loadData();
     } catch (err) { alert("Lỗi cập nhật trạng thái"); }
   };
@@ -61,7 +61,7 @@ const EventDetail = () => {
     if (files.sheet) postData.append('sheet', files.sheet);
     if (files.beat) postData.append('beat', files.beat);
     try {
-      await axios.post(`https://band-api.onrender.co/api/events/${id}/songs`, postData, {
+      await axios.post(`https://band-manager-s9tm.onrender.com/api/events/${id}/songs`, postData, {
         headers: { ...getHeaders().headers, 'Content-Type': 'multipart/form-data' }
       });
       alert("✅ Đã thêm bài hát!");
@@ -76,7 +76,7 @@ const EventDetail = () => {
   // --- HÀM KHO NHẠC ---
   const fetchLibrary = async () => {
     try {
-      const res = await axios.get('https://band-api.onrender.co/api/library', getHeaders());
+      const res = await axios.get('https://band-manager-s9tm.onrender.com/api/library', getHeaders());
       setLibrarySongs(res.data);
       setShowLibModal(true);
     } catch (err) { console.error(err); }
@@ -84,7 +84,7 @@ const EventDetail = () => {
 
   const handleAddFromLib = async (libSongId) => {
     try {
-      await axios.post(`https://band-api.onrender.co/api/events/${id}/songs/from-library`, { librarySongId: libSongId }, getHeaders());
+      await axios.post(`https://band-manager-s9tm.onrender.com/api/events/${id}/songs/from-library`, { librarySongId: libSongId }, getHeaders());
       alert("✅ Đã lấy nhạc từ kho!");
       setShowLibModal(false);
       loadData();
@@ -94,7 +94,7 @@ const EventDetail = () => {
 
   const handleUpdateEvent = async () => {
     try {
-      await axios.put(`https://band-api.onrender.co/api/events/${id}`, editEventData, getHeaders());
+      await axios.put(`https://band-manager-s9tm.onrender.com/api/events/${id}`, editEventData, getHeaders());
       alert("✅ Đã cập nhật!");
       setIsEditing(false);
       loadData();
@@ -104,7 +104,7 @@ const EventDetail = () => {
   const handleDeleteSong = async (songId) => {
     if(!window.confirm("Xóa bài này?")) return;
     try {
-      await axios.delete(`https://band-api.onrender.co/api/events/songs/${songId}`, getHeaders());
+      await axios.delete(`https://band-manager-s9tm.onrender.com/api/events/songs/${songId}`, getHeaders());
       loadData();
     } catch (err) { alert("Lỗi xóa"); }
   };
@@ -112,7 +112,7 @@ const EventDetail = () => {
   const handleDeleteEvent = async () => {
     if(!window.confirm("⚠️ Xóa Show này?")) return;
     try {
-      await axios.delete(`https://band-api.onrender.co/api/events/${id}`, getHeaders());
+      await axios.delete(`https://band-manager-s9tm.onrender.com/api/events/${id}`, getHeaders());
       alert("🗑️ Đã xóa show!");
       navigate('/dashboard');
     } catch (err) { alert("Lỗi xóa show"); }
@@ -268,8 +268,8 @@ const EventDetail = () => {
                     </h4>
                     <p className="text-sm text-gray-500 mb-2 italic">{song.note || "Không có ghi chú"}</p>
                     <div className="flex gap-3 mt-2">
-                      {song.sheetUrl && <a href={`https://band-api.onrender.co/${song.sheetUrl}`} target="_blank" className="text-red-600 bg-red-50 px-3 py-1 rounded border border-red-200 text-sm font-bold hover:bg-red-100 transition">📄 Sheet</a>}
-                      {song.beatUrl && <audio controls src={`https://band-api.onrender.co/${song.beatUrl}`} className="h-8 w-64" />}
+                      {song.sheetUrl && <a href={`https://band-manager-s9tm.onrender.com/${song.sheetUrl}`} target="_blank" className="text-red-600 bg-red-50 px-3 py-1 rounded border border-red-200 text-sm font-bold hover:bg-red-100 transition">📄 Sheet</a>}
+                      {song.beatUrl && <audio controls src={`https://band-manager-s9tm.onrender.com/${song.beatUrl}`} className="h-8 w-64" />}
                     </div>
                   </div>
                   {user?.role === 'admin' && (

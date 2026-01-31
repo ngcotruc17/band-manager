@@ -14,7 +14,7 @@ const Register = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('https://band-api.onrender.co/api/auth/register', formData);
+      await axios.post('https://band-manager-s9tm.onrender.com/api/auth/register', formData);
       alert("✅ Đăng ký thành công! Hãy đăng nhập.");
       navigate('/'); 
     } catch (err) {

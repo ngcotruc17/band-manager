@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://band-api.onrender.co/api',
+  baseURL: 'https://band-manager-s9tm.onrender.com/api',
 });
 
 // Interceptor: Gắn token vào header
