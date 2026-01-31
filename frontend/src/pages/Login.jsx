@@ -11,7 +11,7 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault(); // Chặn hành động reload trang mặc định của Form
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/login', formData);
+      const res = await axios.post('https://band-api.onrender.co/api/auth/login', formData);
       
       // Lưu token và thông tin user
       login(res.data.token, res.data); 
