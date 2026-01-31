@@ -1,62 +1,49 @@
 const Notification = require('../models/Notification');
-const User = require('../models/User');
 
-// --- HÀM HELPER (ĐỂ CÁC FILE KHÁC GỌI) ---
-// 1. Gửi cho 1 người
-exports.notifyUser = async ({ recipientId, message, link, type }) => {
-  try {
-    await Notification.create({ recipient: recipientId, message, link, type });
-  } catch (error) { console.error("Lỗi tạo noti:", error); }
-};
-
-// 2. Gửi cho TOÀN BỘ MEMBER (Trừ admin)
+// 1. Tạo thông báo (Dùng nội bộ trong code backend)
 exports.notifyAllMembers = async ({ message, link, type }) => {
-  try {
-    const members = await User.find({ role: 'member' });
-    const notifications = members.map(u => ({
-      recipient: u._id,
-      message,
-      link,
-      type: type || 'info'
-    }));
-    if (notifications.length > 0) await Notification.insertMany(notifications);
-  } catch (error) { console.error("Lỗi tạo noti hàng loạt:", error); }
+  const User = require('../models/User');
+  const users = await User.find();
+  
+  const notis = users.map(u => ({
+    recipient: u._id,
+    sender: 'System',
+    message,
+    link,
+    type: type || 'info'
+  }));
+  
+  await Notification.insertMany(notis);
 };
 
-// 3. Gửi cho ADMIN
-exports.notifyAdmin = async ({ message, link, type }) => {
-  try {
-    const admins = await User.find({ role: 'admin' });
-    const notifications = admins.map(u => ({
-      recipient: u._id,
-      message,
-      link,
-      type: type || 'warning'
-    }));
-    if (notifications.length > 0) await Notification.insertMany(notifications);
-  } catch (error) { console.error("Lỗi tạo noti admin:", error); }
-};
-
-
-// --- HÀM API (CHO FRONTEND GỌI) ---
+// 2. API: Lấy thông báo của TÔI
 exports.getMyNotifications = async (req, res) => {
   try {
-    const notis = await Notification.find({ recipient: req.user._id }).sort({ createdAt: -1 }).limit(20);
-    const unreadCount = await Notification.countDocuments({ recipient: req.user._id, isRead: false });
-    res.json({ notifications: notis, unreadCount });
-  } catch (error) { res.status(500).json({ message: error.message }); }
+    const notis = await Notification.find({ recipient: req.user._id })
+      .sort({ createdAt: -1 }) // Mới nhất lên đầu
+      .limit(20); // Lấy 20 cái gần nhất
+    res.json(notis);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
+// 3. API: Đánh dấu đã đọc
 exports.markAsRead = async (req, res) => {
   try {
-    await Notification.findByIdAndUpdate(req.params.id, { isRead: true });
+    await Notification.findByIdAndUpdate(req.params.id, { read: true });
     res.json({ success: true });
-  } catch (error) { res.status(500).json({ message: error.message }); }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
+// 4. API: Đánh dấu tất cả là đã đọc
 exports.markAllRead = async (req, res) => {
   try {
-    await Notification.updateMany({ recipient: req.user._id, isRead: false }, { isRead: true });
+    await Notification.updateMany({ recipient: req.user._id, read: false }, { read: true });
     res.json({ success: true });
-  } catch (error) { res.status(500).json({ message: error.message }); }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };

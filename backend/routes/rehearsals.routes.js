@@ -1,3 +1,4 @@
+//D:\ProjectVSC\band-booking-app\backend\routes\rehearsals.routes.js
 const express = require('express');
 const router = express.Router();
 const Rehearsal = require('../models/Rehearsal');
