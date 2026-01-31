@@ -1,17 +1,20 @@
 const Booking = require('../models/Booking');
 const Event = require('../models/Event');
 const { sendNewShowEmail } = require('../utils/sendEmail'); 
-const { notifyAllMembers } = require('./notification.controller'); // Import thông báo
+const { notifyAllMembers } = require('./notification.controller'); 
 
 // 1. Get Bookings
 exports.getBookings = async (req, res) => {
   try {
-    const bookings = await Booking.find().sort({ createdAt: -1 });
+    // 🔥 SỬA DÒNG NÀY: Sort theo date (tăng dần) để hiện show sắp tới
+    // (Thay vì createdAt là show mới tạo)
+    const bookings = await Booking.find().sort({ date: 1 });
+    
     res.json(bookings);
   } catch (error) { res.status(500).json({ message: error.message }); }
 };
 
-// 2. Create Booking
+// ... Các hàm create, update, delete giữ nguyên như của bạn là OK rồi ...
 exports.createBooking = async (req, res) => {
   try {
     const newBooking = new Booking(req.body);
@@ -28,7 +31,6 @@ exports.createBooking = async (req, res) => {
   } catch (error) { res.status(400).json({ message: error.message }); }
 };
 
-// 3. Update Status (Duyệt -> Gửi Mail + Thông báo Web)
 exports.updateBookingStatus = async (req, res) => {
   try {
     const { status } = req.body;
@@ -37,10 +39,10 @@ exports.updateBookingStatus = async (req, res) => {
     if (status === 'approved') {
       const event = await Event.findOne({ bookingRef: booking._id });
       if (event) {
-        // 1. Gửi Email
-        sendNewShowEmail(event); 
+        // Gửi Email nếu có hàm này
+        if (typeof sendNewShowEmail === 'function') sendNewShowEmail(event); 
 
-        // 2. Gửi Thông báo Web
+        // Gửi thông báo
         await notifyAllMembers({
           message: `🔥 Show mới: ${event.title}. Đăng ký ngay!`,
           link: `/events/${event._id}`,
@@ -53,7 +55,6 @@ exports.updateBookingStatus = async (req, res) => {
   } catch (error) { res.status(400).json({ message: error.message }); }
 };
 
-// 4. Delete Booking
 exports.deleteBooking = async (req, res) => {
   try {
     await Booking.findByIdAndDelete(req.params.id);

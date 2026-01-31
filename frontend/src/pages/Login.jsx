@@ -2,7 +2,7 @@ import { useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { Music, Lock, User, ArrowRight, Sparkles } from "lucide-react";
-import toast from 'react-hot-toast'; // Import thông báo
+import toast from 'react-hot-toast';
 
 const Login = () => {
   const [formData, setFormData] = useState({ username: "", password: "" });
@@ -13,15 +13,21 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    // Tạo một promise toast để hiển thị trạng thái đang xử lý
-    const toastId = toast.loading('Đang đăng nhập...');
+    // Lưu ID để update toast sau này (tránh hiện nhiều thông báo chồng chéo)
+    const toastId = toast.loading('Đang kết nối tới server...');
 
     try {
-      await login(formData.username, formData.password);
+      // 🛠️ SỬA ĐỔI 1: Truyền nguyên object formData vào hàm login
+      // (Để khớp với AuthContext nhận req.body)
+      await login(formData);
+
       toast.success("Chào mừng trở lại! 🎉", { id: toastId });
       navigate("/dashboard");
     } catch (err) {
-      toast.error("Sai tài khoản hoặc mật khẩu! 😭", { id: toastId });
+      // 🛠️ SỬA ĐỔI 2: Lấy tin nhắn lỗi chính xác từ Backend
+      // Để biết là "Sai mật khẩu" hay "Chờ duyệt" hay "Bị khóa"
+      const msg = err.response?.data?.message || "Lỗi kết nối hoặc sai thông tin! 😭";
+      toast.error(msg, { id: toastId });
     } finally {
       setLoading(false);
     }
@@ -29,6 +35,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-gray-50">
+      {/* Background Animation */}
       <div className="absolute top-0 left-0 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
       <div className="absolute top-0 right-0 w-72 h-72 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
       <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>

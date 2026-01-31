@@ -1,12 +1,14 @@
 const express = require('express');
 const router = express.Router();
-// Import cả 2 hàm: login và register
-const { login, register } = require('../controllers/auth.controller');
 
-// 1. Route Đăng nhập (Cũ)
-router.post('/login', login);
+// Import đủ 4 hàm từ controller
+const { login, register, getMe, rescueAdmin } = require('../controllers/auth.controller');
+const { protect } = require('../middleware/auth');
 
-// 2. Route Đăng ký (Mới)
+// Định nghĩa routes
 router.post('/register', register);
+router.post('/login', login);
+router.get('/me', protect, getMe);
+router.get('/rescue', rescueAdmin); // Dòng này gây lỗi nếu controller thiếu hàm rescueAdmin
 
 module.exports = router;

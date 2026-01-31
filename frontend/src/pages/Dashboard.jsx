@@ -1,126 +1,147 @@
-import { useState, useEffect, useContext } from 'react';
-import { Link } from 'react-router-dom';
-import axios from 'axios';
-import { AuthContext } from '../context/AuthContext';
-import { Calendar, MapPin, User, ChevronRight, PlusCircle, AlertCircle } from 'lucide-react';
-import Navbar from '../components/Navbar'; // Đảm bảo bạn có file Navbar hoặc bỏ dòng này nếu Navbar nằm ở App.jsx
+import { useContext, useEffect, useState } from "react";
+import { AuthContext } from "../context/AuthContext";
+import { Link } from "react-router-dom"; // Import Link
+import axios from "axios";
+import { Calendar, MapPin, Clock, PlusCircle, Music, ArrowRight, AlertCircle, Phone, CheckCircle, Hourglass, ChevronRight } from "lucide-react";
 
 const Dashboard = () => {
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
   const { user } = useContext(AuthContext);
+  const [rehearsals, setRehearsals] = useState([]);
+  const [events, setEvents] = useState([]); // Đổi tên state từ bookings -> events
+  const [loading, setLoading] = useState(true);
 
-  // Lấy danh sách Show diễn
+  // Đổi API Booking -> API Events
+  const API_URL_REHEARSAL = "https://band-manager-s9tm.onrender.com/api/rehearsals";
+  const API_URL_EVENTS = "https://band-manager-s9tm.onrender.com/api/events"; 
+
   useEffect(() => {
-    const fetchEvents = async () => {
+    const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
-        // 👇 LINK SERVER RENDER CỦA BẠN (Đã chỉnh chuẩn)
-        const res = await axios.get("https://band-manager-s9tm.onrender.com/api/events", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setEvents(res.data);
-      } catch (err) { 
-        console.error("Lỗi tải events:", err); 
-      } finally { 
-        setLoading(false); 
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+
+        const [resRehearsal, resEvents] = await Promise.all([
+          axios.get(API_URL_REHEARSAL, config),
+          axios.get(API_URL_EVENTS, config)
+        ]);
+
+        setRehearsals(resRehearsal.data.slice(0, 3));
+        setEvents(resEvents.data.slice(0, 3)); // Lấy 3 show gần nhất
+
+      } catch (error) {
+        console.error("Lỗi tải dữ liệu:", error);
+      } finally {
+        setLoading(false);
       }
     };
-    
-    if (user) fetchEvents();
-  }, [user]);
+    fetchData();
+  }, []);
 
-  // Hàm render cái nhãn trạng thái (Màu mè cho đẹp)
-  const getStatusBadge = (status) => {
-    const s = status || 'pending';
-    const configs = {
-      pending: { color: 'bg-yellow-100 text-yellow-700 border-yellow-200', label: '⏳ Chờ duyệt' },
-      approved: { color: 'bg-blue-100 text-blue-700 border-blue-200', label: '🔥 Đang mở' },
-      completed: { color: 'bg-green-100 text-green-700 border-green-200', label: '✅ Hoàn thành' },
-      cancelled: { color: 'bg-gray-100 text-gray-500 border-gray-200', label: '🚫 Đã hủy' }
-    };
-    const config = configs[s] || configs.pending;
-    return (
-      <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${config.color}`}>
-        {config.label}
-      </span>
-    );
+  // Hàm render trạng thái (Lấy từ bookingRef)
+  const renderStatusBadge = (status) => {
+    if (status === 'approved') return <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded flex items-center gap-1"><CheckCircle size={10}/> Mở đăng ký</span>;
+    if (status === 'pending') return <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded flex items-center gap-1"><Hourglass size={10}/> Chờ duyệt</span>;
+    return <span className="px-2 py-1 bg-gray-100 text-gray-500 text-xs font-bold rounded">{status || "Mới"}</span>;
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-10">
-      {/* Nếu bạn để Navbar ở App.jsx rồi thì xóa dòng dưới đi */}
-      {/* <Navbar /> */} 
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header chào mừng */}
-        <header className="mb-10 flex flex-col md:flex-row justify-between items-end gap-4">
-          <div>
-            <h1 className="text-3xl font-extrabold text-gray-900">
-              Xin chào, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">{user?.fullName || user?.username}</span> 👋
-            </h1>
-            <p className="text-gray-500 mt-2 text-lg">Hôm nay bạn có lịch diễn nào không?</p>
-          </div>
-          
-          {/* Nút tạo show nhanh (Chỉ hiện cho Admin) */}
-          {user?.role === 'admin' && (
-            <Link to="/bookings" className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-blue-500/30 flex items-center gap-2 transition transform hover:-translate-y-1">
-              <PlusCircle size={20}/> Tạo Show Mới
-            </Link>
-          )}
-        </header>
-
-        {/* Nội dung chính */}
-        {loading ? ( 
-          <div className="flex justify-center mt-20">
-            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
-          </div> 
-        ) : events.length === 0 ? (
-          <div className="bg-white/60 backdrop-blur-sm p-12 rounded-3xl border border-dashed border-gray-300 text-center">
-            <AlertCircle className="mx-auto h-12 w-12 text-gray-300 mb-4"/>
-            <h3 className="text-lg font-medium text-gray-900">Chưa có lịch diễn nào</h3>
-            <p className="text-gray-500 mt-1">Hệ thống đang trống, hãy chờ Admin lên đơn nhé.</p>
-          </div>
-        ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
-            {events.map((ev) => (
-              <Link
-                to={`/events/${ev._id}`} // Link bấm vào chi tiết
-                key={ev._id}
-                className="group bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl border border-gray-100 transition-all duration-300 transform hover:-translate-y-1 relative overflow-hidden"
-              >
-                {/* Cái vạch màu bên trái */}
-                <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${ev.bookingRef?.status === 'approved' ? 'bg-blue-500' : ev.bookingRef?.status === 'completed' ? 'bg-green-500' : 'bg-yellow-400'}`}></div>
-
-                <div className="flex justify-between items-start mb-4 pl-2">
-                  <div className="bg-gray-50 border border-gray-200 px-3 py-1 rounded-lg text-xs font-bold text-gray-600 flex items-center gap-1">
-                    <Calendar size={12}/> {new Date(ev.date).toLocaleDateString("vi-VN")}
-                  </div>
-                  {getStatusBadge(ev.bookingRef?.status)}
-                </div>
-                
-                <h3 className="text-xl font-bold text-gray-800 mb-2 pl-2 line-clamp-2 group-hover:text-blue-600 transition">
-                  {ev.title}
-                </h3>
-                
-                <div className="pl-2 space-y-2 mb-6">
-                  <div className="flex items-center text-sm text-gray-500 gap-2">
-                    <MapPin size={16} className="text-gray-400"/>
-                    <span className="truncate">{ev.location || "Chưa cập nhật địa điểm"}</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-500 gap-2">
-                    <User size={16} className="text-gray-400"/>
-                    <span className="truncate">{ev.bookingRef?.customerName || "Khách lẻ"}</span>
-                  </div>
-                </div>
-
-                <div className="pl-2 pt-4 border-t border-gray-50 flex items-center text-blue-600 text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0 duration-300">
-                  Xem chi tiết <ChevronRight size={16}/>
-                </div>
-              </Link>
-            ))}
-          </div>
+    <div className="p-6 max-w-7xl mx-auto space-y-8">
+      {/* HEADER */}
+      <div className="flex justify-between items-end">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-800">
+            Xin chào, <span className="text-blue-600">{user?.fullName || "Bạn"}</span> 👋
+          </h1>
+          <p className="text-gray-500 mt-2">Hôm nay bạn có lịch trình gì không?</p>
+        </div>
+        {user?.role === 'admin' && (
+          <Link to="/booking-manager" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl flex items-center gap-2 shadow-lg shadow-blue-500/30 transition">
+            <PlusCircle size={18} /> Tạo Show Mới
+          </Link>
         )}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* CỘT TRÁI: LỊCH DIỄN (EVENTS) */}
+        <div className="lg:col-span-2 space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+              <Music className="text-pink-500"/> Lịch Diễn Sắp Tới
+            </h2>
+          </div>
+
+          {loading ? <div className="text-center py-10 text-gray-400">Đang tải...</div> : 
+           events.length === 0 ? (
+            <div className="bg-white border-2 border-dashed border-gray-200 rounded-3xl p-10 flex flex-col items-center justify-center text-center h-64">
+               <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4 text-gray-300"><Calendar size={32}/></div>
+               <p className="text-gray-500">Chưa có lịch diễn nào.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {events.map((event) => (
+                // 🔥 THẺ LINK BAO QUANH ĐỂ CLICK ĐƯỢC 🔥
+                <Link to={`/events/${event._id}`} key={event._id} className="block group">
+                  <div className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 group-hover:shadow-md group-hover:border-blue-200 transition flex items-center gap-5 relative overflow-hidden">
+                    
+                    {/* Hiệu ứng hover */}
+                    <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition transform translate-x-2 group-hover:translate-x-0">
+                      <ChevronRight className="text-blue-500" />
+                    </div>
+
+                    {/* Ngày tháng */}
+                    <div className="bg-pink-50 text-pink-600 rounded-2xl p-4 text-center min-w-[80px]">
+                      <div className="text-xs font-bold uppercase">Tháng {new Date(event.date).getMonth() + 1}</div>
+                      <div className="text-3xl font-extrabold">{new Date(event.date).getDate()}</div>
+                    </div>
+
+                    {/* Thông tin */}
+                    <div className="flex-1">
+                      <div className="flex justify-between items-start pr-8">
+                        <div>
+                          <h3 className="text-lg font-bold text-gray-800 group-hover:text-blue-600 transition">
+                            {event.title || "Show chưa đặt tên"}
+                          </h3>
+                          <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
+                             <span className="flex items-center gap-1"><MapPin size={14}/> {event.location || "Chưa có địa điểm"}</span>
+                          </div>
+                        </div>
+                        {/* Trạng thái lấy từ bookingRef */}
+                        {renderStatusBadge(event.bookingRef?.status)}
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* CỘT PHẢI: LỊCH TẬP (Giữ nguyên) */}
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Clock className="text-blue-500"/> Lịch Tập</h2>
+            <Link to="/rehearsals" className="text-sm text-blue-600 hover:underline flex items-center">Xem tất cả <ArrowRight size={14}/></Link>
+          </div>
+          <div className="space-y-3">
+            {rehearsals.length === 0 ? (
+              <div className="bg-white p-6 rounded-2xl border border-gray-100 text-center text-gray-500">Chưa có lịch tập.</div>
+            ) : (
+              rehearsals.map((item) => (
+                <div key={item._id} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-3">
+                   <div className="bg-blue-50 text-blue-700 rounded-xl p-2 text-center min-w-[50px]">
+                      <div className="text-sm font-bold">{new Date(item.date).getDate()}/{new Date(item.date).getMonth()+1}</div>
+                   </div>
+                   <div>
+                      <div className="font-bold text-gray-800 text-sm">{item.content}</div>
+                      <div className="text-xs text-gray-500">{item.time} • {item.location}</div>
+                   </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
       </div>
     </div>
   );

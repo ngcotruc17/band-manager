@@ -115,14 +115,17 @@ const Navbar = () => {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center gap-8">
             <Link to="/dashboard" className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-80 transition">
-              🎸 Quản lý
+              🎸 Home
             </Link>
             <div className="hidden md:flex space-x-1">
               <Link to="/dashboard" className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition flex items-center gap-1.5">Dashboard</Link>
               <Link to="/library" className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition flex items-center gap-1.5">Kho Nhạc</Link>
               <Link to="/rehearsals" className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition flex items-center gap-1.5">Lịch Tập</Link>
               {user?.role === 'admin' && (
-                <Link to="/bookings" className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition flex items-center gap-1.5">Quản lý Booking</Link>
+                <>
+                  <Link to="/bookings" className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition flex items-center gap-1.5">Quản lý Booking</Link>
+                  <Link to="/members" className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition flex items-center gap-1.5">Nhân sự</Link>
+                </>
               )}
             </div>
           </div>
