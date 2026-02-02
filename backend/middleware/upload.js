@@ -7,13 +7,20 @@ const storage = multer.diskStorage({
     cb(null, 'uploads/'); // Lưu vào thư mục uploads
   },
   filename: function (req, file, cb) {
-    // Đặt tên file: thoigian-tenfilegoc
-    cb(null, Date.now() + '-' + file.originalname.replace(/\s/g, '_'));
+    // 👇 SỬA LẠI ĐOẠN NÀY:
+    // Thay vì dùng tên gốc, ta tạo tên mới hoàn toàn bằng thời gian + số ngẫu nhiên
+    // Ví dụ: 170988229-123456789.pdf (Đảm bảo không bao giờ bị lỗi ký tự)
+    
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const fileExtension = path.extname(file.originalname); // Lấy đuôi file (.pdf, .mp3)
+    
+    cb(null, 'file-' + uniqueSuffix + fileExtension);
   }
 });
 
 // Kiểm tra định dạng file (Chỉ cho PDF và Audio)
 const fileFilter = (req, file, cb) => {
+  // Chấp nhận mọi file audio (mp3, wav, m4a...) và pdf
   if (file.mimetype.startsWith('audio/') || file.mimetype === 'application/pdf') {
     cb(null, true);
   } else {

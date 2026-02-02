@@ -5,7 +5,8 @@ import { Music, UploadCloud, Trash2, Search, FileText, PlayCircle } from 'lucide
 
 const SongLibrary = () => {
   const [songs, setSongs] = useState([]);
-  const [formData, setFormData] = useState({ name: '', note: '' });
+  // 👇 SỬA 1: Đổi 'name' thành 'title'
+  const [formData, setFormData] = useState({ title: '', note: '' });
   const [files, setFiles] = useState({ sheet: null, beat: null });
   const [searchTerm, setSearchTerm] = useState('');
   const { user } = useContext(AuthContext);
@@ -24,8 +25,11 @@ const SongLibrary = () => {
   const handleUpload = async (e) => {
     e.preventDefault();
     const postData = new FormData();
-    postData.append('name', formData.name);
+    
+    // 👇 SỬA 2: Gửi 'title' cho đúng ý Backend
+    postData.append('title', formData.title);
     postData.append('note', formData.note);
+    
     if (files.sheet) postData.append('sheet', files.sheet);
     if (files.beat) postData.append('beat', files.beat);
 
@@ -34,12 +38,18 @@ const SongLibrary = () => {
         headers: { ...getHeaders().headers, 'Content-Type': 'multipart/form-data' }
       });
       alert("✅ Đã thêm vào Kho Nhạc!");
-      setFormData({ name: '', note: '' });
+      setFormData({ title: '', note: '' }); // Reset form
       setFiles({ sheet: null, beat: null });
-      document.getElementById('lib-sheet').value = "";
-      document.getElementById('lib-beat').value = "";
+      
+      // Reset input file thủ công
+      if(document.getElementById('lib-sheet')) document.getElementById('lib-sheet').value = "";
+      if(document.getElementById('lib-beat')) document.getElementById('lib-beat').value = "";
+      
       fetchSongs();
-    } catch (err) { alert("Lỗi upload"); }
+    } catch (err) { 
+        console.error(err);
+        alert("Lỗi upload: " + (err.response?.data?.message || err.message)); 
+    }
   };
 
   const handleDelete = async (id) => {
@@ -50,7 +60,8 @@ const SongLibrary = () => {
     } catch (err) { alert("Lỗi xóa"); }
   };
 
-  const filteredSongs = songs.filter(s => s.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  // 👇 SỬA 3: Filter theo 'title' (Thêm ?. để tránh lỗi nếu null)
+  const filteredSongs = songs.filter(s => s.title?.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
@@ -64,8 +75,16 @@ const SongLibrary = () => {
           <div className="md:col-span-1 h-fit bg-white p-5 rounded-lg shadow border border-blue-100">
             <h3 className="font-bold mb-4 flex items-center gap-2 text-blue-800"><UploadCloud/> Thêm bài mới</h3>
             <form onSubmit={handleUpload} className="space-y-3">
-              <input className="w-full border p-2 rounded" placeholder="Tên bài hát" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
+              {/* 👇 SỬA 4: Input bind vào 'title' */}
+              <input 
+                className="w-full border p-2 rounded" 
+                placeholder="Tên bài hát" 
+                value={formData.title} 
+                onChange={e => setFormData({...formData, title: e.target.value})} 
+                required 
+              />
               <input className="w-full border p-2 rounded" placeholder="Ghi chú (Tone/Nhịp)" value={formData.note} onChange={e => setFormData({...formData, note: e.target.value})} />
+              
               <div className="text-sm">
                 <label className="block font-bold mb-1 text-red-600">Sheet (PDF)</label>
                 <input id="lib-sheet" type="file" accept=".pdf" className="w-full" onChange={e => setFiles({...files, sheet: e.target.files[0]})} />
@@ -99,11 +118,21 @@ const SongLibrary = () => {
                 {filteredSongs.map(song => (
                   <div key={song._id} className="p-4 hover:bg-gray-50 flex justify-between items-center group">
                     <div>
-                      <h4 className="font-bold text-gray-800 text-lg">{song.name}</h4>
+                      {/* 👇 SỬA 5: Hiển thị 'song.title' */}
+                      <h4 className="font-bold text-gray-800 text-lg">{song.title}</h4>
                       <p className="text-sm text-gray-500">{song.note || "Không có ghi chú"}</p>
                       <div className="flex gap-2 mt-1">
-                        {song.sheetUrl && <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded flex items-center gap-1"><FileText size={12}/> Sheet</span>}
-                        {song.beatUrl && <span className="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded flex items-center gap-1"><PlayCircle size={12}/> Beat</span>}
+                        {/* Hiển thị link download/xem nếu có */}
+                        {song.sheetUrl && (
+                            <a href={`https://band-manager-s9tm.onrender.com/${song.sheetUrl}`} target="_blank" rel="noreferrer" className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded flex items-center gap-1 hover:bg-red-200">
+                                <FileText size={12}/> Sheet
+                            </a>
+                        )}
+                        {song.beatUrl && (
+                            <a href={`https://band-manager-s9tm.onrender.com/${song.beatUrl}`} target="_blank" rel="noreferrer" className="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded flex items-center gap-1 hover:bg-blue-200">
+                                <PlayCircle size={12}/> Beat
+                            </a>
+                        )}
                       </div>
                     </div>
                     {user?.role === 'admin' && (

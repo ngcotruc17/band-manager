@@ -5,11 +5,18 @@ const connectDB = require('./config/db');
 const path = require('path');
 const dashboardRoutes = require('./routes/dashboard.routes');
 const commentRoutes = require('./routes/comment.routes');
+const fs = require('fs');
 
 dotenv.config();
 connectDB();
 
 const app = express();
+
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)){
+    fs.mkdirSync(uploadDir);
+    console.log("📂 Đã tạo thư mục 'uploads' thành công!");
+}
 
 // --- 👇 SỬA ĐOẠN NÀY ĐỂ FIX LỖI CORS ---
 app.use(cors({
