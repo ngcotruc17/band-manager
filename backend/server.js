@@ -1,6 +1,6 @@
 const express = require('express');
 const dotenv = require('dotenv');
-const cors = require('cors');
+const cors = require('cors'); // Đảm bảo đã cài: npm install cors
 const connectDB = require('./config/db');
 const path = require('path');
 const dashboardRoutes = require('./routes/dashboard.routes');
@@ -9,12 +9,24 @@ dotenv.config();
 connectDB();
 
 const app = express();
+
+// --- 👇 SỬA ĐOẠN NÀY ĐỂ FIX LỖI CORS ---
+app.use(cors({
+  origin: [
+    'http://localhost:5173',      // Cho phép máy cá nhân (Dev)
+    'https://sacband.vercel.app', // Cho phép web trên Vercel (Production)
+    'http://localhost:3000'       // (Dự phòng)
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true // Cho phép gửi cookie/token nếu có
+}));
+// ----------------------------------------
+
 // Route đánh thức server (Ping)
 app.get('/api/ping', (req, res) => {
   res.status(200).json({ message: "Server is awake! ☕" });
 });
 
-app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
