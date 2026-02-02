@@ -78,39 +78,47 @@ exports.register = async (req, res) => {
   }
 };
 
-// 2. Đăng nhập (Login)
+// 2. Đăng Nhập
 exports.login = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, password } = req.body; // Login bằng username hoặc email đều được
 
-    // Tìm user bằng email HOẶC username
+    // Tìm user theo username HOẶC email
     const user = await User.findOne({
-        $or: [
-            { email: username }, 
-            { username: username }
-        ]
+       $or: [{ username: username }, { email: username }]
     });
 
-    if (user && (await user.matchPassword(password))) {
-      
-      if (user.status === 'banned') return res.status(403).json({ message: 'Tài khoản bị khóa' });
-      if (user.status === 'pending') return res.status(403).json({ message: 'Tài khoản chưa được duyệt!' });
+    if (!user) return res.status(400).json({ message: "Sai tên đăng nhập hoặc mật khẩu" });
 
-      res.json({
-        _id: user._id,
-        username: user.username,
-        fullName: user.fullName,
-        email: user.email,
-        role: user.role,
-        token: generateToken(user._id),
-        requireChangePassword: user.mustChangePassword 
-      });
-    } else {
-      res.status(401).json({ message: 'Sai tài khoản hoặc mật khẩu' });
+    // 👇 KIỂM TRA DUYỆT:
+    // Nếu chưa duyệt VÀ không phải admin -> Chặn
+    if (user.isApproved === false && user.role !== 'admin') {
+        return res.status(403).json({ message: "Tài khoản chưa được duyệt! Vui lòng liên hệ Admin." });
     }
+
+    // Kiểm tra pass (Hàm matchPassword trong Model)
+    // Lưu ý: Nếu bạn chưa có hàm matchPassword trong Model thì so sánh trực tiếp (không khuyến khích)
+    // const isMatch = await bcrypt.compare(password, user.password); 
+    // Giả sử bạn đang dùng bcrypt trong model:
+    const isMatch = await user.matchPassword(password); 
+
+    if (!isMatch) return res.status(400).json({ message: "Sai tên đăng nhập hoặc mật khẩu" });
+
+    // Tạo Token
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+
+    res.json({
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      fullName: user.fullName,
+      role: user.role,
+      token,
+      requireChangePassword: user.mustChangePassword // Trả về cờ này cho Frontend biết đường chuyển hướng
+    });
+
   } catch (error) {
-    console.error("Lỗi Login:", error);
-    res.status(500).json({ message: "Lỗi Server: " + error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -198,6 +206,8 @@ exports.resetUserPassword = async (req, res) => {
     
     // 👇 QUAN TRỌNG: Bật cờ này lên để khi login nó bắt đổi pass ngay
     user.mustChangePassword = true; 
+
+    user.isApproved = true;
 
     await user.save(); // Model sẽ tự động mã hóa password "123456"
 
