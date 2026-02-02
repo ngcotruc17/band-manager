@@ -10,44 +10,24 @@ const generateToken = (id) => {
 };
 
 // 1. Đăng ký tài khoản
-exports.register = async (req, res) => { // 👈 Bỏ tham số 'next' để tránh lỗi
+exports.register = async (req, res) => {
   try {
-    const { fullName, email, password } = req.body;
+    const { fullName, email, password } = req.body; // Lấy email từ form
 
-    // Kiểm tra dữ liệu đầu vào
-    if (!fullName || !email || !password) {
-      return res.status(400).json({ message: "Vui lòng nhập đủ thông tin" });
-    }
+    // Nếu form của bạn chỉ có ô Email mà không có ô Username
+    // Thì ta lấy luôn phần trước @ của email làm username tạm
+    const username = email.split('@')[0]; 
 
-    // Kiểm tra trùng email
-    const userExists = await User.findOne({ email });
-    if (userExists) {
-      return res.status(400).json({ message: "Email này đã được sử dụng" });
-    }
-
-    // Tạo user mới
-    // (Password sẽ được mã hóa tự động nếu bạn đã làm pre-save hook trong Model User)
     const user = await User.create({
       fullName,
-      email,
+      email,     // Lưu email
+      username,  // Lưu username tự sinh
       password
     });
-
-    if (user) {
-      res.status(201).json({
-        _id: user.id,
-        fullName: user.fullName,
-        email: user.email,
-        role: user.role,
-        token: generateToken(user._id), // Trả về token luôn để tự đăng nhập
-      });
-    } else {
-      res.status(400).json({ message: "Không thể tạo tài khoản" });
-    }
+    
+    // ... đoạn trả về res.json ...
   } catch (error) {
-    console.error("Lỗi đăng ký:", error.message);
-    // 👇 Đây là chỗ fix lỗi "next is not a function": Trả lỗi trực tiếp
-    res.status(500).json({ message: "Lỗi Server: " + error.message });
+     res.status(500).json({ message: "Lỗi: " + error.message });
   }
 };
 
