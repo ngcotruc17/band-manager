@@ -1,6 +1,5 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
-// const bcrypt = require('bcryptjs'); // Không cần import ở đây nếu Model đã tự xử lý
 
 // Hàm tạo Token
 const generateToken = (id) => {
@@ -9,42 +8,42 @@ const generateToken = (id) => {
   });
 };
 
-// 1. Đăng ký tài khoản (Người dùng tự đăng ký)
+// 1. Đăng ký (Register)
 exports.register = async (req, res) => {
   try {
-    const { fullName, email, password } = req.body;
+    let { fullName, email, username, password } = req.body;
+
+    // Nếu người dùng nhập username vào ô email (hoặc ngược lại)
+    if (!email && username) {
+        email = username; 
+    }
 
     if (!fullName || !email || !password) {
       return res.status(400).json({ message: "Vui lòng nhập đủ thông tin" });
     }
 
-    // Check trùng email
-    const userExists = await User.findOne({ email });
-    if (userExists) {
-      return res.status(400).json({ message: "Email này đã được sử dụng" });
+    // Tự động tạo username nếu chưa có
+    if (!username) {
+        username = email.includes('@') ? email.split('@')[0] : email;
     }
 
-    // Tạo username từ email (ví dụ: nct@gmail.com -> nct)
-    // Thêm số ngẫu nhiên để tránh trùng (nct123)
-    let baseUsername = email.split('@')[0];
-    let username = baseUsername;
-    let counter = 1;
+    // Check trùng
+    const userExists = await User.findOne({ 
+        $or: [{ email: email }, { username: username }] 
+    });
     
-    // Vòng lặp kiểm tra nếu username đã tồn tại thì thêm số
-    while (await User.findOne({ username })) {
-        username = baseUsername + counter;
-        counter++;
+    if (userExists) {
+      return res.status(400).json({ message: "Tài khoản hoặc Email đã tồn tại" });
     }
 
-    // 👇 CHỈ CẦN TRUYỀN PASSWORD GỐC, MODEL SẼ TỰ MÃ HÓA
+    // Tạo User (Model sẽ tự mã hóa password)
     const user = await User.create({
       fullName,
-      email,
+      email,     
       username,
       password 
     });
     
-    // 👇 PHẦN QUAN TRỌNG BẠN ĐANG THIẾU: TRẢ VỀ DỮ LIỆU
     if (user) {
       res.status(201).json({
         _id: user.id,
@@ -64,45 +63,12 @@ exports.register = async (req, res) => {
   }
 };
 
-// 2. Admin tạo User (Thêm nhạc công/thành viên)
-exports.adminCreateUser = async (req, res) => {
-  try {
-    // 👇 Admin phải nhập thêm Email cho user đó
-    const { fullName, email, role, instrument } = req.body; 
-
-    // Kiểm tra trùng email
-    const userExists = await User.findOne({ email });
-    if (userExists) return res.status(400).json({ message: 'Email đã tồn tại' });
-
-    // Tạo username tự động từ email
-    const username = email.split('@')[0];
-
-    // 👇 KHÔNG DÙNG BCRYPT Ở ĐÂY. Để Model tự làm.
-    // Mật khẩu mặc định là "123456"
-    const user = new User({
-        username,
-        email,
-        password: "123456", // Model sẽ tự mã hóa thành $2a$10$....
-        fullName,
-        role: role || 'member',
-        instrument: instrument || 'Chưa phân công',
-        mustChangePassword: true,
-        status: 'active'
-    });
-
-    await user.save();
-    res.status(201).json(user);
-  } catch (e) { 
-      res.status(500).json({ message: e.message }); 
-  }
-};
-
-// 3. Đăng nhập
+// 2. Đăng nhập (Login) - CÁI BẠN ĐANG THIẾU
 exports.login = async (req, res) => {
   try {
-    const { username, password } = req.body; // username ở đây có thể là email hoặc tên đăng nhập
+    const { username, password } = req.body;
 
-    // 👇 Tìm kiếm linh hoạt: Cho phép nhập Email HOẶC Username để login
+    // Tìm user bằng email HOẶC username
     const user = await User.findOne({
         $or: [
             { email: username }, 
@@ -110,7 +76,7 @@ exports.login = async (req, res) => {
         ]
     });
 
-    // Kiểm tra pass bằng hàm của Model (Tránh lỗi import bcrypt loằng ngoằng)
+    // Kiểm tra password
     if (user && (await user.matchPassword(password))) {
       
       if (user.status === 'banned') return res.status(403).json({ message: 'Tài khoản bị khóa' });
@@ -129,7 +95,37 @@ exports.login = async (req, res) => {
       res.status(401).json({ message: 'Sai tài khoản hoặc mật khẩu' });
     }
   } catch (error) {
+    console.error("Lỗi Login:", error);
     res.status(500).json({ message: "Lỗi Server: " + error.message });
+  }
+};
+
+// 3. Admin tạo User - CÁI BẠN ĐANG THIẾU
+exports.adminCreateUser = async (req, res) => {
+  try {
+    const { fullName, email, role, instrument } = req.body; 
+
+    const userExists = await User.findOne({ email });
+    if (userExists) return res.status(400).json({ message: 'Email đã tồn tại' });
+
+    const username = email.split('@')[0];
+
+    // Password mặc định 123456
+    const user = new User({
+        username,
+        email,
+        password: "123456", 
+        fullName,
+        role: role || 'member',
+        instrument: instrument || 'Chưa phân công',
+        mustChangePassword: true,
+        status: 'active'
+    });
+
+    await user.save();
+    res.status(201).json(user);
+  } catch (e) { 
+      res.status(500).json({ message: e.message }); 
   }
 };
 
@@ -137,15 +133,13 @@ exports.login = async (req, res) => {
 exports.changePasswordFirstTime = async (req, res) => {
   try {
     const { newPassword } = req.body;
-    const user = await User.findById(req.user.id); // req.user lấy từ middleware protect
+    const user = await User.findById(req.user.id);
 
     if (!user) return res.status(404).json({ message: "User không tồn tại" });
 
-    // 👇 CHỈ GÁN PASSWORD MỚI, KHÔNG MÃ HÓA THỦ CÔNG
-    user.password = newPassword; // Model pre('save') sẽ tự mã hóa
+    user.password = newPassword; 
     user.mustChangePassword = false; 
-    
-    await user.save(); // Lúc này pre('save') sẽ chạy
+    await user.save();
 
     res.json({ message: "Đổi mật khẩu thành công!" });
   } catch (error) {
@@ -153,7 +147,7 @@ exports.changePasswordFirstTime = async (req, res) => {
   }
 };
 
-// 5. Get Me
+// 5. Lấy thông tin bản thân (Get Me)
 exports.getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');

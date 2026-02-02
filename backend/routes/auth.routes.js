@@ -9,6 +9,14 @@ const {
     getMe
 } = require('../controllers/auth.controller');
 
+// 👇 THÊM ĐOẠN NÀY ĐỂ DEBUG 👇
+console.log("--- KIỂM TRA IMPORT ---");
+console.log("1. register:", register);   // Phải hiện [Function]
+console.log("2. login:", login);         // Phải hiện [Function]
+console.log("3. protect:", protect);     // Phải hiện [Function]
+console.log("4. admin:", admin);         // 🔥 Nghi ngờ cái này đang là 'undefined'
+console.log("5. adminCreateUser:", adminCreateUser); // Phải hiện [Function]
+
 router.post('/register', register);
 router.post('/login', login);
 
