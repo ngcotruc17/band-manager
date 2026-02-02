@@ -103,7 +103,7 @@ const SongLibrary = () => {
               </span>
               Kho Nhạc Chung
             </h1>
-            <p className="text-gray-500 mt-1 text-sm">Nơi lưu trữ Sheet & Beat cho toàn bộ Band</p>
+            {/* <p className="text-gray-500 mt-1 text-sm">Nơi lưu trữ Sheet & Beat cho toàn bộ Band</p> */}
           </div>
 
           <div className="flex items-center gap-3 w-full md:w-auto">

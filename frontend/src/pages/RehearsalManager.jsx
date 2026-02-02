@@ -108,7 +108,7 @@ const Rehearsals = () => {
            <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
              <Calendar className="text-blue-600"/> Lịch Tập & Điểm Danh
            </h1>
-           <p className="text-slate-500 text-sm">Kỷ luật là sức mạnh của Band!</p>
+           {/* <p className="text-slate-500 text-sm">Kỷ luật là sức mạnh của Band!</p> */}
         </div>
         
         {/* Widget Tiền Phạt (Đã tính toán thật) */}
