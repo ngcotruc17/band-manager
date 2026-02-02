@@ -42,6 +42,7 @@ app.use('/api/finance', require('./routes/finance.routes'));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/comments', require('./routes/comment.routes'));
+app.use('/api/library', require('./routes/library.routes'));
   
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server đang chạy tại port ${PORT}`));
