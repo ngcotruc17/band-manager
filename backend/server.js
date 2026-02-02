@@ -8,6 +8,10 @@ dotenv.config();
 connectDB();
 
 const app = express();
+// Route đánh thức server (Ping)
+app.get('/api/ping', (req, res) => {
+  res.status(200).json({ message: "Server is awake! ☕" });
+});
 
 app.use(cors());
 app.use(express.json());
