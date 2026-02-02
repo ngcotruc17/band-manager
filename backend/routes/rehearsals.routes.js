@@ -1,35 +1,14 @@
 const express = require('express');
 const router = express.Router();
+const controller = require('../controllers/rehearsal.controller');
+const { protect, admin } = require('../middleware/auth');
 
-// Middleware an toàn
-let protect, admin;
-try {
-    const auth = require('../middleware/auth');
-    protect = auth.protect;
-    admin = auth.admin;
-} catch (e) {}
-if (!protect) protect = (req, res, next) => next();
+// Ai cũng xem được lịch
+router.get('/', protect, controller.getRehearsals);
 
-const { 
-  getRehearsals, 
-  createRehearsal, 
-  markAttendance, 
-  deleteRehearsal 
-} = require('../controllers/rehearsal.controller');
-
-// --- CÁC ROUTE ---
-
-// 1. Lấy danh sách
-router.get('/', protect, getRehearsals);
-
-// 2. Tạo lịch (Chỉ Admin)
-router.post('/', protect, admin, createRehearsal);
-
-// 3. Điểm danh (Cập nhật trạng thái)
-// 👇 Đây là cái API mà Frontend đang gọi bị lỗi, giờ có rồi sẽ hết lỗi
-router.put('/:id/attendance', protect, admin, markAttendance);
-
-// 4. Xóa lịch
-router.delete('/:id', protect, admin, deleteRehearsal);
+// Chỉ Admin mới được Tạo/Sửa/Xóa
+router.post('/', protect, admin, controller.createRehearsal);
+router.put('/:id/attendance', protect, admin, controller.updateAttendance);
+router.delete('/:id', protect, admin, controller.deleteRehearsal);
 
 module.exports = router;

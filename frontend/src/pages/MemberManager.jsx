@@ -7,7 +7,6 @@ import {
   Key,
   Trash2,
   CheckCircle,
-  XCircle,
   Shield,
   User,
   Mail,
@@ -20,7 +19,9 @@ const MemberManager = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const { user } = useContext(AuthContext);
 
+  // Link API lấy từ file config hoặc env (đang hardcode theo code cũ của bạn)
   const BASE_URL = "https://band-manager-s9tm.onrender.com/api/auth";
+  
   const getHeaders = () => ({
     headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
   });
@@ -58,7 +59,7 @@ const MemberManager = () => {
       await axios.put(
         `${BASE_URL}/users/${id}/reset-password`,
         {},
-        getHeaders(),
+        getHeaders()
       );
       toast.success(`Đã reset pass cho ${name}`);
       fetchMembers();
@@ -71,7 +72,7 @@ const MemberManager = () => {
   const handleDelete = async (id, name) => {
     if (
       !window.confirm(
-        `⚠️ CẢNH BÁO: Bạn có chắc muốn XÓA VĨNH VIỄN thành viên "${name}" không?`,
+        `⚠️ CẢNH BÁO: Bạn có chắc muốn XÓA VĨNH VIỄN thành viên "${name}" không?`
       )
     )
       return;
@@ -87,7 +88,7 @@ const MemberManager = () => {
   const filteredMembers = members.filter(
     (m) =>
       (m.fullName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (m.email || "").toLowerCase().includes(searchTerm.toLowerCase()),
+      (m.email || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -127,7 +128,8 @@ const MemberManager = () => {
                   <th className="p-5 font-bold">Thành viên</th>
                   <th className="p-5 font-bold">Vai trò</th>
                   <th className="p-5 font-bold">Trạng thái</th>
-                  <th className="p-5 font-bold text-center">Hành động</th>
+                  {/* Chỉ hiện cột Hành động nếu là Admin */}
+                  {user?.role === 'admin' && <th className="p-5 font-bold text-center">Hành động</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -139,7 +141,11 @@ const MemberManager = () => {
                     <td className="p-5">
                       <div className="flex items-center gap-3">
                         <div
-                          className={`w-10 h-10 rounded-full flex items-center justify-center font-bold shadow-sm ${m.isApproved ? "bg-blue-100 text-blue-700" : "bg-gray-200 text-gray-500"}`}
+                          className={`w-10 h-10 rounded-full flex items-center justify-center font-bold shadow-sm ${
+                            m.isApproved
+                              ? "bg-blue-100 text-blue-700"
+                              : "bg-gray-200 text-gray-500"
+                          }`}
                         >
                           {m.fullName?.charAt(0).toUpperCase()}
                         </div>
@@ -167,7 +173,6 @@ const MemberManager = () => {
                     </td>
 
                     <td className="p-5">
-                      {/* Logic hiển thị trạng thái phức tạp */}
                       {!m.isApproved && m.role !== "admin" ? (
                         <span className="inline-flex items-center gap-1 px-2 py-1 rounded border bg-yellow-100 text-yellow-700 border-yellow-200 text-xs font-bold animate-pulse">
                           <AlertTriangle size={12} /> Chờ duyệt
@@ -183,44 +188,47 @@ const MemberManager = () => {
                       )}
                     </td>
 
-                    <td className="p-5 text-center">
-                      {user._id !== m._id && (
-                        <div className="flex items-center justify-center gap-2">
-                          {/* 1. Nút DUYỆT (Chỉ hiện khi chưa duyệt) */}
-                          {!m.isApproved && (
-                            <button
-                              onClick={() => handleApprove(m._id, m.fullName)}
-                              className="p-2 rounded-lg bg-green-100 text-green-600 hover:bg-green-600 hover:text-white transition shadow-sm"
-                              title="Duyệt thành viên"
-                            >
-                              <CheckCircle size={18} />
-                            </button>
-                          )}
+                    {/* 👇 LOGIC QUAN TRỌNG: Ẩn toàn bộ nút nếu không phải Admin */}
+                    {user?.role === 'admin' && (
+                      <td className="p-5 text-center">
+                        {user._id !== m._id && (
+                          <div className="flex items-center justify-center gap-2">
+                            {/* 1. Nút DUYỆT */}
+                            {!m.isApproved && (
+                              <button
+                                onClick={() => handleApprove(m._id, m.fullName)}
+                                className="p-2 rounded-lg bg-green-100 text-green-600 hover:bg-green-600 hover:text-white transition shadow-sm"
+                                title="Duyệt thành viên"
+                              >
+                                <CheckCircle size={18} />
+                              </button>
+                            )}
 
-                          {/* 2. Nút RESET PASS (Chỉ hiện khi đã duyệt) */}
-                          {m.isApproved && (
-                            <button
-                              onClick={() =>
-                                handleResetPassword(m._id, m.fullName)
-                              }
-                              className="p-2 rounded-lg bg-yellow-100 text-yellow-600 hover:bg-yellow-500 hover:text-white transition shadow-sm"
-                              title="Reset Mật khẩu"
-                            >
-                              <Key size={18} />
-                            </button>
-                          )}
+                            {/* 2. Nút RESET PASS */}
+                            {m.isApproved && (
+                              <button
+                                onClick={() =>
+                                  handleResetPassword(m._id, m.fullName)
+                                }
+                                className="p-2 rounded-lg bg-yellow-100 text-yellow-600 hover:bg-yellow-500 hover:text-white transition shadow-sm"
+                                title="Reset Mật khẩu"
+                              >
+                                <Key size={18} />
+                              </button>
+                            )}
 
-                          {/* 3. Nút XÓA (Luôn hiện) */}
-                          <button
-                            onClick={() => handleDelete(m._id, m.fullName)}
-                            className="p-2 rounded-lg bg-gray-100 text-gray-400 hover:bg-red-500 hover:text-white transition shadow-sm"
-                            title="Xóa thành viên"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
-                      )}
-                    </td>
+                            {/* 3. Nút XÓA */}
+                            <button
+                              onClick={() => handleDelete(m._id, m.fullName)}
+                              className="p-2 rounded-lg bg-gray-100 text-gray-400 hover:bg-red-500 hover:text-white transition shadow-sm"
+                              title="Xóa thành viên"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

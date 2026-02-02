@@ -62,7 +62,7 @@ exports.register = async (req, res) => {
   }
 };
 
-// 2. Đăng Nhập (ĐÃ FIX LỖI LOGIC DUYỆT)
+// 2. Đăng Nhập (ĐÃ FIX LOGIC: Dùng dấu !)
 exports.login = async (req, res) => {
   try {
     const { username, password } = req.body; 
@@ -73,7 +73,7 @@ exports.login = async (req, res) => {
 
     if (!user) return res.status(400).json({ message: "Sai tên đăng nhập hoặc mật khẩu" });
 
-    // 👇 SỬA LẠI CHỖ NÀY: Dùng dấu ! để bắt cả undefined
+    // 👇 SỬA QUAN TRỌNG: Dùng !user.isApproved để bắt cả false và undefined
     if (!user.isApproved && user.role !== 'admin') {
         return res.status(403).json({ message: "Tài khoản chưa được duyệt! Vui lòng liên hệ Admin." });
     }
@@ -92,7 +92,7 @@ exports.login = async (req, res) => {
       fullName: user.fullName,
       role: user.role,
       token,
-      requireChangePassword: user.mustChangePassword 
+      mustChangePassword: user.mustChangePassword 
     });
 
   } catch (error) {
@@ -158,7 +158,7 @@ exports.getAllUsers = async (req, res) => {
   } catch (error) { res.status(500).json({ message: error.message }); }
 };
 
-// 7. Admin Reset mật khẩu (FIX LỖI MẤT DUYỆT)
+// 7. Admin Reset mật khẩu
 exports.resetUserPassword = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);

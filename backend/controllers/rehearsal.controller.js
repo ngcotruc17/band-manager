@@ -1,72 +1,82 @@
 const Rehearsal = require('../models/Rehearsal');
 const User = require('../models/User');
 
-// 1. Lấy danh sách lịch tập
+// 1. Lấy danh sách lịch tập (Tự động đồng bộ thành viên)
 exports.getRehearsals = async (req, res) => {
   try {
-    const rehearsals = await Rehearsal.find()
-      .populate('attendees.user', 'username fullName avatar')
-      .sort({ date: 1 }); // Xếp theo ngày tăng dần
+    const allUsers = await User.find({ isApproved: true }).select('_id fullName email');
+    let rehearsals = await Rehearsal.find().sort({ date: -1 }).lean();
+
+    // Logic đồng bộ: Lấy danh sách User hiện tại làm chuẩn
+    rehearsals = rehearsals.map(rehearsal => {
+        const currentAttendance = rehearsal.attendance || [];
+        
+        const mergedAttendance = allUsers.map(user => {
+            // Check xem user này đã được điểm danh chưa
+            const existingRecord = currentAttendance.find(a => 
+                a.user && a.user.toString() === user._id.toString()
+            );
+
+            if (existingRecord) {
+                // Có rồi thì lấy lại trạng thái cũ
+                return { ...existingRecord, user: user };
+            } else {
+                // Chưa có (người mới) thì tạo mới
+                return {
+                    user: user,
+                    status: 'pending',
+                    fine: 0
+                };
+            }
+        });
+
+        return { ...rehearsal, attendance: mergedAttendance };
+    });
+
     res.json(rehearsals);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// 2. Tạo lịch tập mới (Tự động thêm thành viên)
+// 2. Tạo lịch tập mới 
 exports.createRehearsal = async (req, res) => {
   try {
     const { date, time, location, content } = req.body;
-
-    // 👇 TỰ ĐỘNG LẤY TẤT CẢ USER ĐANG HOẠT ĐỘNG
-    // Để khi tạo lịch là có sẵn danh sách người để điểm danh luôn
-    const allUsers = await User.find({ status: { $ne: 'banned' } });
     
-    const attendeesList = allUsers.map(user => ({
-        user: user._id,
-        status: 'unknown' // Mặc định là chưa biết
+    // Vẫn tạo danh sách ban đầu để lưu vào DB
+    const users = await User.find({ isApproved: true });
+    const attendanceList = users.map(u => ({
+      user: u._id,
+      status: 'pending',
+      fine: 0
     }));
 
     const newRehearsal = new Rehearsal({
-      date,
-      time,
-      location,
-      content,
-      attendees: attendeesList // Gắn danh sách vào
+      date, time, location, content,
+      attendance: attendanceList
     });
 
     await newRehearsal.save();
     res.status(201).json(newRehearsal);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
-// 3. Điểm danh (Mark Attendance)
-exports.markAttendance = async (req, res) => {
+// 3. Cập nhật điểm danh
+exports.updateAttendance = async (req, res) => {
   try {
-    const { id } = req.params; // ID buổi tập
-    const { userId, status } = req.body; // ID thành viên & Trạng thái (present/late/absent)
-
-    // Tìm buổi tập
-    const rehearsal = await Rehearsal.findById(id);
+    const { attendance } = req.body; 
+    const rehearsal = await Rehearsal.findById(req.params.id);
+    
     if (!rehearsal) return res.status(404).json({ message: "Không tìm thấy lịch tập" });
 
-    // Tìm người trong danh sách attendees
-    const memberIndex = rehearsal.attendees.findIndex(a => a.user.toString() === userId);
-
-    if (memberIndex > -1) {
-      // Nếu có rồi -> Cập nhật
-      rehearsal.attendees[memberIndex].status = status;
-    } else {
-      // Nếu chưa có (ví dụ thành viên mới vào sau khi tạo lịch) -> Thêm mới vào
-      rehearsal.attendees.push({ user: userId, status: status });
-    }
-
+    rehearsal.attendance = attendance;
     await rehearsal.save();
+    
     res.json(rehearsal);
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -75,7 +85,7 @@ exports.markAttendance = async (req, res) => {
 exports.deleteRehearsal = async (req, res) => {
   try {
     await Rehearsal.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Đã xóa lịch tập' });
+    res.json({ message: "Đã xóa lịch tập" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
