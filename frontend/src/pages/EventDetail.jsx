@@ -1,11 +1,11 @@
-import { useEffect, useState, useContext, useRef } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
-  Trash2, Edit, XCircle, Clock, Shirt, Lock, AlertTriangle, 
+  Trash2, Edit, XCircle, Clock, Shirt, 
   CheckCircle, PlusCircle, MinusCircle, DollarSign, Music, 
-  UploadCloud, Search, BookOpen, MessageSquare, MapPin, Calendar,
-  User, ChevronDown, ChevronUp, Send, PlayCircle, FileText
+  Search, BookOpen, MessageSquare, MapPin, Calendar,
+  User, ChevronUp, PlayCircle, FileText
 } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import CommentSection from '../components/CommentSection';
@@ -19,15 +19,13 @@ const EventDetail = () => {
   const getHeaders = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
 
   const [data, setData] = useState({ event: null, songs: [] });
-  
-  // State Edit
   const [isEditing, setIsEditing] = useState(false);
   const [editEventData, setEditEventData] = useState({ title: '', location: '', date: '', time: '', logistics: '', cast: 0 });
 
-  // State Upload & Library
-  const [formData, setFormData] = useState({ name: '', note: '' });
+  // 👇 SỬA 1: Đổi 'name' thành 'title' cho thống nhất
+  const [formData, setFormData] = useState({ title: '', note: '' });
   const [files, setFiles] = useState({ sheet: null, beat: null });
-  const [showUpload, setShowUpload] = useState(false); // Toggle form upload cho gọn
+  const [showUpload, setShowUpload] = useState(false); 
   
   const [showLibModal, setShowLibModal] = useState(false);
   const [librarySongs, setLibrarySongs] = useState([]);
@@ -52,7 +50,6 @@ const EventDetail = () => {
 
   useEffect(() => { loadData(); }, [id]);
 
-  // --- HANDLERS (Giữ nguyên logic cũ) ---
   const handleJoin = async () => {
     try {
       await axios.post(`${BASE_URL}/events/${id}/join`, {}, getHeaders());
@@ -71,7 +68,8 @@ const EventDetail = () => {
   const handleAddSong = async (e) => {
     e.preventDefault();
     const postData = new FormData();
-    postData.append('name', formData.name);
+    // 👇 SỬA 2: Gửi 'title' thay vì 'name'
+    postData.append('title', formData.title); 
     postData.append('note', formData.note);
     if (files.sheet) postData.append('sheet', files.sheet);
     if (files.beat) postData.append('beat', files.beat);
@@ -80,13 +78,13 @@ const EventDetail = () => {
         headers: { ...getHeaders().headers, 'Content-Type': 'multipart/form-data' }
       });
       alert("✅ Đã thêm bài hát!");
-      setFormData({ name: '', note: '' });
+      setFormData({ title: '', note: '' });
       setFiles({ sheet: null, beat: null });
-      document.getElementById('file-sheet').value = "";
-      document.getElementById('file-beat').value = "";
+      if(document.getElementById('file-sheet')) document.getElementById('file-sheet').value = "";
+      if(document.getElementById('file-beat')) document.getElementById('file-beat').value = "";
       setShowUpload(false);
       loadData();
-    } catch (err) { alert("Lỗi thêm bài hát"); }
+    } catch (err) { alert("Lỗi thêm bài hát: " + (err.response?.data?.message || "Chi tiết lỗi server")); }
   };
 
   const fetchLibrary = async () => {
@@ -133,7 +131,6 @@ const EventDetail = () => {
     } catch (err) { alert("Lỗi xóa show"); }
   };
 
-  // --- RENDER ---
   if (!data.event) return <div className="p-10 text-center animate-pulse text-gray-400">Đang tải dữ liệu...</div>;
   
   const status = data.event.bookingRef?.status || 'approved';
@@ -146,23 +143,20 @@ const EventDetail = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      
-      {/* HEADER GRADIENT */}
+      {/* HEADER */}
       <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-800 text-white pt-8 pb-16 px-4 md:px-8 shadow-lg relative overflow-hidden">
-        {/* Bong bóng trang trí */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-300 opacity-10 rounded-full -ml-10 -mb-10 blur-2xl"></div>
 
         <div className="max-w-7xl mx-auto relative z-10">
           <Link to="/dashboard" className="inline-flex items-center gap-2 text-blue-200 hover:text-white transition mb-4 font-medium text-sm">
-             ← Quay lại Dashboard
+              ← Quay lại Dashboard
           </Link>
           
           {!isEditing ? (
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
               <div>
                 <div className="flex items-center gap-3 mb-2">
-                   {/* BADGE TRẠNG THÁI */}
                    {status === 'pending' && <span className="bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold shadow-sm animate-pulse">⏳ ĐANG CHỜ DUYỆT</span>}
                    {status === 'approved' && <span className="bg-green-400 text-green-900 px-3 py-1 rounded-full text-xs font-bold shadow-sm">✅ CHÍNH THỨC</span>}
                    {status === 'completed' && <span className="bg-gray-400 text-gray-900 px-3 py-1 rounded-full text-xs font-bold shadow-sm">🏁 ĐÃ DIỄN XONG</span>}
@@ -176,7 +170,6 @@ const EventDetail = () => {
                 </div>
               </div>
 
-              {/* ACTION BUTTONS (ADMIN) */}
               {user?.role === 'admin' && (
                 <div className="flex gap-2 bg-white/10 p-1.5 rounded-xl backdrop-blur-md">
                    <button onClick={() => setIsEditing(true)} className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-white hover:text-blue-700 transition font-bold text-sm">
@@ -189,9 +182,8 @@ const EventDetail = () => {
               )}
             </div>
           ) : (
-            // FORM EDIT TRÊN HEADER (Giữ nguyên logic form cũ nhưng style lại chút)
+            // FORM EDIT
             <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 animate-fade-in text-white">
-               {/* ... (Code form edit giống hệt cái cũ, chỉ cần copy paste lại nội dung bên trong form) ... */}
                <h3 className="font-bold text-lg mb-4 flex items-center gap-2"><Edit size={20}/> Chỉnh sửa thông tin</h3>
                <div className="grid md:grid-cols-2 gap-4 mb-4">
                   <input className="bg-white/20 border border-white/30 p-3 rounded-xl placeholder-blue-200 text-white focus:outline-none focus:bg-white/30" placeholder="Tên Show" value={editEventData.title} onChange={e => setEditEventData({...editEventData, title: e.target.value})} />
@@ -216,13 +208,12 @@ const EventDetail = () => {
       <div className="max-w-7xl mx-auto px-4 md:px-8 -mt-8 relative z-20">
         <div className="grid md:grid-cols-3 gap-8">
           
-          {/* CỘT TRÁI (2/3): SETLIST & INFO */}
+          {/* CỘT TRÁI (2/3) */}
           <div className="md:col-span-2 space-y-8">
             
-            {/* 1. THÔNG TIN CHUNG & LOGISTICS */}
+            {/* 1. THÔNG TIN CHUNG */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                <div className="p-6 grid md:grid-cols-2 gap-6">
-                  {/* Cát xê */}
                   <div className="flex items-center gap-4 bg-green-50 p-4 rounded-xl border border-green-100">
                      <div className="bg-green-100 text-green-600 p-3 rounded-full"><DollarSign size={24}/></div>
                      <div>
@@ -230,7 +221,6 @@ const EventDetail = () => {
                         <div className="text-2xl font-black text-green-700">{data.event.cast ? data.event.cast.toLocaleString('vi-VN') : 0} ₫</div>
                      </div>
                   </div>
-                  {/* Ghi chú Logistics */}
                   <div className="bg-amber-50 p-4 rounded-xl border border-amber-100">
                      <div className="flex items-center gap-2 mb-2 text-amber-800 font-bold text-sm uppercase">
                         <Shirt size={16}/> Logistics / Trang phục
@@ -242,7 +232,7 @@ const EventDetail = () => {
                </div>
             </div>
 
-            {/* 2. QUẢN LÝ BÀI HÁT (SETLIST) */}
+            {/* 2. QUẢN LÝ BÀI HÁT */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
                <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                   <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
@@ -266,23 +256,24 @@ const EventDetail = () => {
                   </div>
                </div>
                
-               {/* FORM UPLOAD (Ẩn/Hiện) */}
+               {/* FORM UPLOAD */}
                {showUpload && isApproved && (
                  <div className="p-6 bg-blue-50/50 border-b border-blue-100 animate-slide-in-from-top">
                     <form onSubmit={handleAddSong} className="grid md:grid-cols-2 gap-4">
                        <div className="md:col-span-2">
-                          <input className="w-full border border-blue-200 p-3 rounded-xl focus:ring-2 ring-blue-500 outline-none" placeholder="Tên bài hát (VD: Cắt đôi nỗi sầu)" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required autoFocus/>
+                          {/* 👇 SỬA 3: Input bind vào 'title' */}
+                          <input className="w-full border border-blue-200 p-3 rounded-xl focus:ring-2 ring-blue-500 outline-none" placeholder="Tên bài hát (VD: Cắt đôi nỗi sầu)" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} required autoFocus/>
                        </div>
                        <div className="md:col-span-2">
                           <input className="w-full border border-blue-200 p-3 rounded-xl focus:ring-2 ring-blue-500 outline-none text-sm" placeholder="Ghi chú (Tone/Nhịp/Ca sĩ hát...)" value={formData.note} onChange={e => setFormData({...formData, note: e.target.value})} />
                        </div>
                        <div className="bg-white p-3 rounded-xl border border-blue-200">
                           <label className="block text-xs font-bold text-gray-500 mb-1">Sheet nhạc (PDF)</label>
-                          <input type="file" accept=".pdf" className="text-sm w-full file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:bg-blue-100 file:text-blue-700" onChange={e => setFiles({...files, sheet: e.target.files[0]})} />
+                          <input id="file-sheet" type="file" accept=".pdf" className="text-sm w-full file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:bg-blue-100 file:text-blue-700" onChange={e => setFiles({...files, sheet: e.target.files[0]})} />
                        </div>
                        <div className="bg-white p-3 rounded-xl border border-blue-200">
                           <label className="block text-xs font-bold text-gray-500 mb-1">Beat nhạc (MP3/Audio)</label>
-                          <input type="file" accept="audio/*" className="text-sm w-full file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:bg-blue-100 file:text-blue-700" onChange={e => setFiles({...files, beat: e.target.files[0]})} />
+                          <input id="file-beat" type="file" accept="audio/*" className="text-sm w-full file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:bg-blue-100 file:text-blue-700" onChange={e => setFiles({...files, beat: e.target.files[0]})} />
                        </div>
                        <button className="md:col-span-2 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg">🚀 Upload & Lưu vào Show</button>
                     </form>
@@ -299,16 +290,14 @@ const EventDetail = () => {
                   ) : (
                     data.songs.map((song, index) => (
                       <div key={song._id} className="p-4 hover:bg-gray-50 transition flex flex-col md:flex-row gap-4 items-start md:items-center group">
-                         {/* Số thứ tự & Tên */}
                          <div className="flex-1 flex gap-4 items-center">
                             <span className="text-2xl font-black text-gray-200 w-8 text-center">{index + 1}</span>
                             <div>
-                               <h4 className="font-bold text-gray-800 text-lg">{song.name}</h4>
+                               {/* 👇 SỬA 4: Hiển thị title hoặc name */}
+                               <h4 className="font-bold text-gray-800 text-lg">{song.title || song.name}</h4>
                                {song.note && <p className="text-sm text-gray-500 italic">{song.note}</p>}
                             </div>
                          </div>
-                         
-                         {/* Actions: Sheet/Beat */}
                          <div className="flex items-center gap-3 w-full md:w-auto justify-end">
                             {song.sheetUrl ? (
                                <a href={`${BASE_URL.replace('/api', '')}/${song.sheetUrl}`} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 bg-white border border-gray-200 px-3 py-1.5 rounded-lg text-xs font-bold text-gray-700 hover:border-red-500 hover:text-red-500 transition shadow-sm">
@@ -333,15 +322,14 @@ const EventDetail = () => {
                </div>
             </div>
 
-            {/* 3. THẢO LUẬN (COMMENT) */}
+            {/* 3. COMMENT */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                <h3 className="font-bold text-slate-800 mb-6 flex items-center gap-2"><MessageSquare className="text-green-500"/> Thảo luận & Bàn bạc</h3>
                <CommentSection eventId={id} />
             </div>
-
           </div>
 
-          {/* CỘT PHẢI (1/3): SIDEBAR NHÂN SỰ */}
+          {/* CỘT PHẢI (1/3) */}
           <div className="md:col-span-1 space-y-6">
             
             {/* Box 1: ĐỘI HÌNH CHÍNH THỨC */}
@@ -389,7 +377,6 @@ const EventDetail = () => {
                   ))}
                </div>
 
-               {/* NÚT ĐĂNG KÝ THAM GIA */}
                {isApproved && !isCompleted && (
                   !isRegistered ? (
                      <button onClick={handleJoin} className="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 font-bold shadow-lg shadow-blue-200 transition transform active:scale-95 flex items-center justify-center gap-2">
@@ -407,7 +394,7 @@ const EventDetail = () => {
         </div>
       </div>
 
-      {/* MODAL KHO NHẠC (Giữ nguyên logic) */}
+      {/* MODAL KHO NHẠC */}
       {showLibModal && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
           <div className="bg-white rounded-2xl w-full max-w-xl max-h-[80vh] flex flex-col shadow-2xl overflow-hidden">
@@ -422,10 +409,12 @@ const EventDetail = () => {
                  </div>
             </div>
             <div className="flex-1 overflow-y-auto p-2 bg-gray-50">
-              {librarySongs.filter(s => s.name.toLowerCase().includes(libSearch.toLowerCase())).map(song => (
+              {/* 👇 SỬA 5: Logic lọc dùng cả title và name để chống crash */}
+              {librarySongs.filter(s => (s.title || s.name || "").toLowerCase().includes(libSearch.toLowerCase())).map(song => (
                 <div key={song._id} className="p-3 mb-2 bg-white rounded-xl shadow-sm border border-gray-100 hover:border-purple-300 flex justify-between items-center group transition cursor-pointer" onClick={() => handleAddFromLib(song._id)}>
                    <div>
-                     <p className="font-bold text-slate-800 group-hover:text-purple-700 transition">{song.name}</p>
+                     {/* 👇 SỬA 6: Hiển thị đúng title/name */}
+                     <p className="font-bold text-slate-800 group-hover:text-purple-700 transition">{song.title || song.name}</p>
                      <p className="text-xs text-gray-500">{song.note || 'Chưa có ghi chú'}</p>
                    </div>
                    <button className="text-purple-600 font-bold text-xs bg-purple-50 px-3 py-1.5 rounded-lg border border-purple-100 group-hover:bg-purple-600 group-hover:text-white transition">Chọn</button>
