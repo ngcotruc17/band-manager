@@ -18,7 +18,7 @@ const FinanceManager = () => {
     category: "show"
   });
 
-  const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+  const BASE_URL = import.meta.env.VITE_API_URL || "https://band-manager-s9tm.onrender.com/api";
   const getAuthHeader = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
 
   // 1. Tải dữ liệu

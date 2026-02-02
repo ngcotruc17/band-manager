@@ -13,7 +13,7 @@ const CommentSection = ({ eventId }) => {
 
   const fetchComments = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/comments/${eventId}`, getHeaders());
+      const res = await axios.get(`https://band-manager-s9tm.onrender.com/api/comments/${eventId}`, getHeaders());
       setComments(res.data);
       // Tự động cuộn xuống dưới cùng khi mới vào
       setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
@@ -26,7 +26,7 @@ const CommentSection = ({ eventId }) => {
     e.preventDefault();
     if (!content.trim()) return;
     try {
-      const res = await axios.post('http://localhost:5000/api/comments', { content, eventId }, getHeaders());
+      const res = await axios.post('https://band-manager-s9tm.onrender.com/api/comments', { content, eventId }, getHeaders());
       setComments([...comments, res.data]); // Thêm comment mới vào list ngay lập tức
       setContent('');
       setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
@@ -36,7 +36,7 @@ const CommentSection = ({ eventId }) => {
   const handleDelete = async (commentId) => {
     if(!window.confirm("Xóa bình luận này?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/comments/${commentId}`, getHeaders());
+      await axios.delete(`https://band-manager-s9tm.onrender.com/api/comments/${commentId}`, getHeaders());
       setComments(comments.filter(c => c._id !== commentId));
     } catch (err) { alert('Lỗi xóa'); }
   };

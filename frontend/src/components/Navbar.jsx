@@ -27,7 +27,7 @@ const Navbar = () => {
 
   // Lấy URL API từ biến môi trường
   const API_URL =
-    (import.meta.env.VITE_API_URL || "http://localhost:5000/api") +
+    (import.meta.env.VITE_API_URL || "https://band-manager-s9tm.onrender.com/api") +
     "/notifications";
   const getAuthHeader = () => ({
     headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },

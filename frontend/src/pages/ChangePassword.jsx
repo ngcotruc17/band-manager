@@ -10,7 +10,7 @@ const ChangePassword = () => {
   const { user, login } = useContext(AuthContext); // Lấy hàm login để cập nhật lại user state
   const navigate = useNavigate();
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+  const API_URL = import.meta.env.VITE_API_URL || 'https://band-manager-s9tm.onrender.com/api';
 
   const handleSubmit = async (e) => {
     e.preventDefault();

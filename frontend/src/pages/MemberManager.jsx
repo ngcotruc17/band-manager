@@ -9,7 +9,7 @@ const MemberManager = () => {
   const [filterStatus, setFilterStatus] = useState("all");
 
   // Dùng biến môi trường hoặc fallback về localhost
-  const API_URL = "http://localhost:5000/api/users";
+  const API_URL = "https://band-manager-s9tm.onrender.com/api/users";
 
   const getAuthHeader = () => {
     const token = localStorage.getItem("token");

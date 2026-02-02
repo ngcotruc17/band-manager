@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   // URL Backend của bạn (Sửa lại localhost hoặc render tùy lúc test)
-  const API_URL = "http://localhost:5000/api/auth";
+  const API_URL = "https://band-manager-s9tm.onrender.com/api";
 
   // Hàm load user khi F5 trang
   const loadUser = async () => {
@@ -29,11 +29,11 @@ export const AuthProvider = ({ children }) => {
       setUser(res.data);
     } catch (error) {
       console.error("Lỗi xác thực:", error.response?.data?.message);
-      
+
       // 🔥 NẾU LỖI (VÍ DỤ: 403 PENDING) -> ĐÁ VĂNG LUÔN 🔥
       localStorage.removeItem("token");
       setUser(null);
-      
+
       // Nếu lỗi là do chưa duyệt hoặc bị khóa thì thông báo
       if (error.response?.status === 403) {
         toast.error("Phiên đăng nhập hết hạn hoặc tài khoản chưa được duyệt!");

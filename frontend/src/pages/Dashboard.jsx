@@ -15,7 +15,7 @@ const Dashboard = () => {
   });
   const [loading, setLoading] = useState(true);
 
-  const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+  const BASE_URL = import.meta.env.VITE_API_URL || 'https://band-manager-s9tm.onrender.com/api';
 
   useEffect(() => {
     const fetchData = async () => {

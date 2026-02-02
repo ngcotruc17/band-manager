@@ -15,7 +15,7 @@ const BookingManager = () => {
     status: 'pending'
   });
 
-  const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api') + '/bookings';
+  const API_URL = (import.meta.env.VITE_API_URL || 'https://band-manager-s9tm.onrender.com/api') + '/bookings';
   const getAuthHeader = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
 
   const fetchBookings = async () => {
