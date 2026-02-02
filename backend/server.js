@@ -14,7 +14,7 @@ const app = express();
 app.use(cors({
   origin: [
     'http://localhost:5173',      // Cho phép máy cá nhân (Dev)
-    'https://sacband.vercel.app', // Cho phép web trên Vercel (Production)
+    'https://sacband.vercel.app', // 👈 THÊM DÒNG NÀY: Link web của bạn trên Vercel
     'http://localhost:3000'       // (Dự phòng)
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
