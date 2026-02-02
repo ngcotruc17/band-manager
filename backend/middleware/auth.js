@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-// 1. Middleware xác thực đăng nhập (Protect)
 exports.protect = async (req, res, next) => {
   let token;
 
@@ -10,41 +9,43 @@ exports.protect = async (req, res, next) => {
       // 1. Lấy token
       token = req.headers.authorization.split(' ')[1];
 
-      // 2. Giải mã token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
+      // 2. Giải mã
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || '123456');
 
-      // 3. Tìm user trong DB
-      const user = await User.findById(decoded.id).select('-password');
+      // 3. Tìm user
+      // Lưu ý: Select trừ password ra để nhẹ gánh
+      req.user = await User.findById(decoded.id).select('-password');
 
-      if (!user) {
-        return res.status(401).json({ message: 'Không tìm thấy người dùng' });
+      if (!req.user) {
+        return res.status(401).json({ message: "Không tìm thấy người dùng" });
       }
 
-      // 🔥 CHỐT CHẶN: Kiểm tra trạng thái
-      if (user.status === 'pending') {
-        return res.status(403).json({ message: 'Tài khoản chưa được duyệt! Vui lòng chờ Admin. ⛔' });
-      }
-      if (user.status === 'banned') {
-        return res.status(403).json({ message: 'Tài khoản đã bị KHÓA! 🚫' });
+      // 4. KIỂM TRA DUYỆT (Logic chuẩn)
+      // Nếu chưa duyệt (false hoặc undefined) VÀ không phải admin -> CHẶN
+      if (!req.user.isApproved && req.user.role !== 'admin') {
+         return res.status(403).json({ message: "Tài khoản chưa được duyệt hoặc đang bị khóa." });
       }
 
-      // 4. Cho qua
-      req.user = user;
+      // ⚠️ QUAN TRỌNG: Không được chặn mustChangePassword ở đây!
+      // Nếu chặn thì làm sao người ta gọi API để đổi mật khẩu được?
+      
       next();
     } catch (error) {
-      console.error('Lỗi Auth:', error.message);
-      res.status(401).json({ message: 'Phiên đăng nhập hết hạn hoặc lỗi Token' });
+      console.error(error);
+      res.status(401).json({ message: "Token không hợp lệ, vui lòng đăng nhập lại" });
     }
-  } else {
-    res.status(401).json({ message: 'Không có quyền truy cập (Thiếu Token)' });
+  }
+
+  if (!token) {
+    res.status(401).json({ message: "Bạn chưa đăng nhập" });
   }
 };
 
-// 👇 2. Middleware kiểm tra quyền Admin (CÁI BẠN ĐANG THIẾU)
+// Middleware Admin (Giữ nguyên)
 exports.admin = (req, res, next) => {
   if (req.user && req.user.role === 'admin') {
-    next(); // Là Admin thì cho qua
+    next();
   } else {
-    res.status(403).json({ message: 'Chỉ Admin mới có quyền thực hiện thao tác này! 👮‍♂️' });
+    res.status(403).json({ message: "Chỉ Admin mới có quyền này" });
   }
 };
