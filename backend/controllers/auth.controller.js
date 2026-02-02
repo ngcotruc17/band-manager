@@ -9,33 +9,45 @@ const generateToken = (id) => {
   });
 };
 
-// 1. Đăng ký (User tự tạo)
-exports.register = async (req, res) => {
+// 1. Đăng ký tài khoản
+exports.register = async (req, res) => { // 👈 Bỏ tham số 'next' để tránh lỗi
   try {
-    const { username, password, fullName } = req.body;
-    
-    // Kiểm tra user tồn tại
-    const userExists = await User.findOne({ username });
-    if (userExists) return res.status(400).json({ message: 'Tài khoản đã tồn tại' });
+    const { fullName, email, password } = req.body;
 
-    // Tạo user (password sẽ được hash tự động bên User.js hoặc hash tay ở đây đều được)
-    // Ở đây mình để User.js lo phần hash (nếu bạn dùng code User.js mình đưa trước đó)
-    // Tuy nhiên để chắc chắn, ta hash luôn ở đây cho an toàn
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    // Kiểm tra dữ liệu đầu vào
+    if (!fullName || !email || !password) {
+      return res.status(400).json({ message: "Vui lòng nhập đủ thông tin" });
+    }
 
-    const user = new User({
-        username, 
-        password: hashedPassword,
-        fullName,
-        mustChangePassword: false 
+    // Kiểm tra trùng email
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: "Email này đã được sử dụng" });
+    }
+
+    // Tạo user mới
+    // (Password sẽ được mã hóa tự động nếu bạn đã làm pre-save hook trong Model User)
+    const user = await User.create({
+      fullName,
+      email,
+      password
     });
-    
-    await user.save();
-    res.status(201).json({ message: 'Tạo tài khoản thành công' });
-  } catch (e) { 
-    console.error(e);
-    res.status(500).json({ message: "Lỗi đăng ký: " + e.message }); 
+
+    if (user) {
+      res.status(201).json({
+        _id: user.id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+        token: generateToken(user._id), // Trả về token luôn để tự đăng nhập
+      });
+    } else {
+      res.status(400).json({ message: "Không thể tạo tài khoản" });
+    }
+  } catch (error) {
+    console.error("Lỗi đăng ký:", error.message);
+    // 👇 Đây là chỗ fix lỗi "next is not a function": Trả lỗi trực tiếp
+    res.status(500).json({ message: "Lỗi Server: " + error.message });
   }
 };
 
