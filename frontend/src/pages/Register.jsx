@@ -16,7 +16,7 @@ const Register = () => {
 
     try {
       // LINK RENDER CỦA BẠN (Sửa nếu cần thiết)
-      await axios.post('https://band-manager-s9tm.onrender.com/api/auth/register', formData);
+      await axios.post('http://localhost:5000/api/auth/register', formData);
       toast.success("Đăng ký thành công! Vui lòng chờ Admin duyệt tài khoản nhé ⏳");
       navigate("/");
     } catch (err) {

@@ -14,7 +14,7 @@ const SongLibrary = () => {
 
   const fetchSongs = async () => {
     try {
-      const res = await axios.get('https://band-manager-s9tm.onrender.com/api/library', getHeaders());
+      const res = await axios.get('http://localhost:5000/api/library', getHeaders());
       setSongs(res.data);
     } catch (err) { console.error(err); }
   };
@@ -30,7 +30,7 @@ const SongLibrary = () => {
     if (files.beat) postData.append('beat', files.beat);
 
     try {
-      await axios.post('https://band-manager-s9tm.onrender.com/api/library', postData, {
+      await axios.post('http://localhost:5000/api/library', postData, {
         headers: { ...getHeaders().headers, 'Content-Type': 'multipart/form-data' }
       });
       alert("✅ Đã thêm vào Kho Nhạc!");
@@ -45,7 +45,7 @@ const SongLibrary = () => {
   const handleDelete = async (id) => {
     if(!window.confirm("Xóa bài này khỏi kho?")) return;
     try {
-      await axios.delete(`https://band-manager-s9tm.onrender.com/api/library/${id}`, getHeaders());
+      await axios.delete(`http://localhost:5000/api/library/${id}`, getHeaders());
       fetchSongs();
     } catch (err) { alert("Lỗi xóa"); }
   };
