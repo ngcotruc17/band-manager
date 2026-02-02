@@ -38,11 +38,15 @@ exports.markAsRead = async (req, res) => {
   }
 };
 
-// 4. API: Đánh dấu tất cả là đã đọc
 exports.markAllRead = async (req, res) => {
   try {
-    await Notification.updateMany({ recipient: req.user._id, read: false }, { read: true });
-    res.json({ success: true });
+    // Tìm tất cả thông báo của User này mà chưa đọc -> Sửa thành Đã đọc
+    await Notification.updateMany(
+      { recipient: req.user._id, isRead: false },
+      { $set: { isRead: true } }
+    );
+
+    res.json({ message: 'Đã đánh dấu tất cả là đã đọc' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

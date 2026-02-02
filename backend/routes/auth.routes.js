@@ -1,14 +1,20 @@
 const express = require('express');
 const router = express.Router();
+const { protect, admin } = require('../middleware/auth'); // Import middleware
+const { 
+    register, 
+    login, 
+    adminCreateUser, 
+    changePasswordFirstTime 
+} = require('../controllers/auth.controller');
 
-// Import đủ 4 hàm từ controller
-const { login, register, getMe, rescueAdmin } = require('../controllers/auth.controller');
-const { protect } = require('../middleware/auth');
-
-// Định nghĩa routes
 router.post('/register', register);
 router.post('/login', login);
-router.get('/me', protect, getMe);
-router.get('/rescue', rescueAdmin); // Dòng này gây lỗi nếu controller thiếu hàm rescueAdmin
+
+// Route cho Admin tạo user (nếu bạn chưa có)
+router.post('/create-user', protect, admin, adminCreateUser);
+
+// 👇 Route đổi mật khẩu (Cần đăng nhập mới đổi được)
+router.put('/change-password', protect, changePasswordFirstTime);
 
 module.exports = router;

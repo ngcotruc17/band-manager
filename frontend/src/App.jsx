@@ -12,6 +12,8 @@ import EventDetail from "./pages/EventDetail";
 import SongLibrary from "./pages/SongLibrary"; 
 import RehearsalManager from "./pages/RehearsalManager"; // Trang lịch tập
 import MemberManager from "./pages/MemberManager"; // Trang nhân sự
+import FinanceManager from "./pages/FinanceManager";
+import ChangePassword from './pages/ChangePassword';
 
 // Import Navbar
 import Navbar from "./components/Navbar";
@@ -41,7 +43,7 @@ function App() {
       <BrowserRouter>
         {/* CẤU HÌNH THÔNG BÁO POPUP */}
         <Toaster 
-          position="top-center"
+          position="bottom-right"
           reverseOrder={false}
           toastOptions={{
             duration: 3000,
@@ -70,12 +72,15 @@ function App() {
         <Routes>
           {/* 1. Trang Public */}
           <Route path="/" element={<Login />} />
+          
+          <Route path="/change-password" element={<ChangePassword />} />
+          
           <Route path="/register" element={<Register />} />
           
           {/* 2. Trang Private (Đã sửa lại path cho chuẩn với Dashboard) */}
           <Route path="/dashboard" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
           
-          {/* Sửa /bookings -> /booking-manager */}
+          {/* Sửa /bookings-manager -> /bookings*/}
           <Route path="/bookings" element={<ProtectedRoute><Layout><BookingManager /></Layout></ProtectedRoute>} />
           
           <Route path="/events/:id" element={<ProtectedRoute><Layout><EventDetail /></Layout></ProtectedRoute>} />
@@ -88,6 +93,7 @@ function App() {
           
           {/* Sửa /members -> /human-resources (Hoặc /member-manager tùy ý bạn, miễn là khớp Navbar) */}
           <Route path="/members" element={<ProtectedRoute><Layout><MemberManager /></Layout></ProtectedRoute>} />
+          <Route path="/finance" element={<ProtectedRoute><Layout><FinanceManager /></Layout></ProtectedRoute>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

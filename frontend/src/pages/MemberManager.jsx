@@ -21,7 +21,7 @@ const MemberManager = () => {
       const res = await axios.get(API_URL, getAuthHeader());
       setUsers(res.data);
     } catch (error) {
-      toast.error("Không thể tải danh sách thành viên!");
+      toast.error("Bạn không có quyền truy cập!");
     } finally {
       setLoading(false);
     }

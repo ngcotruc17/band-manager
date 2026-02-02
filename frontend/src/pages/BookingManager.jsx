@@ -1,115 +1,140 @@
 import { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
+import { Plus, Trash2, CheckCircle, Clock, Calendar, Phone, User, X, CheckCheck } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
-import { Trash2, CheckCircle, XCircle, Clock, PlayCircle } from 'lucide-react';
-import toast from 'react-hot-toast'; // Import
 
 const BookingManager = () => {
-  const [bookings, setBookings] = useState([]);
-  const [formData, setFormData] = useState({ customerName: '', contactInfo: '', date: '' });
   const { user } = useContext(AuthContext);
-
-  const getHeaders = () => ({
-    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+  const [bookings, setBookings] = useState([]);
+  
+  const [formData, setFormData] = useState({
+    customerName: '',
+    contactInfo: '',
+    date: '',
+    time: '',
+    status: 'pending'
   });
+
+  const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api') + '/bookings';
+  const getAuthHeader = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
 
   const fetchBookings = async () => {
     try {
-      const res = await axios.get('https://band-manager-s9tm.onrender.com/api/bookings', getHeaders());
+      const res = await axios.get(API_URL, getAuthHeader());
       setBookings(res.data);
     } catch (error) { console.error(error); }
   };
 
   useEffect(() => { fetchBookings(); }, []);
 
-  const handleCreate = async () => {
-    if (!formData.customerName || !formData.date) return toast.error("Vui lòng điền đủ thông tin ⚠️");
-    const toastId = toast.loading("Đang tạo...");
+  const handleCreate = async (e) => {
+    e.preventDefault();
+    if (!formData.customerName || !formData.date) return alert("Nhập thiếu thông tin!");
     try {
-      await axios.post('https://band-manager-s9tm.onrender.com/api/bookings', formData, getHeaders());
-      toast.success('Đã tạo booking thành công! 📅', { id: toastId });
-      setFormData({ customerName: '', contactInfo: '', date: '' });
+      await axios.post(API_URL, formData, getAuthHeader());
+      alert("✅ Đã tạo Booking và Event!");
+      setFormData({ customerName: '', contactInfo: '', date: '', time: '', status: 'pending' });
       fetchBookings();
-    } catch (error) { toast.error('Lỗi khi tạo booking', { id: toastId }); }
+    } catch (error) { alert("Lỗi khi tạo"); }
   };
 
-  const handleChangeStatus = async (id, newStatus) => {
+  const handleUpdateStatus = async (id, newStatus) => {
     try {
-      await axios.put(`https://band-manager-s9tm.onrender.com/api/bookings/${id}/status`, { status: newStatus }, getHeaders());
-      toast.success(`Đã cập nhật: ${newStatus}`);
+      await axios.put(`${API_URL}/${id}`, { status: newStatus }, getAuthHeader());
       fetchBookings();
-    } catch (error) { toast.error('Lỗi cập nhật'); }
+    } catch (error) { alert("Lỗi cập nhật"); }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("⚠️ CẢNH BÁO: Bạn chắc chắn muốn xóa vĩnh viễn booking này?")) return;
+    if(!window.confirm("Xóa booking này sẽ xóa luôn Event tương ứng. Chắc chưa?")) return;
     try {
-      await axios.delete(`https://band-manager-s9tm.onrender.com/api/bookings/${id}`, getHeaders());
-      toast.success('Đã xóa booking vào thùng rác 🗑️');
+      await axios.delete(`${API_URL}/${id}`, getAuthHeader());
       fetchBookings();
-    } catch (error) { toast.error('Lỗi khi xóa'); }
+    } catch (error) { alert("Lỗi xóa"); }
   };
 
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case 'pending': return <span className="flex items-center gap-1 bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm font-bold"><Clock size={14}/> Chờ duyệt</span>;
-      case 'approved': return <span className="flex items-center gap-1 bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-bold"><CheckCircle size={14}/> Đã duyệt</span>;
-      case 'completed': return <span className="flex items-center gap-1 bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-bold"><PlayCircle size={14}/> Đã diễn</span>;
-      case 'cancelled': return <span className="flex items-center gap-1 bg-gray-200 text-gray-600 px-3 py-1 rounded-full text-sm font-bold"><XCircle size={14}/> Đã hủy</span>;
-      default: return status;
-    }
+  // Badge trạng thái (Thêm completed)
+  const renderStatus = (status) => {
+    if (status === 'approved') return <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 w-fit"><CheckCircle size={12}/> Đã duyệt</span>;
+    if (status === 'pending') return <span className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 w-fit"><Clock size={12}/> Chờ duyệt</span>;
+    // 👇 Thêm cái này
+    if (status === 'completed') return <span className="bg-gray-200 text-gray-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 w-fit"><CheckCheck size={12}/> Đã diễn xong</span>;
+    
+    return <span className="bg-red-50 text-red-600 px-3 py-1 rounded-full text-xs font-bold">Đã hủy/Khác</span>;
   };
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold text-blue-900 mb-6">Quản lý Booking</h1>
+    <div className="p-4 md:p-8 max-w-7xl mx-auto animate-fade-in">
+      <h1 className="text-2xl font-bold text-blue-900 mb-6">Quản lý Booking</h1>
 
-      {user?.role === 'admin' ? (
-        <div className="bg-white p-6 rounded-lg shadow mb-8 border border-blue-100">
-          <h3 className="font-bold text-lg text-blue-800 mb-4 flex items-center gap-2">➕ Tạo Booking Mới</h3>
-          <div className="flex flex-col md:flex-row gap-4">
-            <input className="border p-2 rounded flex-1 focus:ring-2 ring-blue-500 outline-none" placeholder="Tên khách hàng" value={formData.customerName} onChange={e => setFormData({ ...formData, customerName: e.target.value })} />
-            <input className="border p-2 rounded flex-1 focus:ring-2 ring-blue-500 outline-none" placeholder="SĐT / Liên hệ" value={formData.contactInfo} onChange={e => setFormData({ ...formData, contactInfo: e.target.value })} />
-            <input type="date" className="border p-2 rounded focus:ring-2 ring-blue-500 outline-none" value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} />
-            <button onClick={handleCreate} className="bg-blue-600 text-white px-6 py-2 rounded font-bold hover:bg-blue-700 transition shadow-md">Tạo Booking</button>
+      {/* FORM TẠO BOOKING */}
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-8">
+        <h3 className="font-bold text-blue-600 mb-4 flex items-center gap-2"><Plus size={20}/> Tạo Booking Mới</h3>
+        <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-12 gap-4">
+          <div className="md:col-span-3">
+            <input className="w-full border p-3 rounded-lg focus:ring-2 ring-blue-500 outline-none" placeholder="Tên khách hàng / Tên Show" value={formData.customerName} onChange={e => setFormData({...formData, customerName: e.target.value})} required />
           </div>
-        </div>
-      ) : (
-        <div className="bg-blue-50 p-4 rounded text-blue-800 mb-6 border border-blue-200">ℹ️ Bạn đang xem danh sách Booking.</div>
-      )}
+          <div className="md:col-span-3">
+            <input className="w-full border p-3 rounded-lg focus:ring-2 ring-blue-500 outline-none" placeholder="SĐT / Liên hệ" value={formData.contactInfo} onChange={e => setFormData({...formData, contactInfo: e.target.value})} />
+          </div>
+          <div className="md:col-span-2">
+            <input type="date" className="w-full border p-3 rounded-lg focus:ring-2 ring-blue-500 outline-none" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} required/>
+          </div>
+          <div className="md:col-span-2">
+            <input type="time" className="w-full border p-3 rounded-lg focus:ring-2 ring-blue-500 outline-none" value={formData.time} onChange={e => setFormData({...formData, time: e.target.value})} />
+          </div>
+          <div className="md:col-span-2">
+            <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition shadow-lg">Tạo Booking</button>
+          </div>
+        </form>
+      </div>
 
-      <div className="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
-        <table className="w-full text-left">
-          <thead className="bg-gray-100 text-gray-700 uppercase text-sm">
-            <tr>
-              <th className="p-4">Khách hàng</th>
-              <th className="p-4">Ngày diễn</th>
-              <th className="p-4">Trạng thái</th>
-              {user?.role === 'admin' && <th className="p-4 text-center">Hành động</th>}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {bookings.map(item => (
-              <tr key={item._id} className="hover:bg-gray-50 transition">
-                <td className="p-4 font-medium text-gray-800">{item.customerName}<div className="text-xs text-gray-400 font-normal mt-1">{item.contactInfo}</div></td>
-                <td className="p-4 text-gray-600">{new Date(item.date).toLocaleDateString('vi-VN')}</td>
-                <td className="p-4">{getStatusBadge(item.status)}</td>
-                {user?.role === 'admin' && (
-                  <td className="p-4"><div className="flex justify-center items-center gap-2">
-                      <select className="text-sm border rounded p-1 bg-white hover:border-blue-500 cursor-pointer outline-none" value={item.status} onChange={(e) => handleChangeStatus(item._id, e.target.value)}>
-                        <option value="pending">⏳ Chờ duyệt</option>
-                        <option value="approved">✅ Duyệt</option>
-                        <option value="completed">🎉 Đã diễn</option>
-                        <option value="cancelled">🚫 Đã hủy</option>
-                      </select>
-                      <button onClick={() => handleDelete(item._id)} className="text-gray-400 hover:text-red-600 p-2 rounded hover:bg-red-50 transition"><Trash2 size={18} /></button>
-                    </div></td>
-                )}
+      {/* DANH SÁCH TABLE */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead className="bg-gray-50 text-gray-500 text-xs uppercase">
+              <tr>
+                <th className="p-4">Khách hàng</th>
+                <th className="p-4">Thời gian</th>
+                <th className="p-4">Trạng thái</th>
+                <th className="p-4 text-right">Hành động</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-        {bookings.length === 0 && <div className="p-10 text-center text-gray-400 italic">Chưa có booking nào.</div>}
+            </thead>
+            <tbody className="divide-y divide-gray-100 text-sm">
+              {bookings.map(b => (
+                <tr key={b._id} className="hover:bg-blue-50/30 transition">
+                  <td className="p-4">
+                    <div className="font-bold text-gray-800">{b.customerName}</div>
+                    <div className="text-gray-400 text-xs">{b.contactInfo}</div>
+                  </td>
+                  <td className="p-4 font-medium text-gray-600">
+                     {new Date(b.date).toLocaleDateString('vi-VN')}
+                  </td>
+                  <td className="p-4">{renderStatus(b.status)}</td>
+                  <td className="p-4 text-right">
+                    {user?.role === 'admin' && (
+                      <div className="flex justify-end gap-2">
+                        <select 
+                          className="border p-1.5 rounded text-xs bg-white cursor-pointer hover:border-blue-400 focus:ring-2 focus:ring-blue-200 outline-none transition"
+                          value={b.status}
+                          onChange={(e) => handleUpdateStatus(b._id, e.target.value)}
+                        >
+                          <option value="pending">⏳ Chờ duyệt</option>
+                          <option value="approved">✅ Duyệt</option>
+                          <option value="completed">🏁 Đã diễn</option> {/* 👈 Thêm option này */}
+                          <option value="rejected">❌ Từ chối</option>
+                        </select>
+                        <button onClick={() => handleDelete(b._id)} className="text-gray-300 hover:text-red-500 p-1 transition"><Trash2 size={16}/></button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {bookings.length === 0 && <div className="p-8 text-center text-gray-400">Chưa có booking nào.</div>}
+        </div>
       </div>
     </div>
   );

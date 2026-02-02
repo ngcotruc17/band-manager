@@ -13,19 +13,27 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    // Lưu ID để update toast sau này (tránh hiện nhiều thông báo chồng chéo)
+    // Lưu ID để update toast sau này
     const toastId = toast.loading('Đang kết nối tới server...');
 
     try {
-      // 🛠️ SỬA ĐỔI 1: Truyền nguyên object formData vào hàm login
-      // (Để khớp với AuthContext nhận req.body)
-      await login(formData);
+      // 🛠️ SỬA ĐỔI: Gọi login và hứng lấy kết quả trả về
+      // (Lưu ý: Hàm login trong AuthContext phải return res.data)
+      const userData = await login(formData);
 
       toast.success("Chào mừng trở lại! 🎉", { id: toastId });
-      navigate("/dashboard");
+
+      // 👇👇👇 LOGIC KIỂM TRA ĐỔI MẬT KHẨU LẦN ĐẦU 👇👇👇
+      if (userData && userData.requireChangePassword) {
+          // Nếu Admin bắt đổi pass -> Chuyển sang trang đổi pass
+          navigate("/change-password");
+      } else {
+          // Bình thường -> Vào Dashboard
+          navigate("/dashboard");
+      }
+      
     } catch (err) {
-      // 🛠️ SỬA ĐỔI 2: Lấy tin nhắn lỗi chính xác từ Backend
-      // Để biết là "Sai mật khẩu" hay "Chờ duyệt" hay "Bị khóa"
+      // Lấy tin nhắn lỗi chính xác từ Backend
       const msg = err.response?.data?.message || "Lỗi kết nối hoặc sai thông tin! 😭";
       toast.error(msg, { id: toastId });
     } finally {

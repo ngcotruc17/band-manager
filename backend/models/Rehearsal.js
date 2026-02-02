@@ -1,19 +1,21 @@
 const mongoose = require('mongoose');
 
-const RehearsalSchema = new mongoose.Schema({
+const rehearsalSchema = new mongoose.Schema({
   date: { type: Date, required: true },
-  location: { type: String, default: 'Phòng tập quen' },
-  content: { type: String, required: true }, // Tập bài gì
+  time: { type: String, required: true },
+  location: { type: String, required: true },
+  content: { type: String, required: true },
+  
+  // Danh sách điểm danh
   attendees: [{
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     status: { 
       type: String, 
-      enum: ['pending', 'present', 'late', 'absent'], 
-      default: 'pending' 
+      enum: ['present', 'late', 'absent', 'unknown'], 
+      default: 'unknown' 
     },
-    fine: { type: Number, default: 0 } // Tiền phạt
-  }],
-  createdAt: { type: Date, default: Date.now }
-});
+    note: String
+  }]
+}, { timestamps: true });
 
-module.exports = mongoose.model('Rehearsal', RehearsalSchema);
+module.exports = mongoose.model('Rehearsal', rehearsalSchema);

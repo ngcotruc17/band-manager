@@ -3,6 +3,7 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const path = require('path');
+const dashboardRoutes = require('./routes/dashboard.routes');
 
 dotenv.config();
 connectDB();
@@ -16,7 +17,6 @@ app.get('/api/ping', (req, res) => {
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
 app.use('/api/auth', require('./routes/auth.routes'));
@@ -24,9 +24,10 @@ app.use('/api/users', require('./routes/users.routes'));
 app.use('/api/bookings', require('./routes/booking.routes'));
 app.use('/api/events', require('./routes/event.routes'));
 app.use('/api/notifications', require('./routes/notification.routes'));
-
-// Các route khác tạm thời comment lại nếu chưa có file
 app.use('/api/rehearsals', require('./routes/rehearsals.routes'));
-
+app.use('/api/finance', require('./routes/finance.routes'));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/api/dashboard', dashboardRoutes);
+  
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server đang chạy tại port ${PORT}`));
