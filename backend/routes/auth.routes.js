@@ -1,30 +1,32 @@
 const express = require('express');
 const router = express.Router();
-const { protect, admin } = require('../middleware/auth'); // Import middleware
-const { 
-    register, 
-    login, 
-    adminCreateUser, 
-    changePasswordFirstTime,
-    getMe
-} = require('../controllers/auth.controller');
 
-// 👇 THÊM ĐOẠN NÀY ĐỂ DEBUG 👇
-console.log("--- KIỂM TRA IMPORT ---");
-console.log("1. register:", register);   // Phải hiện [Function]
-console.log("2. login:", login);         // Phải hiện [Function]
-console.log("3. protect:", protect);     // Phải hiện [Function]
-console.log("4. admin:", admin);         // 🔥 Nghi ngờ cái này đang là 'undefined'
-console.log("5. adminCreateUser:", adminCreateUser); // Phải hiện [Function]
+// 1. Import Middleware bảo vệ
+const { protect, admin } = require('../middleware/auth');
 
-router.post('/register', register);
-router.post('/login', login);
+// 2. Import Controller (QUAN TRỌNG: Phải có dòng này mới dùng được biến 'controller')
+const controller = require('../controllers/auth.controller');
 
-// Route cho Admin tạo user (nếu bạn chưa có)
-router.post('/create-user', protect, admin, adminCreateUser);
+// --- CÁC ROUTE ---
 
-// 👇 Route đổi mật khẩu (Cần đăng nhập mới đổi được)
-router.put('/change-password', protect, changePasswordFirstTime);
-router.get('/me', protect, getMe); // 👈 Thêm dòng này
+// Đăng ký & Đăng nhập
+router.post('/register', controller.register);
+router.post('/login', controller.login);
+
+// Admin tạo user
+router.post('/admin-create', protect, admin, controller.adminCreateUser);
+
+// Đổi mật khẩu lần đầu
+router.put('/change-password-first-time', protect, controller.changePasswordFirstTime);
+
+// Lấy thông tin bản thân
+router.get('/me', protect, controller.getMe);
+
+// 👇 CÁC ROUTE MỚI THÊM (Quản lý nhân sự) 👇
+// 1. Lấy danh sách nhân sự
+router.get('/users', protect, controller.getAllUsers);
+
+// 2. Reset mật khẩu (Cần quyền Admin)
+router.put('/users/:id/reset-password', protect, admin, controller.resetUserPassword);
 
 module.exports = router;

@@ -1,39 +1,51 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { useNavigate, Link } from "react-router-dom";
-import { Music, Lock, User, ArrowRight, Sparkles } from "lucide-react";
+import { useNavigate, Link, useLocation } from "react-router-dom"; // 👈 Thêm useLocation
+import { Music, Lock, User, ArrowRight, Sparkles, CheckCircle, X } from "lucide-react"; // 👈 Thêm icon cho Toast
 import toast from 'react-hot-toast';
 
 const Login = () => {
   const [formData, setFormData] = useState({ username: "", password: "" });
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation(); // 👈 Hook để lấy dữ liệu từ trang Register
   const [loading, setLoading] = useState(false);
+  
+  // State cho Popup thông báo từ trang Register
+  const [registerSuccessToast, setRegisterSuccessToast] = useState(null);
 
+  // 👇 1. HIỆU ỨNG: Kiểm tra nếu có tin nhắn từ trang Register gửi sang
+  useEffect(() => {
+    if (location.state?.message) {
+      setRegisterSuccessToast(location.state.message);
+      
+      // Xóa state lịch sử để F5 không hiện lại
+      window.history.replaceState({}, document.title);
+
+      // Tự tắt sau 5 giây
+      const timer = setTimeout(() => setRegisterSuccessToast(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [location]);
+
+  // 👇 2. XỬ LÝ ĐĂNG NHẬP (Giữ nguyên logic cũ của bạn)
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    // Lưu ID để update toast sau này
     const toastId = toast.loading('Đang kết nối tới server...');
 
     try {
-      // 🛠️ SỬA ĐỔI: Gọi login và hứng lấy kết quả trả về
-      // (Lưu ý: Hàm login trong AuthContext phải return res.data)
       const userData = await login(formData);
 
       toast.success("Chào mừng trở lại! 🎉", { id: toastId });
 
-      // 👇👇👇 LOGIC KIỂM TRA ĐỔI MẬT KHẨU LẦN ĐẦU 👇👇👇
       if (userData && userData.requireChangePassword) {
-          // Nếu Admin bắt đổi pass -> Chuyển sang trang đổi pass
           navigate("/change-password");
       } else {
-          // Bình thường -> Vào Dashboard
           navigate("/dashboard");
       }
       
     } catch (err) {
-      // Lấy tin nhắn lỗi chính xác từ Backend
       const msg = err.response?.data?.message || "Lỗi kết nối hoặc sai thông tin! 😭";
       toast.error(msg, { id: toastId });
     } finally {
@@ -55,7 +67,7 @@ const Login = () => {
           </div>
           <h2 className="text-3xl font-extrabold text-gray-800 tracking-tight">Chào mừng!</h2>
           <p className="text-gray-500 mt-2 text-sm flex items-center justify-center gap-1">
-            Quản lý Band nhạc chuyên nghiệp <Sparkles size={14} className="text-yellow-500"/>
+            Quản lý band nhạc chuyên "nghiệp" <Sparkles size={14} className="text-yellow-500"/>
           </p>
         </div>
 
@@ -91,6 +103,25 @@ const Login = () => {
           </Link>
         </p>
       </div>
+
+      {/* 👇👇👇 3. PHẦN CUSTOM TOAST (GÓC PHẢI DƯỚI) 👇👇👇 */}
+      {registerSuccessToast && (
+        <div className="fixed bottom-5 right-5 z-50 animate-slide-in-right">
+          <div className="bg-white border-l-4 border-green-500 shadow-2xl rounded-lg p-4 flex items-start gap-3 max-w-sm">
+             <div className="text-green-500 mt-0.5">
+                <CheckCircle size={24} />
+             </div>
+             <div className="flex-1">
+                <h4 className="font-bold text-gray-800 text-sm">Thành công!</h4>
+                <p className="text-gray-600 text-sm mt-1">{registerSuccessToast}</p>
+             </div>
+             <button onClick={() => setRegisterSuccessToast(null)} className="text-gray-400 hover:text-gray-600 transition">
+                <X size={18} />
+             </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

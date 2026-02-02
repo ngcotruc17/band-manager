@@ -174,3 +174,35 @@ exports.getMe = async (req, res) => {
     res.status(500).json({ message: "Lỗi Server" });
   }
 };
+
+// 6. Lấy danh sách tất cả User (Cho trang Quản lý nhân sự)
+exports.getAllUsers = async (req, res) => {
+  try {
+    // Lấy tất cả user trừ password, sắp xếp người mới nhất lên đầu
+    const users = await User.find().select('-password').sort({ createdAt: -1 });
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// 7. Admin Reset mật khẩu thành viên (Về mặc định 123456)
+exports.resetUserPassword = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    
+    if (!user) return res.status(404).json({ message: "Không tìm thấy user này" });
+
+    // Đặt lại mật khẩu mặc định
+    user.password = "123456"; 
+    
+    // 👇 QUAN TRỌNG: Bật cờ này lên để khi login nó bắt đổi pass ngay
+    user.mustChangePassword = true; 
+
+    await user.save(); // Model sẽ tự động mã hóa password "123456"
+
+    res.json({ message: `Đã reset mật khẩu của ${user.fullName} về 123456 thành công!` });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

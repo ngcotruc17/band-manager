@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"; // 👈 Lấy BrowserRouter từ đây
 import { AuthProvider, AuthContext } from "./context/AuthContext";
 import { useContext } from "react";
 import { Toaster } from 'react-hot-toast'; 
@@ -7,32 +7,47 @@ import { Toaster } from 'react-hot-toast';
 import Login from "./pages/Login";
 import Register from './pages/Register';
 import Dashboard from "./pages/Dashboard";
-import BookingManager from "./pages/BookingManager"; // Trang quản lý Show
+import BookingManager from "./pages/BookingManager"; 
 import EventDetail from "./pages/EventDetail";
 import SongLibrary from "./pages/SongLibrary"; 
-import RehearsalManager from "./pages/RehearsalManager"; // Trang lịch tập
-import MemberManager from "./pages/MemberManager"; // Trang nhân sự
+import RehearsalManager from "./pages/RehearsalManager"; 
+import MemberManager from "./pages/MemberManager"; 
 import FinanceManager from "./pages/FinanceManager";
 import ChangePassword from './pages/ChangePassword';
 
 // Import Navbar
 import Navbar from "./components/Navbar";
 
-// Component bảo vệ (Chặn người chưa đăng nhập)
+// Component bảo vệ (Chưa login -> Đá về /login)
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useContext(AuthContext);
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50">⏳ Đang tải...</div>;
-  return user ? children : <Navigate to="/" />;
+  return user ? children : <Navigate to="/login" replace />;
 };
 
-// Layout chung (Có Navbar ở trên)
+// Layout chung (Có Navbar)
 const Layout = ({ children }) => {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
+      {/* 1. Navbar dính trên cùng */}
       <Navbar />
-      <div className="pt-20"> {/* Thêm padding top để không bị Navbar che mất nội dung */}
+      
+      {/* 2. Nội dung chính (Đẩy Footer xuống dưới) */}
+      <div className="pt-20 flex-1"> 
         {children}
       </div>
+
+      {/* 3. Footer (Chân trang) */}
+      <footer className="py-6 text-center text-xs text-gray-400 italic border-t border-gray-100 mt-8">
+        <p>
+          Phát triển bởi <span className="font-bold text-gray-500">Nguyễn Công Trực</span> 
+          <span className="mx-2">•</span> 
+          Made with <span className="text-red-400">❤</span> for Music
+        </p>
+        <p className="mt-1">
+          Copyright © {new Date().getFullYear()} <span className="font-bold text-blue-600">Sắc Band Manager</span>. All rights reserved.
+        </p>
+      </footer>
     </div>
   );
 };
@@ -40,30 +55,27 @@ const Layout = ({ children }) => {
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        {/* CẤU HÌNH THÔNG BÁO POPUP */}
+      {/* 👇 BẬT LẠI CÁI NÀY LÀ HẾT LỖI TRẮNG TRANG NGAY */}
+      <BrowserRouter> 
+        
         <Toaster 
           position="bottom-right"
           reverseOrder={false}
           toastOptions={{
-            duration: 3000,
+            duration: 4000,
             style: {
-              background: 'rgba(255, 255, 255, 0.8)',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255, 255, 255, 0.3)',
+              background: '#fff',
               color: '#333',
-              padding: '16px',
-              borderRadius: '12px',
-              boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
-              fontWeight: '600',
-              fontSize: '14px',
+              boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+              borderRadius: '8px',
+              padding: '12px 16px',
             },
             success: {
-              icon: '✅',
+              icon: '🎉',
               style: { borderLeft: '4px solid #10B981' },
             },
             error: {
-              icon: '❌',
+              icon: '😥',
               style: { borderLeft: '4px solid #EF4444' },
             },
           }}
@@ -71,30 +83,26 @@ function App() {
 
         <Routes>
           {/* 1. Trang Public */}
-          <Route path="/" element={<Login />} />
-          
-          <Route path="/change-password" element={<ChangePassword />} />
-          
+          <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           
-          {/* 2. Trang Private (Đã sửa lại path cho chuẩn với Dashboard) */}
+          {/* 👇 Route gốc: Vào trang chủ tự chuyển về Login */}
+          <Route path="/" element={<Navigate to="/login" replace />} />
+
+          {/* 2. Trang Private */}
+          <Route path="/change-password" element={<ProtectedRoute><Layout><ChangePassword /></Layout></ProtectedRoute>} />
           <Route path="/dashboard" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
-          
-          {/* Sửa /bookings-manager -> /bookings*/}
           <Route path="/bookings" element={<ProtectedRoute><Layout><BookingManager /></Layout></ProtectedRoute>} />
-          
           <Route path="/events/:id" element={<ProtectedRoute><Layout><EventDetail /></Layout></ProtectedRoute>} />
-          
-          {/* Sửa /library -> /song-library (Nếu cần) hoặc giữ nguyên nếu Navbar đang để library */}
           <Route path="/library" element={<ProtectedRoute><Layout><SongLibrary /></Layout></ProtectedRoute>} />
-          
-          {/* 🔥 QUAN TRỌNG: Sửa /rehearsals -> /rehearsal-manager để khớp Dashboard */}
           <Route path="/rehearsals" element={<ProtectedRoute><Layout><RehearsalManager /></Layout></ProtectedRoute>} />
-          
-          {/* Sửa /members -> /human-resources (Hoặc /member-manager tùy ý bạn, miễn là khớp Navbar) */}
           <Route path="/members" element={<ProtectedRoute><Layout><MemberManager /></Layout></ProtectedRoute>} />
           <Route path="/finance" element={<ProtectedRoute><Layout><FinanceManager /></Layout></ProtectedRoute>} />
+
+          {/* Bắt link sai -> Về Login */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
+
       </BrowserRouter>
     </AuthProvider>
   );
