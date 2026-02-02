@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   // URL Backend của bạn (Sửa lại localhost hoặc render tùy lúc test)
-  const API_URL = "https://band-manager-s9tm.onrender.com/api";
+  const API_URL = "https://band-manager-s9tm.onrender.com/api/auth";
 
   // Hàm load user khi F5 trang
   const loadUser = async () => {
