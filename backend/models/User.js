@@ -14,7 +14,9 @@ const userSchema = new mongoose.Schema({
   status: { type: String, enum: ['pending', 'active', 'banned'], default: 'pending' },
   mustChangePassword: { type: Boolean, default: false },
   instrument: { type: String, default: 'Chưa phân công' },
+  isApproved: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now }
+  
 });
 
 // 🔥 SỬA ĐOẠN NÀY ĐỂ HẾT LỖI "next is not a function"

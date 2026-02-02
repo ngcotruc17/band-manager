@@ -29,4 +29,10 @@ router.get('/users', protect, controller.getAllUsers);
 // 2. Reset mật khẩu (Cần quyền Admin)
 router.put('/users/:id/reset-password', protect, admin, controller.resetUserPassword);
 
+// Duyệt thành viên
+router.put('/users/:id/approve', protect, admin, controller.approveUser);
+
+// Xóa thành viên
+router.delete('/users/:id', protect, admin, controller.deleteUser);
+
 module.exports = router;

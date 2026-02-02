@@ -206,3 +206,25 @@ exports.resetUserPassword = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// 8. Duyệt thành viên (Approve)
+exports.approveUser = async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(req.params.id, { isApproved: true }, { new: true });
+    if (!user) return res.status(404).json({ message: "Không tìm thấy user" });
+    res.json({ message: `Đã duyệt thành viên: ${user.fullName}` });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// 9. Xóa thành viên
+exports.deleteUser = async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.params.id);
+    if (!user) return res.status(404).json({ message: "Không tìm thấy user" });
+    res.json({ message: "Đã xóa thành viên khỏi hệ thống" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

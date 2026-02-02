@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"; // 👈 Lấy BrowserRouter từ đây
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom"; // 👈 Thêm useLocation
 import { AuthProvider, AuthContext } from "./context/AuthContext";
 import { useContext } from "react";
 import { Toaster } from 'react-hot-toast'; 
@@ -18,35 +18,46 @@ import ChangePassword from './pages/ChangePassword';
 // Import Navbar
 import Navbar from "./components/Navbar";
 
-// Component bảo vệ (Chưa login -> Đá về /login)
+// --- 🛡️ COMPONENT BẢO VỆ (Đã nâng cấp) ---
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useContext(AuthContext);
+  const location = useLocation(); // Lấy đường dẫn hiện tại
+
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50">⏳ Đang tải...</div>;
-  return user ? children : <Navigate to="/login" replace />;
+  
+  // 1. Chưa đăng nhập -> Đá về Login
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // 2. 👇 LOGIC "NHỐT" NGƯỜI DÙNG:
+  // Nếu bị bắt đổi pass (mustChangePassword = true)
+  // MÀ đang đứng ở trang khác (không phải trang /change-password)
+  // -> Thì đá ngay lập tức về trang /change-password
+  if (user.mustChangePassword && location.pathname !== '/change-password') {
+    return <Navigate to="/change-password" replace />;
+  }
+
+  // 3. Ngược lại: Nếu đã đổi pass rồi mà cố tình vào trang /change-password để chơi
+  // -> Đá về Dashboard cho rảnh nợ (Optional, nhưng nên làm)
+  if (!user.mustChangePassword && location.pathname === '/change-password') {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return children;
 };
 
-// Layout chung (Có Navbar)
+// Layout chung (Có Navbar + Footer)
 const Layout = ({ children }) => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
-      {/* 1. Navbar dính trên cùng */}
       <Navbar />
-      
-      {/* 2. Nội dung chính (Đẩy Footer xuống dưới) */}
       <div className="pt-20 flex-1"> 
         {children}
       </div>
-
-      {/* 3. Footer (Chân trang) */}
       <footer className="py-6 text-center text-xs text-gray-400 italic border-t border-gray-100 mt-8">
-        <p>
-          Phát triển bởi <span className="font-bold text-gray-500">Nguyễn Công Trực</span> 
-          <span className="mx-2">•</span> 
-          Made with <span className="text-red-400">❤</span> for Music
-        </p>
-        <p className="mt-1">
-          Copyright © {new Date().getFullYear()} <span className="font-bold text-blue-600">Sắc Band Manager</span>. All rights reserved.
-        </p>
+        <p>Phát triển bởi <span className="font-bold text-gray-500">Nguyễn Công Trực</span> • Made with <span className="text-red-400">❤</span> for Music</p>
+        <p className="mt-1">Copyright © {new Date().getFullYear()} <span className="font-bold text-blue-600">Sắc Band Manager</span>. All rights reserved.</p>
       </footer>
     </div>
   );
@@ -55,42 +66,29 @@ const Layout = ({ children }) => {
 function App() {
   return (
     <AuthProvider>
-      {/* 👇 BẬT LẠI CÁI NÀY LÀ HẾT LỖI TRẮNG TRANG NGAY */}
       <BrowserRouter> 
-        
-        <Toaster 
-          position="bottom-right"
-          reverseOrder={false}
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: '#fff',
-              color: '#333',
-              boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
-              borderRadius: '8px',
-              padding: '12px 16px',
-            },
-            success: {
-              icon: '🎉',
-              style: { borderLeft: '4px solid #10B981' },
-            },
-            error: {
-              icon: '😥',
-              style: { borderLeft: '4px solid #EF4444' },
-            },
-          }}
-        />
+        <Toaster position="bottom-right" reverseOrder={false} />
 
         <Routes>
-          {/* 1. Trang Public */}
+          {/* Public Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          
-          {/* 👇 Route gốc: Vào trang chủ tự chuyển về Login */}
           <Route path="/" element={<Navigate to="/login" replace />} />
 
-          {/* 2. Trang Private */}
-          <Route path="/change-password" element={<ProtectedRoute><Layout><ChangePassword /></Layout></ProtectedRoute>} />
+          {/* --- PRIVATE ROUTES --- */}
+          
+          {/* 👇 SỬA Ở ĐÂY: Bỏ thẻ <Layout> đi */}
+          {/* Trang này sẽ đứng độc lập, không có Navbar, không có Footer, không có đường thoát! */}
+          <Route 
+            path="/change-password" 
+            element={
+              <ProtectedRoute>
+                <ChangePassword /> 
+              </ProtectedRoute>
+            } 
+          />
+
+          {/* Các trang còn lại thì vẫn dùng Layout bình thường */}
           <Route path="/dashboard" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
           <Route path="/bookings" element={<ProtectedRoute><Layout><BookingManager /></Layout></ProtectedRoute>} />
           <Route path="/events/:id" element={<ProtectedRoute><Layout><EventDetail /></Layout></ProtectedRoute>} />
@@ -99,7 +97,6 @@ function App() {
           <Route path="/members" element={<ProtectedRoute><Layout><MemberManager /></Layout></ProtectedRoute>} />
           <Route path="/finance" element={<ProtectedRoute><Layout><FinanceManager /></Layout></ProtectedRoute>} />
 
-          {/* Bắt link sai -> Về Login */}
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
 
