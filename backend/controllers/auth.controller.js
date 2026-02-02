@@ -8,48 +8,63 @@ const generateToken = (id) => {
   });
 };
 
-// 1. Đăng ký (Register)
+// 1. Đăng ký (Phiên bản "Bắt Dính" mọi trường hợp)
 exports.register = async (req, res) => {
   try {
-    let { fullName, email, username, password } = req.body;
+    console.log("👉 Dữ liệu Register nhận được:", req.body); // In ra để debug nếu lỗi
 
-    // Nếu người dùng nhập username vào ô email (hoặc ngược lại)
-    if (!email && username) {
-        email = username; 
-    }
-
-    if (!fullName || !email || !password) {
-      return res.status(400).json({ message: "Vui lòng nhập đủ thông tin" });
-    }
-
-    // Tự động tạo username nếu chưa có
-    if (!username) {
-        username = email.includes('@') ? email.split('@')[0] : email;
-    }
-
-    // Check trùng
-    const userExists = await User.findOne({ 
-        $or: [{ email: email }, { username: username }] 
-    });
+    // 1. BẮT DÍNH DỮ LIỆU (Chấp nhận nhiều kiểu tên biến từ Frontend)
+    // Frontend gửi fullName, fullname hay name đều nhận được hết
+    const fullName = req.body.fullName || req.body.fullname || req.body.name;
     
-    if (userExists) {
-      return res.status(400).json({ message: "Tài khoản hoặc Email đã tồn tại" });
+    // Frontend gửi username, user, hay lỡ nhập username vào ô email... bắt hết!
+    let username = req.body.username || req.body.user || req.body.email;
+    let email = req.body.email;
+    const password = req.body.password || req.body.pass;
+
+    // 2. XỬ LÝ LOGIC THÔNG MINH
+    // Nếu dữ liệu ở ô 'email' không phải là email thật (vd: "nct") -> Coi nó là username
+    if (email && !email.includes('@')) {
+        username = email; 
+        email = undefined; // Xóa email đi để không bị lỗi định dạng
+    }
+    // Nếu có email thật mà chưa có username -> Tự tạo username từ email
+    if (email && !username) {
+        username = email.split('@')[0];
     }
 
-    // Tạo User (Model sẽ tự mã hóa password)
+    // 3. KIỂM TRA ĐẦU VÀO (Chỉ cần Tên + Pass + (Username HOẶC Email))
+    if (!fullName || (!username && !email) || !password) {
+      console.log("❌ Thiếu thông tin quan trọng:", { fullName, username, email });
+      return res.status(400).json({ message: "Vui lòng nhập đủ thông tin (Tên, Tài khoản, Mật khẩu)" });
+    }
+
+    // 4. Check trùng (Tìm trong cả username và email)
+    const query = [];
+    if (username) query.push({ username });
+    if (email) query.push({ email });
+    
+    const userExists = await User.findOne({ $or: query });
+
+    if (userExists) {
+      return res.status(400).json({ message: "Tài khoản hoặc Email đã tồn tại!" });
+    }
+
+    // 5. Tạo User
     const user = await User.create({
       fullName,
-      email,     
       username,
+      email, // Có thể null (nếu đăng ký bằng username)
       password 
     });
     
+    // Trả về kết quả
     if (user) {
       res.status(201).json({
         _id: user.id,
         fullName: user.fullName,
-        email: user.email,
         username: user.username,
+        email: user.email,
         role: user.role,
         token: generateToken(user._id),
       });
@@ -58,12 +73,12 @@ exports.register = async (req, res) => {
     }
 
   } catch (error) {
-     console.error("Lỗi đăng ký:", error);
+     console.error("🔥 Lỗi Đăng Ký:", error);
      res.status(500).json({ message: "Lỗi Server: " + error.message });
   }
 };
 
-// 2. Đăng nhập (Login) - CÁI BẠN ĐANG THIẾU
+// 2. Đăng nhập (Login)
 exports.login = async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -76,7 +91,6 @@ exports.login = async (req, res) => {
         ]
     });
 
-    // Kiểm tra password
     if (user && (await user.matchPassword(password))) {
       
       if (user.status === 'banned') return res.status(403).json({ message: 'Tài khoản bị khóa' });
@@ -100,17 +114,20 @@ exports.login = async (req, res) => {
   }
 };
 
-// 3. Admin tạo User - CÁI BẠN ĐANG THIẾU
+// 3. Admin tạo User
 exports.adminCreateUser = async (req, res) => {
   try {
     const { fullName, email, role, instrument } = req.body; 
+    
+    // Logic tạo user của admin
+    // Nếu không nhập email thì lấy tạm username + @fake.com để không lỗi (hoặc sửa model cho phép null)
+    if (!email) return res.status(400).json({ message: 'Vui lòng nhập Email' });
 
     const userExists = await User.findOne({ email });
     if (userExists) return res.status(400).json({ message: 'Email đã tồn tại' });
 
     const username = email.split('@')[0];
 
-    // Password mặc định 123456
     const user = new User({
         username,
         email,
@@ -147,7 +164,7 @@ exports.changePasswordFirstTime = async (req, res) => {
   }
 };
 
-// 5. Lấy thông tin bản thân (Get Me)
+// 5. Get Me
 exports.getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');
