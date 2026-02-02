@@ -118,3 +118,20 @@ exports.changePasswordFirstTime = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+exports.getMe = async (req, res) => {
+  try {
+    // Tìm user dựa vào ID đã lấy được từ Token (req.user.id)
+    // Loại bỏ trường password khi trả về
+    const user = await User.findById(req.user.id).select('-password'); 
+    
+    if (!user) {
+      return res.status(404).json({ message: "Không tìm thấy người dùng" });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Lỗi Server" });
+  }
+};

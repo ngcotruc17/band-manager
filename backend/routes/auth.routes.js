@@ -5,7 +5,8 @@ const {
     register, 
     login, 
     adminCreateUser, 
-    changePasswordFirstTime 
+    changePasswordFirstTime,
+    getMe
 } = require('../controllers/auth.controller');
 
 router.post('/register', register);
@@ -16,5 +17,6 @@ router.post('/create-user', protect, admin, adminCreateUser);
 
 // 👇 Route đổi mật khẩu (Cần đăng nhập mới đổi được)
 router.put('/change-password', protect, changePasswordFirstTime);
+router.get('/me', protect, getMe);
 
 module.exports = router;
