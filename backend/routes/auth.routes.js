@@ -17,6 +17,6 @@ router.post('/create-user', protect, admin, adminCreateUser);
 
 // 👇 Route đổi mật khẩu (Cần đăng nhập mới đổi được)
 router.put('/change-password', protect, changePasswordFirstTime);
-router.get('/me', protect, getMe);
+router.get('/me', protect, getMe); // 👈 Thêm dòng này
 
 module.exports = router;
