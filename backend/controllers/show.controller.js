@@ -44,3 +44,13 @@ exports.updateShowStatus = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+exports.getShowById = async (req, res) => {
+  try {
+    const show = await Show.findById(req.params.id);
+    if (!show) return res.status(404).json({ message: "Không tìm thấy show" });
+    res.json(show);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

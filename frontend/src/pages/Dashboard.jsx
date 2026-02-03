@@ -15,7 +15,7 @@ const Dashboard = () => {
     estimatedRevenue: 0,
     showsThisMonth: 0,
     totalMembers: 0,
-    upcomingShows: [], // Khởi tạo mảng rỗng để tránh lỗi .length
+    upcomingShows: [], // Initialized as empty array to prevent .length errors
     nextRehearsal: null
   });
 
@@ -27,14 +27,14 @@ const Dashboard = () => {
         const token = localStorage.getItem('token');
         const res = await axios.get(API_URL, { headers: { Authorization: `Bearer ${token}` } });
         
-        // Đảm bảo dữ liệu đổ vào luôn đúng cấu trúc, nếu API thiếu thì dùng giá trị mặc định
+        // Ensure data structure is correct, use defaults if API is missing fields
         setData({
           totalPendingFine: res.data?.totalPendingFine || 0,
           totalRevenue: res.data?.totalRevenue || 0,
           estimatedRevenue: res.data?.estimatedRevenue || 0,
           showsThisMonth: res.data?.showsThisMonth || 0,
           totalMembers: res.data?.totalMembers || 0,
-          upcomingShows: res.data?.upcomingShows || [], // Bảo vệ mảng upcomingShows
+          upcomingShows: res.data?.upcomingShows || [], // Protect upcomingShows array
           nextRehearsal: res.data?.nextRehearsal || null
         });
       } catch (error) {
@@ -44,13 +44,14 @@ const Dashboard = () => {
     fetchData();
   }, []);
 
+  // Currency formatter
   const fmt = (num) => (num || 0).toLocaleString('vi-VN') + 'đ';
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8 font-sans">
       <div className="max-w-7xl mx-auto space-y-8">
         
-        {/* 1. BANNER CHÀO MỪNG */}
+        {/* 1. WELCOME BANNER */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 p-8 text-white shadow-xl shadow-purple-200">
           <div className="absolute top-0 right-0 -mt-10 -mr-10 h-64 w-64 rounded-full bg-white opacity-10 blur-3xl"></div>
           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
@@ -75,7 +76,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* 2. GRID THỐNG KÊ */}
+        {/* 2. STATS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition">
             <div className="flex justify-between items-start mb-4">
@@ -124,7 +125,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* 3. KHU VỰC CHÍNH (Show sắp tới) */}
+        {/* 3. MAIN AREA (Upcoming Shows) */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
             <div className="flex items-center justify-between">
@@ -135,7 +136,7 @@ const Dashboard = () => {
             </div>
 
             <div className="space-y-4">
-              {/* Dùng Optional Chaining và kiểm tra length an toàn */}
+              {/* Optional Chaining and safe length check */}
               {(data.upcomingShows?.length || 0) > 0 ? (
                 data.upcomingShows.map((show) => (
                   <div key={show._id} className="group flex flex-col md:flex-row items-center gap-6 bg-white p-5 rounded-2xl border border-gray-100 hover:border-pink-200 hover:shadow-lg hover:shadow-pink-100 transition-all">

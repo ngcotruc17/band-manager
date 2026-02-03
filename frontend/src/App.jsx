@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom"; // 👈 Thêm useLocation
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom"; 
 import { AuthProvider, AuthContext } from "./context/AuthContext";
 import { useContext } from "react";
 import { Toaster } from 'react-hot-toast'; 
@@ -14,14 +14,15 @@ import RehearsalManager from "./pages/RehearsalManager";
 import MemberManager from "./pages/MemberManager"; 
 import FinanceManager from "./pages/FinanceManager";
 import ChangePassword from './pages/ChangePassword';
+import BookingDetail from './pages/BookingDetail'; // 👈 Import trang chi tiết
 
 // Import Navbar
 import Navbar from "./components/Navbar";
 
-// --- 🛡️ COMPONENT BẢO VỆ (Đã nâng cấp) ---
+// --- 🛡️ COMPONENT BẢO VỆ ---
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useContext(AuthContext);
-  const location = useLocation(); // Lấy đường dẫn hiện tại
+  const location = useLocation();
 
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50">⏳ Đang tải...</div>;
   
@@ -30,16 +31,12 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
 
-  // 2. 👇 LOGIC "NHỐT" NGƯỜI DÙNG:
-  // Nếu bị bắt đổi pass (mustChangePassword = true)
-  // MÀ đang đứng ở trang khác (không phải trang /change-password)
-  // -> Thì đá ngay lập tức về trang /change-password
+  // 2. Bắt buộc đổi mật khẩu
   if (user.mustChangePassword && location.pathname !== '/change-password') {
     return <Navigate to="/change-password" replace />;
   }
 
-  // 3. Ngược lại: Nếu đã đổi pass rồi mà cố tình vào trang /change-password để chơi
-  // -> Đá về Dashboard cho rảnh nợ (Optional, nhưng nên làm)
+  // 3. Đã đổi xong mà cố vào lại trang đổi pass -> Đá về Dashboard
   if (!user.mustChangePassword && location.pathname === '/change-password') {
     return <Navigate to="/dashboard" replace />;
   }
@@ -47,7 +44,7 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-// Layout chung (Có Navbar + Footer)
+// Layout chung (Navbar + Content + Footer)
 const Layout = ({ children }) => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
@@ -77,8 +74,7 @@ function App() {
 
           {/* --- PRIVATE ROUTES --- */}
           
-          {/* 👇 SỬA Ở ĐÂY: Bỏ thẻ <Layout> đi */}
-          {/* Trang này sẽ đứng độc lập, không có Navbar, không có Footer, không có đường thoát! */}
+          {/* 1. Trang Đổi Mật Khẩu (Không có Navbar/Footer) */}
           <Route 
             path="/change-password" 
             element={
@@ -88,15 +84,20 @@ function App() {
             } 
           />
 
-          {/* Các trang còn lại thì vẫn dùng Layout bình thường */}
+          {/* 2. Các trang chính (Có Navbar/Footer) */}
           <Route path="/dashboard" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
           <Route path="/bookings" element={<ProtectedRoute><Layout><BookingManager /></Layout></ProtectedRoute>} />
+          
+          {/* 👇 ĐÃ SỬA: Thêm <Layout> để hiện Navbar ở trang chi tiết */}
+          <Route path="/bookings/:id" element={<ProtectedRoute><Layout><BookingDetail /></Layout></ProtectedRoute>} />
+          
           <Route path="/events/:id" element={<ProtectedRoute><Layout><EventDetail /></Layout></ProtectedRoute>} />
           <Route path="/library" element={<ProtectedRoute><Layout><SongLibrary /></Layout></ProtectedRoute>} />
           <Route path="/rehearsals" element={<ProtectedRoute><Layout><RehearsalManager /></Layout></ProtectedRoute>} />
           <Route path="/members" element={<ProtectedRoute><Layout><MemberManager /></Layout></ProtectedRoute>} />
           <Route path="/finance" element={<ProtectedRoute><Layout><FinanceManager /></Layout></ProtectedRoute>} />
-
+          
+          {/* 404 - Redirect */}
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
 

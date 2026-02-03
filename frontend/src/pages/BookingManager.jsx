@@ -7,6 +7,7 @@ import {
   CheckCircle, Clock, XCircle, Music, FileText, Trash2, Loader
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { Link } from "react-router-dom"; // Ensure Link is imported
 
 const BookingManager = () => {
   const { user } = useContext(AuthContext);
@@ -23,11 +24,11 @@ const BookingManager = () => {
   const initialForm = {
     title: "", customerName: "", phone: "", 
     date: "", time: "", location: "", 
-    price: "", deposit: "", notes: "" // Để string rỗng cho dễ nhập, khi gửi sẽ ép kiểu số
+    price: "", deposit: "", notes: "" 
   };
   const [formData, setFormData] = useState(initialForm);
 
-  // 1. Tải danh sách Show
+  // 1. Fetch Bookings
   const fetchBookings = async () => {
     try {
       const res = await axios.get(API_URL, getHeaders());
@@ -41,12 +42,12 @@ const BookingManager = () => {
 
   useEffect(() => { fetchBookings(); }, []);
 
-  // 2. Xử lý nhập liệu Form
+  // 2. Handle Input Change
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // 3. Tạo Show mới
+  // 3. Create New Show
   const handleCreate = async () => {
     if (!formData.title || !formData.date || !formData.price) return toast.error("Vui lòng nhập các thông tin bắt buộc!");
     
@@ -61,8 +62,10 @@ const BookingManager = () => {
     }
   };
 
-  // 4. Xóa Show
-  const handleDelete = async (id) => {
+  // 4. Delete Show
+  const handleDelete = async (e, id) => {
+    e.preventDefault(); // Prevent navigation when clicking delete
+    e.stopPropagation();
     if(!window.confirm("Bạn chắc chắn muốn xóa show này?")) return;
     try {
       await axios.delete(`${API_URL}/${id}`, getHeaders());
@@ -71,8 +74,10 @@ const BookingManager = () => {
     } catch (err) { toast.error("Lỗi xóa"); }
   };
 
-  // 5. Cập nhật trạng thái nhanh
-  const updateStatus = async (id, status) => {
+  // 5. Update Status
+  const updateStatus = async (e, id, status) => {
+    e.preventDefault(); // Prevent navigation when clicking status buttons
+    e.stopPropagation();
     try {
       await axios.put(`${API_URL}/${id}/status`, { status }, getHeaders());
       toast.success("Đã cập nhật trạng thái");
@@ -80,13 +85,13 @@ const BookingManager = () => {
     } catch (err) { toast.error("Lỗi cập nhật"); }
   };
 
-  // Tính toán thống kê
+  // Statistics
   const currentMonth = new Date().getMonth();
   const showsThisMonth = bookings.filter(b => new Date(b.date).getMonth() === currentMonth).length;
   const totalRevenue = bookings.reduce((sum, b) => sum + (b.price || 0), 0);
   const pendingRevenue = bookings.reduce((sum, b) => sum + ((b.price || 0) - (b.deposit || 0)), 0);
 
-  // Badge trạng thái
+  // Status Badge Helper
   const getStatusBadge = (status) => {
     switch (status) {
       case 'pending': return <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs font-bold border border-yellow-200"><Clock size={12}/> Đang chốt</span>;
@@ -116,7 +121,7 @@ const BookingManager = () => {
           )}
         </div>
 
-        {/* THỐNG KÊ REAL-TIME */}
+        {/* REAL-TIME STATS */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
             <div><p className="text-gray-400 text-xs font-bold uppercase">Show tháng này</p><h3 className="text-3xl font-extrabold text-gray-800 mt-1">{showsThisMonth}</h3></div>
@@ -147,24 +152,29 @@ const BookingManager = () => {
           <button className="px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-600 font-medium shadow-sm flex items-center gap-2"><Filter size={18}/> Lọc</button>
         </div>
 
-        {/* DANH SÁCH BOOKING */}
+        {/* BOOKING LIST */}
         <div className="grid grid-cols-1 gap-4">
           {loading ? <div className="text-center py-10"><Loader className="animate-spin mx-auto text-pink-500"/></div> : 
            bookings.filter(b => b.title.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 ? 
            <p className="text-center text-gray-400 py-10">Chưa có show nào.</p> :
            
            bookings.filter(b => b.title.toLowerCase().includes(searchTerm.toLowerCase())).map((item) => (
-            <div key={item._id} className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group overflow-hidden">
+            // START CHANGE: Wrapped card content in Link
+            <Link 
+              to={`/bookings/${item._id}`} 
+              key={item._id} 
+              className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group overflow-hidden block"
+            >
               <div className="p-6 flex flex-col md:flex-row gap-6">
                 
-                {/* Vé Ngày */}
+                {/* Date Ticket */}
                 <div className="flex-shrink-0 w-full md:w-24 bg-gray-50 rounded-xl border border-gray-200 flex flex-col items-center justify-center p-4 md:p-0">
                   <span className="text-red-500 font-bold uppercase text-xs tracking-wider">THÁNG {new Date(item.date).getMonth() + 1}</span>
                   <span className="text-3xl font-black text-gray-800">{new Date(item.date).getDate()}</span>
                   <span className="text-gray-400 text-xs font-medium">{new Date(item.date).getFullYear()}</span>
                 </div>
 
-                {/* Thông tin chính */}
+                {/* Main Info */}
                 <div className="flex-1 space-y-3">
                   <div className="flex justify-between items-start">
                     <div>
@@ -183,7 +193,7 @@ const BookingManager = () => {
                   </div>
                 </div>
 
-                {/* Cột Tài chính */}
+                {/* Financial Column */}
                 <div className="flex-shrink-0 w-full md:w-48 border-t md:border-t-0 md:border-l border-gray-100 md:pl-6 pt-4 md:pt-0 flex flex-col justify-center gap-2">
                    <div className="text-right">
                       <p className="text-xs text-gray-400 font-bold uppercase">Tổng cát-xê</p>
@@ -201,21 +211,23 @@ const BookingManager = () => {
                 </div>
               </div>
               
-              {/* Toolbar Admin */}
+              {/* Admin Toolbar */}
               {user?.role === 'admin' && (
                 <div className="bg-gray-50 border-t border-gray-100 p-2 flex justify-end gap-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
-                   {item.status !== 'completed' && <button onClick={() => updateStatus(item._id, 'completed')} className="text-xs font-bold text-green-600 bg-white border border-green-200 px-3 py-1.5 rounded hover:bg-green-50">✓ Hoàn thành</button>}
-                   {item.status !== 'confirmed' && <button onClick={() => updateStatus(item._id, 'confirmed')} className="text-xs font-bold text-blue-600 bg-white border border-blue-200 px-3 py-1.5 rounded hover:bg-blue-50">✓ Chốt</button>}
-                   <button onClick={() => handleDelete(item._id)} className="text-xs font-bold text-red-500 hover:text-red-700 px-3 py-1.5 rounded bg-white border hover:border-red-300 shadow-sm transition flex items-center gap-1"><Trash2 size={14}/> Xóa</button>
+                   {/* Passed 'e' to stop propagation */}
+                   {item.status !== 'completed' && <button onClick={(e) => updateStatus(e, item._id, 'completed')} className="text-xs font-bold text-green-600 bg-white border border-green-200 px-3 py-1.5 rounded hover:bg-green-50">✓ Hoàn thành</button>}
+                   {item.status !== 'confirmed' && <button onClick={(e) => updateStatus(e, item._id, 'confirmed')} className="text-xs font-bold text-blue-600 bg-white border border-blue-200 px-3 py-1.5 rounded hover:bg-blue-50">✓ Chốt</button>}
+                   <button onClick={(e) => handleDelete(e, item._id)} className="text-xs font-bold text-red-500 hover:text-red-700 px-3 py-1.5 rounded bg-white border hover:border-red-300 shadow-sm transition flex items-center gap-1"><Trash2 size={14}/> Xóa</button>
                 </div>
               )}
-            </div>
+            </Link>
+            // END CHANGE
           ))}
         </div>
 
       </div>
 
-      {/* MODAL TẠO MỚI */}
+      {/* CREATE MODAL */}
       {showModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden animate-scale-up">
