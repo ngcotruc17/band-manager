@@ -3,11 +3,11 @@ import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 import { 
   Calendar, MapPin, User, Phone, DollarSign, 
-  Plus, Search, Filter, 
-  CheckCircle, Clock, XCircle, Music, FileText, Trash2, Loader
+  Plus, Search, CheckCircle, Clock, XCircle, Music, FileText, Loader,
+  Lock, Unlock, PlayCircle, Check, Edit
 } from "lucide-react";
 import toast from "react-hot-toast";
-import { Link } from "react-router-dom"; // Ensure Link is imported
+import { Link } from "react-router-dom";
 
 const BookingManager = () => {
   const { user } = useContext(AuthContext);
@@ -15,6 +15,8 @@ const BookingManager = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  
+  const [editingId, setEditingId] = useState(null);
 
   // API Config
   const API_URL = "https://band-manager-s9tm.onrender.com/api/shows";
@@ -28,7 +30,7 @@ const BookingManager = () => {
   };
   const [formData, setFormData] = useState(initialForm);
 
-  // 1. Fetch Bookings
+  // 1. Tải danh sách Show
   const fetchBookings = async () => {
     try {
       const res = await axios.get(API_URL, getHeaders());
@@ -42,64 +44,91 @@ const BookingManager = () => {
 
   useEffect(() => { fetchBookings(); }, []);
 
-  // 2. Handle Input Change
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // 3. Create New Show
-  const handleCreate = async () => {
+  // 2. Mở Modal để SỬA (ĐÃ FIX LỖI NULL)
+  const handleEditClick = (e, item) => {
+    e.preventDefault(); 
+    e.stopPropagation();
+    
+    const formattedDate = item.date ? new Date(item.date).toISOString().split('T')[0] : "";
+
+    setEditingId(item._id); 
+    setFormData({
+      title: item.title || "", 
+      customerName: item.customerName || "",
+      phone: item.phone || "", // Chống null
+      date: formattedDate,
+      time: item.time || "",
+      location: item.location || "",
+      price: item.price || 0,
+      deposit: item.deposit || 0,
+      notes: item.notes || "" // Chống null
+    });
+    setShowModal(true);
+  };
+
+  // 3. Mở Modal để TẠO MỚI
+  const handleCreateClick = () => {
+    setEditingId(null); 
+    setFormData(initialForm); 
+    setShowModal(true);
+  }
+
+  // 4. Xử lý LƯU
+  const handleSave = async () => {
     if (!formData.title || !formData.date || !formData.price) return toast.error("Vui lòng nhập các thông tin bắt buộc!");
     
     try {
-      await axios.post(API_URL, formData, getHeaders());
-      toast.success("Đã tạo Booking mới! 🎤");
+      if (editingId) {
+        await axios.put(`${API_URL}/${editingId}`, formData, getHeaders());
+        toast.success("Đã cập nhật thông tin show!");
+      } else {
+        await axios.post(API_URL, formData, getHeaders());
+        toast.success("Đã tạo Booking mới! 🎤");
+      }
+
       setShowModal(false);
       setFormData(initialForm);
+      setEditingId(null);
       fetchBookings();
     } catch (err) {
-      toast.error(err.response?.data?.message || "Lỗi tạo show");
+      toast.error(err.response?.data?.message || "Lỗi thao tác");
     }
   };
 
-  // 4. Delete Show
   const handleDelete = async (e, id) => {
-    e.preventDefault(); // Prevent navigation when clicking delete
-    e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();
     if(!window.confirm("Bạn chắc chắn muốn xóa show này?")) return;
-    try {
-      await axios.delete(`${API_URL}/${id}`, getHeaders());
-      toast.success("Đã xóa");
-      fetchBookings();
-    } catch (err) { toast.error("Lỗi xóa"); }
+    try { await axios.delete(`${API_URL}/${id}`, getHeaders()); toast.success("Đã xóa"); fetchBookings(); } catch (err) { toast.error("Lỗi xóa"); }
   };
 
-  // 5. Update Status
   const updateStatus = async (e, id, status) => {
-    e.preventDefault(); // Prevent navigation when clicking status buttons
-    e.stopPropagation();
-    try {
-      await axios.put(`${API_URL}/${id}/status`, { status }, getHeaders());
-      toast.success("Đã cập nhật trạng thái");
-      fetchBookings();
-    } catch (err) { toast.error("Lỗi cập nhật"); }
+    e.preventDefault(); e.stopPropagation();
+    try { await axios.put(`${API_URL}/${id}/status`, { status }, getHeaders()); toast.success("Đã cập nhật trạng thái!"); fetchBookings(); } catch (err) { toast.error("Lỗi cập nhật"); }
   };
 
-  // Statistics
+  const toggleLock = async (e, id) => {
+    e.preventDefault(); e.stopPropagation();
+    try { await axios.put(`${API_URL}/${id}/toggle-registration`, {}, getHeaders()); toast.success("Đã thay đổi trạng thái đăng ký"); fetchBookings(); } catch (err) { toast.error("Lỗi thao tác"); }
+  };
+
+  // Thống kê & Helper
   const currentMonth = new Date().getMonth();
   const showsThisMonth = bookings.filter(b => new Date(b.date).getMonth() === currentMonth).length;
   const totalRevenue = bookings.reduce((sum, b) => sum + (b.price || 0), 0);
   const pendingRevenue = bookings.reduce((sum, b) => sum + ((b.price || 0) - (b.deposit || 0)), 0);
 
-  // Status Badge Helper
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case 'pending': return <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs font-bold border border-yellow-200"><Clock size={12}/> Đang chốt</span>;
-      case 'confirmed': return <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold border border-blue-200"><CheckCircle size={12}/> Đã chốt</span>;
-      case 'completed': return <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-bold border border-green-200"><Music size={12}/> Đã diễn</span>;
-      case 'cancelled': return <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-bold border border-red-200"><XCircle size={12}/> Đã hủy</span>;
-      default: return null;
+  const getStatusBadge = (item) => {
+    if (item.status === 'completed') return <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-bold border border-green-200"><CheckCircle size={12}/> Đã diễn xong</span>;
+    if (item.status === 'pending') return <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs font-bold border border-yellow-200"><Clock size={12}/> Chờ duyệt mở</span>;
+    if (item.status === 'confirmed') {
+        if (item.isRegistrationClosed) return <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-bold border border-red-200"><Lock size={12}/> Đã chốt sổ</span>;
+        return <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold border border-blue-200"><CheckCircle size={12}/> Đang mở ĐK</span>;
     }
+    return null;
   };
 
   return (
@@ -115,13 +144,13 @@ const BookingManager = () => {
             </h1>
           </div>
           {user?.role === 'admin' && (
-            <button onClick={() => setShowModal(true)} className="flex items-center gap-2 bg-gray-900 text-white px-5 py-3 rounded-xl font-bold shadow-lg hover:bg-gray-800 transition transform active:scale-95">
+            <button onClick={handleCreateClick} className="flex items-center gap-2 bg-gray-900 text-white px-5 py-3 rounded-xl font-bold shadow-lg hover:bg-gray-800 transition transform active:scale-95">
               <Plus size={20}/> Tạo Booking Mới
             </button>
           )}
         </div>
 
-        {/* REAL-TIME STATS */}
+        {/* THỐNG KÊ */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
             <div><p className="text-gray-400 text-xs font-bold uppercase">Show tháng này</p><h3 className="text-3xl font-extrabold text-gray-800 mt-1">{showsThisMonth}</h3></div>
@@ -149,32 +178,27 @@ const BookingManager = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <button className="px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-600 font-medium shadow-sm flex items-center gap-2"><Filter size={18}/> Lọc</button>
         </div>
 
-        {/* BOOKING LIST */}
+        {/* LIST BOOKING */}
         <div className="grid grid-cols-1 gap-4">
           {loading ? <div className="text-center py-10"><Loader className="animate-spin mx-auto text-pink-500"/></div> : 
            bookings.filter(b => b.title.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 ? 
            <p className="text-center text-gray-400 py-10">Chưa có show nào.</p> :
            
            bookings.filter(b => b.title.toLowerCase().includes(searchTerm.toLowerCase())).map((item) => (
-            // START CHANGE: Wrapped card content in Link
             <Link 
               to={`/bookings/${item._id}`} 
               key={item._id} 
               className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group overflow-hidden block"
             >
               <div className="p-6 flex flex-col md:flex-row gap-6">
-                
-                {/* Date Ticket */}
                 <div className="flex-shrink-0 w-full md:w-24 bg-gray-50 rounded-xl border border-gray-200 flex flex-col items-center justify-center p-4 md:p-0">
                   <span className="text-red-500 font-bold uppercase text-xs tracking-wider">THÁNG {new Date(item.date).getMonth() + 1}</span>
                   <span className="text-3xl font-black text-gray-800">{new Date(item.date).getDate()}</span>
                   <span className="text-gray-400 text-xs font-medium">{new Date(item.date).getFullYear()}</span>
                 </div>
 
-                {/* Main Info */}
                 <div className="flex-1 space-y-3">
                   <div className="flex justify-between items-start">
                     <div>
@@ -183,7 +207,7 @@ const BookingManager = () => {
                         <User size={14}/> {item.customerName} • <Phone size={14}/> {item.phone || "---"}
                       </div>
                     </div>
-                    {getStatusBadge(item.status)}
+                    {getStatusBadge(item)}
                   </div>
 
                   <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-600 bg-gray-50/50 p-3 rounded-lg border border-gray-100">
@@ -193,14 +217,10 @@ const BookingManager = () => {
                   </div>
                 </div>
 
-                {/* Financial Column */}
                 <div className="flex-shrink-0 w-full md:w-48 border-t md:border-t-0 md:border-l border-gray-100 md:pl-6 pt-4 md:pt-0 flex flex-col justify-center gap-2">
                    <div className="text-right">
                       <p className="text-xs text-gray-400 font-bold uppercase">Tổng cát-xê</p>
                       <p className="text-xl font-extrabold text-green-600">{(item.price || 0).toLocaleString()}đ</p>
-                   </div>
-                   <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
-                      <div className={`h-full ${item.deposit >= item.price ? 'bg-green-500' : 'bg-yellow-400'}`} style={{ width: `${Math.min(100, (item.deposit / item.price) * 100)}%` }}></div>
                    </div>
                    <div className="flex justify-between text-xs font-medium">
                       <span className="text-gray-500">Cọc: {(item.deposit || 0).toLocaleString()}</span>
@@ -211,28 +231,52 @@ const BookingManager = () => {
                 </div>
               </div>
               
-              {/* Admin Toolbar */}
+              {/* TOOLBAR ADMIN */}
               {user?.role === 'admin' && (
-                <div className="bg-gray-50 border-t border-gray-100 p-2 flex justify-end gap-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
-                   {/* Passed 'e' to stop propagation */}
-                   {item.status !== 'completed' && <button onClick={(e) => updateStatus(e, item._id, 'completed')} className="text-xs font-bold text-green-600 bg-white border border-green-200 px-3 py-1.5 rounded hover:bg-green-50">✓ Hoàn thành</button>}
-                   {item.status !== 'confirmed' && <button onClick={(e) => updateStatus(e, item._id, 'confirmed')} className="text-xs font-bold text-blue-600 bg-white border border-blue-200 px-3 py-1.5 rounded hover:bg-blue-50">✓ Chốt</button>}
-                   <button onClick={(e) => handleDelete(e, item._id)} className="text-xs font-bold text-red-500 hover:text-red-700 px-3 py-1.5 rounded bg-white border hover:border-red-300 shadow-sm transition flex items-center gap-1"><Trash2 size={14}/> Xóa</button>
+                <div className="bg-gray-50 border-t border-gray-100 p-3 flex justify-end gap-3 items-center">
+                   
+                   <button onClick={(e) => handleEditClick(e, item)} className="text-xs font-bold text-gray-600 bg-white border border-gray-300 px-3 py-2 rounded-lg hover:bg-gray-100 shadow-sm flex items-center gap-1">
+                      <Edit size={14}/> Sửa
+                   </button>
+
+                   {item.status === 'pending' && (
+                     <>
+                        <button onClick={(e) => updateStatus(e, item._id, 'confirmed')} className="text-xs font-bold text-white bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700 shadow-sm flex items-center gap-1">
+                           <PlayCircle size={14}/> Duyệt & Mở Đăng Ký
+                        </button>
+                        <button onClick={(e) => handleDelete(e, item._id)} className="text-xs font-bold text-red-600 bg-white border border-red-200 px-3 py-2 rounded-lg hover:bg-red-50">
+                           Xóa
+                        </button>
+                     </>
+                   )}
+
+                   {item.status === 'confirmed' && (
+                     <>
+                        <button onClick={(e) => toggleLock(e, item._id)} className={`text-xs font-bold px-4 py-2 rounded-lg shadow-sm flex items-center gap-1 text-white ${item.isRegistrationClosed ? 'bg-orange-500 hover:bg-orange-600' : 'bg-red-500 hover:bg-red-600'}`}>
+                           {item.isRegistrationClosed ? <><Unlock size={14}/> Mở lại ĐK</> : <><Lock size={14}/> Chốt sổ</>}
+                        </button>
+                        <button onClick={(e) => updateStatus(e, item._id, 'completed')} className="text-xs font-bold text-white bg-green-600 px-4 py-2 rounded-lg hover:bg-green-700 shadow-sm flex items-center gap-1">
+                           <Check size={14}/> Hoàn thành
+                        </button>
+                     </>
+                   )}
+
+                   {item.status === 'completed' && <span className="text-xs font-bold text-green-600">🎉 Đã xong</span>}
                 </div>
               )}
             </Link>
-            // END CHANGE
           ))}
         </div>
-
       </div>
 
-      {/* CREATE MODAL */}
+      {/* CREATE / EDIT MODAL */}
       {showModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden animate-scale-up">
             <div className="bg-gray-900 text-white p-4 flex justify-between items-center">
-               <h3 className="font-bold text-lg flex items-center gap-2"><Plus size={20}/> Tạo Booking Mới</h3>
+               <h3 className="font-bold text-lg flex items-center gap-2">
+                 {editingId ? <><Edit size={20}/> Cập nhật Show</> : <><Plus size={20}/> Tạo Booking Mới</>}
+               </h3>
                <button onClick={() => setShowModal(false)} className="hover:text-red-400"><XCircle size={24}/></button>
             </div>
             
@@ -256,7 +300,9 @@ const BookingManager = () => {
 
             <div className="p-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
                <button onClick={() => setShowModal(false)} className="px-5 py-2.5 rounded-xl font-bold text-gray-500 hover:bg-gray-200 transition">Hủy bỏ</button>
-               <button onClick={handleCreate} className="px-6 py-2.5 rounded-xl font-bold bg-gray-900 text-white hover:bg-black shadow-lg transition">Tạo Booking</button>
+               <button onClick={handleSave} className="px-6 py-2.5 rounded-xl font-bold bg-gray-900 text-white hover:bg-black shadow-lg transition">
+                  {editingId ? "Lưu thay đổi" : "Tạo Booking"}
+               </button>
             </div>
           </div>
         </div>

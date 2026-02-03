@@ -132,3 +132,18 @@ exports.toggleRegistration = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// 10. Cập nhật thông tin Show (Sửa tên, giá, ngày...)
+exports.updateShow = async (req, res) => {
+  try {
+    const updatedShow = await Show.findByIdAndUpdate(
+      req.params.id, 
+      req.body, 
+      { new: true } // Trả về dữ liệu mới sau khi sửa
+    );
+    if (!updatedShow) return res.status(404).json({ message: "Không tìm thấy show" });
+    res.json(updatedShow);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

@@ -17,4 +17,6 @@ router.put('/:id/approve-participant', protect, admin, controller.approvePartici
 router.put('/:id/remove-participant', protect, admin, controller.removeParticipant);
 router.put('/:id/toggle-registration', protect, admin, controller.toggleRegistration);
 
+router.put('/:id', protect, admin, controller.updateShow);
+
 module.exports = router;
