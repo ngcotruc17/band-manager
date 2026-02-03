@@ -192,7 +192,7 @@ const EventDetail = () => {
                     <input type="time" className="bg-white/20 border border-white/30 p-3 rounded-xl text-white w-32" value={editEventData.time} onChange={e => setEditEventData({...editEventData, time: e.target.value})} />
                   </div>
                   <input className="bg-white/20 border border-white/30 p-3 rounded-xl placeholder-blue-200 text-white" placeholder="Địa điểm" value={editEventData.location} onChange={e => setEditEventData({...editEventData, location: e.target.value})} />
-                  <input type="number" className="bg-white/20 border border-white/30 p-3 rounded-xl placeholder-blue-200 text-white font-bold" placeholder="Cát-xê" value={editEventData.cast} onChange={e => setEditEventData({...editEventData, cast: e.target.value})} />
+                  <input type="number" className="bg-white/20 border border-white/30 p-3 rounded-xl placeholder-blue-200 text-white font-bold" placeholder="Cát-xê / người" value={editEventData.cast} onChange={e => setEditEventData({...editEventData, cast: e.target.value})} />
                </div>
                <textarea rows="2" className="w-full bg-white/20 border border-white/30 p-3 rounded-xl placeholder-blue-200 text-white mb-4" placeholder="Logistics / Ghi chú" value={editEventData.logistics} onChange={e => setEditEventData({...editEventData, logistics: e.target.value})} />
                <div className="flex gap-3">

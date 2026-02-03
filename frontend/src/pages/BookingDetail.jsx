@@ -168,7 +168,7 @@ const BookingDetail = () => {
                   <span className="flex items-center gap-2"><MapPin className="text-blue-500" size={18}/> {show.location}</span>
                 </div>
               </div>
-              <div className="text-right"><p className="text-gray-400 text-xs font-bold uppercase">Cát-xê</p><p className="text-3xl font-black text-green-600">{(show.price || 0).toLocaleString()}đ</p></div>
+              <div className="text-right"><p className="text-gray-400 text-xs font-bold uppercase">Cát-xê / người</p><p className="text-3xl font-black text-green-600">{(show.price || 0).toLocaleString()}đ</p></div>
            </div>
         </div>
 

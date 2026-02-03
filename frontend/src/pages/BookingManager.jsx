@@ -219,7 +219,7 @@ const BookingManager = () => {
 
                 <div className="flex-shrink-0 w-full md:w-48 border-t md:border-t-0 md:border-l border-gray-100 md:pl-6 pt-4 md:pt-0 flex flex-col justify-center gap-2">
                    <div className="text-right">
-                      <p className="text-xs text-gray-400 font-bold uppercase">Tổng cát-xê</p>
+                      <p className="text-xs text-gray-400 font-bold uppercase">Cát-xê / người</p>
                       <p className="text-xl font-extrabold text-green-600">{(item.price || 0).toLocaleString()}đ</p>
                    </div>
                    <div className="flex justify-between text-xs font-medium">
@@ -293,7 +293,7 @@ const BookingManager = () => {
                </div>
                <div><label className="block text-sm font-bold text-gray-700 mb-1">Địa điểm</label><input name="location" value={formData.location} onChange={handleChange} type="text" className="w-full p-3 border rounded-xl focus:ring-2 ring-pink-500 outline-none" placeholder="Nhập địa chỉ chính xác"/></div>
                <div className="grid grid-cols-2 gap-4 bg-green-50 p-4 rounded-xl border border-green-100">
-                  <div><label className="block text-sm font-bold text-green-800 mb-1">Tổng Cát-xê *</label><input name="price" value={formData.price} onChange={handleChange} type="number" className="w-full p-3 border rounded-xl focus:ring-2 ring-green-500 outline-none" placeholder="0"/></div>
+                  <div><label className="block text-sm font-bold text-green-800 mb-1">Cát-xê / người *</label><input name="price" value={formData.price} onChange={handleChange} type="number" className="w-full p-3 border rounded-xl focus:ring-2 ring-green-500 outline-none" placeholder="0"/></div>
                   <div><label className="block text-sm font-bold text-green-800 mb-1">Đã cọc</label><input name="deposit" value={formData.deposit} onChange={handleChange} type="number" className="w-full p-3 border rounded-xl focus:ring-2 ring-green-500 outline-none" placeholder="0"/></div>
                </div>
                <div><label className="block text-sm font-bold text-gray-700 mb-1">Ghi chú</label><textarea name="notes" value={formData.notes} onChange={handleChange} rows="3" className="w-full p-3 border rounded-xl focus:ring-2 ring-pink-500 outline-none" placeholder="Yêu cầu khác..."></textarea></div>
