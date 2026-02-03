@@ -13,7 +13,7 @@ const showSchema = new mongoose.Schema({
   notes: { type: String },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 
-  // 👇 THÊM ĐOẠN NÀY: Danh sách thành viên tham gia
+  // 👇 PHẦN QUAN TRỌNG: Lưu danh sách người đăng ký
   participants: [{
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     role: { type: String, default: 'Thành viên' }, // VD: Guitar, Vocal...

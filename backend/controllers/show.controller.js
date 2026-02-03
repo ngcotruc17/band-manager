@@ -45,9 +45,13 @@ exports.updateShowStatus = async (req, res) => {
   }
 };
 
+// 5. Lấy chi tiết 1 Show (Đã thêm populate để hiện tên người tham gia)
 exports.getShowById = async (req, res) => {
   try {
-    const show = await Show.findById(req.params.id);
+    // 👇 QUAN TRỌNG: Thêm .populate() để lấy thông tin user từ ID
+    const show = await Show.findById(req.params.id)
+      .populate('participants.user', 'fullName email'); 
+
     if (!show) return res.status(404).json({ message: "Không tìm thấy show" });
     res.json(show);
   } catch (error) {
@@ -55,29 +59,26 @@ exports.getShowById = async (req, res) => {
   }
 };
 
-// 6. Đăng ký tham gia Show
+// 6. Đăng ký / Hủy đăng ký Show
 exports.joinShow = async (req, res) => {
   try {
     const show = await Show.findById(req.params.id);
     if (!show) return res.status(404).json({ message: "Không tìm thấy show" });
 
-    // Kiểm tra xem đã đăng ký chưa
+    // Kiểm tra đã đăng ký chưa
     const isJoined = show.participants.find(p => p.user.toString() === req.user.id);
     
     if (isJoined) {
-      // Nếu đăng ký rồi -> Hủy đăng ký (Rời show)
+      // Có rồi -> Xóa (Hủy)
       show.participants = show.participants.filter(p => p.user.toString() !== req.user.id);
       await show.save();
-      return res.json({ message: "Đã hủy đăng ký", isJoined: false, participants: show.participants });
+      return res.json({ message: "Đã hủy đăng ký" });
     } else {
-      // Nếu chưa -> Thêm vào
+      // Chưa -> Thêm vào
       show.participants.push({ user: req.user.id });
       await show.save();
-      // Populate để trả về tên user hiển thị ngay
-      await show.populate('participants.user', 'fullName email');
-      return res.json({ message: "Đăng ký thành công", isJoined: true, participants: show.participants });
+      return res.json({ message: "Đăng ký thành công" });
     }
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
