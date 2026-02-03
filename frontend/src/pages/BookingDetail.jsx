@@ -5,7 +5,7 @@ import { AuthContext } from "../context/AuthContext";
 import { 
   Calendar, Clock, MapPin, User, ArrowLeft, Music, 
   UploadCloud, Lock, Unlock, Check, X, AlertCircle, 
-  Download, Link as LinkIcon, Plus, Search, FileText
+  Download, Link as LinkIcon, Plus, Search, FileText, PlayCircle
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -16,15 +16,17 @@ const BookingDetail = () => {
   const [show, setShow] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // State cho Modal Nhạc
+  // State Modal
   const [showAddMusicModal, setShowAddMusicModal] = useState(false);
   const [showLibraryModal, setShowLibraryModal] = useState(false);
-  const [librarySongs, setLibrarySongs] = useState([]); // Dữ liệu kho nhạc
+  const [librarySongs, setLibrarySongs] = useState([]);
   
-  // Form thêm nhạc nhanh
+  // Form thêm nhạc thủ công
   const [musicForm, setMusicForm] = useState({ title: "", link: "", note: "" });
 
-  const API_URL = `https://band-manager-s9tm.onrender.com/api/shows/${id}`;
+  const API_BASE = "https://band-manager-s9tm.onrender.com";
+  const API_URL = `${API_BASE}/api/shows/${id}`;
+  
   const getHeaders = useCallback(() => ({ 
     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } 
   }), []);
@@ -35,15 +37,13 @@ const BookingDetail = () => {
       setShow(res.data);
       setLoading(false);
     } catch (error) {
-       // Silent fail
+       // Silent fail or redirect
     }
   }, [API_URL, getHeaders]);
 
-  useEffect(() => {
-    fetchShow();
-  }, [fetchShow]);
+  useEffect(() => { fetchShow(); }, [fetchShow]);
 
-  // --- ACTIONS ---
+  // --- ACTIONS (Tham gia, Duyệt, Xóa...) ---
   const handleJoin = async () => {
     try {
       const res = await axios.post(`${API_URL}/join`, {}, getHeaders());
@@ -53,33 +53,21 @@ const BookingDetail = () => {
   };
 
   const handleApprove = async (userId) => {
-    try {
-      await axios.put(`${API_URL}/approve-participant`, { userId }, getHeaders());
-      toast.success("Đã duyệt thành viên!");
-      fetchShow();
-    } catch (err) { toast.error("Lỗi duyệt"); }
+    try { await axios.put(`${API_URL}/approve-participant`, { userId }, getHeaders()); toast.success("Đã duyệt!"); fetchShow(); } catch (err) { toast.error("Lỗi duyệt"); }
   };
 
   const handleRemove = async (userId) => {
-    if(!window.confirm("Muốn loại thành viên này?")) return;
-    try {
-      await axios.put(`${API_URL}/remove-participant`, { userId }, getHeaders());
-      toast.success("Đã xóa thành viên");
-      fetchShow();
-    } catch (err) { toast.error("Lỗi xóa"); }
+    if(!window.confirm("Loại thành viên này?")) return;
+    try { await axios.put(`${API_URL}/remove-participant`, { userId }, getHeaders()); toast.success("Đã xóa"); fetchShow(); } catch (err) { toast.error("Lỗi xóa"); }
   };
 
   const toggleRegistration = async () => {
-    try {
-      const res = await axios.put(`${API_URL}/toggle-registration`, {}, getHeaders());
-      toast.success(res.data.message);
-      fetchShow();
-    } catch (err) { toast.error("Lỗi thao tác"); }
+    try { await axios.put(`${API_URL}/toggle-registration`, {}, getHeaders()); toast.success("Đã đổi trạng thái"); fetchShow(); } catch (err) { toast.error("Lỗi thao tác"); }
   };
 
-  // --- XỬ LÝ NHẠC ---
-  
-  // 1. Thêm nhạc thủ công (Link Drive/Youtube)
+  // --- QUẢN LÝ NHẠC ---
+
+  // 1. Thêm nhạc thủ công (Link ngoài)
   const handleAddMusic = async () => {
     if (!musicForm.title) return toast.error("Vui lòng nhập tên bài hát");
     try {
@@ -94,56 +82,69 @@ const BookingDetail = () => {
   // 2. Xóa nhạc
   const handleRemoveMusic = async (songId) => {
     if(!window.confirm("Xóa bài này khỏi list?")) return;
-    try {
-      await axios.delete(`${API_URL}/setlist/${songId}`, getHeaders());
-      toast.success("Đã xóa");
-      fetchShow();
-    } catch (err) { toast.error("Lỗi xóa nhạc"); }
+    try { await axios.delete(`${API_URL}/setlist/${songId}`, getHeaders()); toast.success("Đã xóa"); fetchShow(); } catch (err) { toast.error("Lỗi xóa nhạc"); }
   };
 
-  // 3. Lấy danh sách từ Kho Nhạc (Giả lập gọi API Songs)
+  // 3. Lấy từ Kho Nhạc (SỬA API PATH)
   const fetchLibrary = async () => {
     try {
-      // Gọi API lấy toàn bộ bài hát trong kho (Cần API này bên backend nếu chưa có)
-      // Tạm thời mình gọi thử, nếu bạn chưa có API songs thì cần tạo thêm.
-      const res = await axios.get("https://band-manager-s9tm.onrender.com/api/songs", getHeaders());
+      // 👇 Đã sửa đường dẫn thành /api/library cho khớp với server.js
+      const res = await axios.get(`${API_BASE}/api/library`, getHeaders());
       setLibrarySongs(res.data);
       setShowLibraryModal(true);
     } catch (err) {
-      toast.error("Không tải được kho nhạc (Cần API /api/songs)");
-      // Mở modal rỗng để test giao diện
-      setLibrarySongs([
-        { _id: '1', title: 'Cắt Đôi Nỗi Sầu', link: 'https://youtube.com', note: 'Tone Em' },
-        { _id: '2', title: 'Ngày Mai Người Ta Lấy Chồng', link: '', note: 'Tone Gm' }
-      ]);
-      setShowLibraryModal(true);
+      toast.error("Lỗi tải kho nhạc");
     }
   };
 
-  // 4. Chọn nhạc từ kho add vào show
-  const handleSelectFromLib = async (song) => {
+  // 4. Chọn từ Kho -> Add vào Show
+  const handleSelectFromLib = async (song, type = 'sheet') => {
+    // type: 'sheet' hoặc 'beat' để chọn link phù hợp
+    let linkToUse = "";
+    let typeNote = "";
+
+    if (type === 'sheet' && song.sheetUrl) {
+      linkToUse = song.sheetUrl;
+      typeNote = "(Sheet)";
+    } else if (type === 'beat' && song.beatUrl) {
+      linkToUse = song.beatUrl;
+      typeNote = "(Beat)";
+    } else {
+      // Fallback nếu chỉ có 1 loại
+      linkToUse = song.sheetUrl || song.beatUrl || "";
+    }
+
     try {
       await axios.post(`${API_URL}/setlist`, {
-        title: song.title,
-        link: song.link || "",
-        note: song.note || ""
+        title: song.title || song.name,
+        link: linkToUse,
+        note: `${song.note || ""} ${typeNote}`.trim()
       }, getHeaders());
-      toast.success(`Đã thêm: ${song.title}`);
+      toast.success(`Đã thêm: ${song.title || song.name}`);
       fetchShow();
+      setShowLibraryModal(false); // Đóng modal sau khi chọn
     } catch (err) { toast.error("Lỗi thêm nhạc"); }
   };
 
+  // Helper: Xử lý link download
+  const getDownloadLink = (link) => {
+    if (!link) return "#";
+    // Nếu là file upload (chứa uploads/ hoặc file-) -> Thêm domain server vào trước
+    if (link.includes("uploads/") || link.includes("file-")) {
+      return `${API_BASE}/${link.replace(/\\/g, "/")}`; // Fix lỗi dấu gạch chéo ngược trên Windows
+    }
+    // Nếu là link ngoài (http...) -> Giữ nguyên
+    return link;
+  };
 
   if (loading || !show) return <div className="min-h-screen flex items-center justify-center">Đang tải...</div>;
 
-  // PHÂN LOẠI DANH SÁCH
   const approvedMembers = show.participants?.filter(p => p.status === 'approved') || [];
   const pendingMembers = show.participants?.filter(p => p.status === 'pending') || [];
   const isJoined = show.participants?.some(p => p.user?._id === user?._id);
   const isAdmin = user?.role === 'admin';
   const canRegister = show.status === 'confirmed' && !show.isRegistrationClosed;
-  
-  // Logic hiển thị chức năng nhạc (Cho phép khi show đã chốt hoặc hoàn thành)
+  // Cho phép up nhạc khi đã chốt lịch hoặc hoàn thành
   const canEditMusic = show.status === 'confirmed' || show.status === 'completed';
 
   return (
@@ -174,7 +175,7 @@ const BookingDetail = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2 space-y-6">
             
-            {/* KHU VỰC ĐĂNG KÝ */}
+            {/* ĐĂNG KÝ */}
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                <div className="flex justify-between items-center mb-4">
                   <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2"><User className="text-purple-500"/> Đăng Ký Tham Gia</h3>
@@ -192,7 +193,6 @@ const BookingDetail = () => {
                     </p>
                     <p className="text-xs text-gray-500 mt-1">Đăng ký sớm để Admin sắp xếp đội hình.</p>
                   </div>
-                  
                   {isJoined ? (
                      <button onClick={handleJoin} className="bg-red-100 text-red-600 border border-red-200 px-6 py-2.5 rounded-xl font-bold hover:bg-red-200 transition">❌ Hủy đăng ký</button>
                   ) : (
@@ -208,7 +208,7 @@ const BookingDetail = () => {
                         <div key={p._id} className="flex items-center justify-between p-3 bg-green-50 border border-green-100 rounded-xl">
                            <div className="flex items-center gap-3">
                               <div className="w-8 h-8 bg-green-200 text-green-700 rounded-full flex items-center justify-center font-bold text-xs">{p.user?.fullName?.charAt(0) || "U"}</div>
-                              <div><p className="font-bold text-sm text-gray-800">{p.user?.fullName || "Ẩn"} {p.user?._id === user._id && "(Bạn)"}</p><p className="text-xs text-gray-500">{p.role}</p></div>
+                              <div><p className="font-bold text-sm text-gray-800">{p.user?.fullName || "Ẩn"}</p><p className="text-xs text-gray-500">{p.role}</p></div>
                            </div>
                            {isAdmin && <button onClick={() => handleRemove(p.user._id)} className="text-red-400 hover:text-red-600 p-1"><X size={16}/></button>}
                         </div>
@@ -241,12 +241,12 @@ const BookingDetail = () => {
             </div>
 
             {/* --- LIST NHẠC & BEAT --- */}
-            <div className={`bg-white p-6 rounded-2xl shadow-sm border border-gray-100 ${!canEditMusic && 'opacity-80'}`}>
+            <div className={`bg-white p-6 rounded-2xl shadow-sm border border-gray-100 ${!canEditMusic && 'opacity-70 pointer-events-none'}`}>
                <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-3">
                   <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Music className="text-pink-500"/> List Nhạc & Beat</h3>
                   <div className="flex gap-2">
-                    <button onClick={fetchLibrary} disabled={!canEditMusic} className="text-sm font-bold text-purple-600 bg-purple-50 hover:bg-purple-100 px-3 py-2 rounded-lg flex items-center gap-1 transition"><Search size={16}/> Lấy từ Kho</button>
-                    <button onClick={() => setShowAddMusicModal(true)} disabled={!canEditMusic} className="text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg flex items-center gap-1 transition"><UploadCloud size={16}/> Up Beat Mới</button>
+                    <button onClick={fetchLibrary} className="text-sm font-bold text-purple-600 bg-purple-50 hover:bg-purple-100 px-3 py-2 rounded-lg flex items-center gap-1 transition"><Search size={16}/> Lấy từ Kho</button>
+                    <button onClick={() => setShowAddMusicModal(true)} className="text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg flex items-center gap-1 transition"><Plus size={16}/> Link Mới</button>
                   </div>
                </div>
 
@@ -263,8 +263,13 @@ const BookingDetail = () => {
                          </div>
                          <div className="flex items-center gap-2">
                             {song.link && (
-                              <a href={song.link} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 flex items-center gap-1">
-                                <Download size={14}/> Tải / Xem
+                              <a 
+                                href={getDownloadLink(song.link)} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 flex items-center gap-1"
+                              >
+                                <Download size={14}/> Tải về
                               </a>
                             )}
                             <button onClick={() => handleRemoveMusic(song._id)} className="text-gray-400 hover:text-red-500 p-2"><X size={16}/></button>
@@ -273,7 +278,7 @@ const BookingDetail = () => {
                     ))
                   ) : (
                     <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-xl">
-                       <p className="text-gray-400 text-sm">Chưa có bài hát nào. Thêm nhạc để mọi người tập nhé!</p>
+                       <p className="text-gray-400 text-sm">{canEditMusic ? "Chưa có bài hát nào." : "Phải chốt Show (Approved) mới được up nhạc."}</p>
                     </div>
                   )}
                </div>
@@ -294,52 +299,47 @@ const BookingDetail = () => {
         </div>
       </div>
 
-      {/* --- MODAL THÊM NHẠC NHANH --- */}
+      {/* MODAL THÊM LINK */}
       {showAddMusicModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
            <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl animate-scale-up">
-              <h3 className="text-lg font-bold mb-4">Thêm Link Nhạc / Beat</h3>
+              <h3 className="text-lg font-bold mb-4">Thêm Link Nhạc (Drive/Youtube)</h3>
               <div className="space-y-3">
-                 <div>
-                    <label className="text-xs font-bold text-gray-500 uppercase">Tên bài hát *</label>
-                    <input type="text" className="w-full p-2 border rounded-lg mt-1" value={musicForm.title} onChange={e => setMusicForm({...musicForm, title: e.target.value})} placeholder="VD: Cắt đôi nỗi sầu"/>
-                 </div>
-                 <div>
-                    <label className="text-xs font-bold text-gray-500 uppercase">Link (Drive/Youtube)</label>
-                    <input type="text" className="w-full p-2 border rounded-lg mt-1" value={musicForm.link} onChange={e => setMusicForm({...musicForm, link: e.target.value})} placeholder="https://..."/>
-                 </div>
-                 <div>
-                    <label className="text-xs font-bold text-gray-500 uppercase">Ghi chú (Tone/Điệu)</label>
-                    <input type="text" className="w-full p-2 border rounded-lg mt-1" value={musicForm.note} onChange={e => setMusicForm({...musicForm, note: e.target.value})} placeholder="VD: Tone Nam, Disco"/>
-                 </div>
+                 <input type="text" className="w-full p-2 border rounded-lg" value={musicForm.title} onChange={e => setMusicForm({...musicForm, title: e.target.value})} placeholder="Tên bài hát *"/>
+                 <input type="text" className="w-full p-2 border rounded-lg" value={musicForm.link} onChange={e => setMusicForm({...musicForm, link: e.target.value})} placeholder="Link (http://...)"/>
+                 <input type="text" className="w-full p-2 border rounded-lg" value={musicForm.note} onChange={e => setMusicForm({...musicForm, note: e.target.value})} placeholder="Ghi chú (Tone/Điệu)"/>
               </div>
               <div className="flex justify-end gap-2 mt-6">
-                 <button onClick={() => setShowAddMusicModal(false)} className="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-lg font-bold">Hủy</button>
-                 <button onClick={handleAddMusic} className="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700">Thêm vào Show</button>
+                 <button onClick={() => setShowAddMusicModal(false)} className="px-4 py-2 text-gray-500 font-bold">Hủy</button>
+                 <button onClick={handleAddMusic} className="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold">Thêm</button>
               </div>
            </div>
         </div>
       )}
 
-      {/* --- MODAL KHO NHẠC --- */}
+      {/* MODAL KHO NHẠC */}
       {showLibraryModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-           <div className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl animate-scale-up h-[80vh] flex flex-col">
-              <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><Music/> Chọn từ Kho Nhạc</h3>
+           <div className="bg-white rounded-2xl p-6 w-full max-w-xl shadow-2xl h-[80vh] flex flex-col">
+              <div className="flex justify-between items-center mb-4">
+                 <h3 className="text-lg font-bold flex items-center gap-2"><Music/> Kho Nhạc Của Band</h3>
+                 <button onClick={() => setShowLibraryModal(false)}><X/></button>
+              </div>
               <div className="flex-1 overflow-y-auto space-y-2 pr-2">
                  {librarySongs.map(song => (
-                    <div key={song._id} className="flex items-center justify-between p-3 border rounded-xl hover:bg-gray-50 cursor-pointer" onClick={() => handleSelectFromLib(song)}>
-                       <div>
-                          <p className="font-bold text-gray-800">{song.title}</p>
-                          <p className="text-xs text-gray-500">{song.note || "Không ghi chú"}</p>
+                    <div key={song._id} className="flex items-center justify-between p-3 border rounded-xl hover:bg-gray-50">
+                       <div className="flex-1">
+                          <p className="font-bold text-gray-800">{song.title || song.name}</p>
+                          <p className="text-xs text-gray-500">{song.note}</p>
                        </div>
-                       <Plus size={20} className="text-blue-500"/>
+                       <div className="flex gap-2">
+                          {song.sheetUrl && <button onClick={() => handleSelectFromLib(song, 'sheet')} className="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-1 rounded flex items-center gap-1"><FileText size={12}/> +Sheet</button>}
+                          {song.beatUrl && <button onClick={() => handleSelectFromLib(song, 'beat')} className="text-xs font-bold bg-pink-100 text-pink-700 px-2 py-1 rounded flex items-center gap-1"><PlayCircle size={12}/> +Beat</button>}
+                          {!song.sheetUrl && !song.beatUrl && <span className="text-xs text-gray-400 italic">Không có file</span>}
+                       </div>
                     </div>
                  ))}
                  {librarySongs.length === 0 && <p className="text-center text-gray-400 mt-10">Kho nhạc trống.</p>}
-              </div>
-              <div className="mt-4 pt-4 border-t text-right">
-                 <button onClick={() => setShowLibraryModal(false)} className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg font-bold hover:bg-gray-200">Đóng</button>
               </div>
            </div>
         </div>
