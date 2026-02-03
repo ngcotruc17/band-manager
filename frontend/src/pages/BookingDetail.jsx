@@ -204,4 +204,4 @@ const BookingDetail = () => {
   );
 };
 
-export default BookingDetail;
+export default BookingDetail; 
