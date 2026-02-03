@@ -13,10 +13,14 @@ const showSchema = new mongoose.Schema({
   notes: { type: String },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 
-  // 👇 PHẦN QUAN TRỌNG: Lưu danh sách người đăng ký
+  // 👇 THÊM: Cờ khóa đăng ký (Chốt sổ thành viên)
+  isRegistrationClosed: { type: Boolean, default: false },
+
+  // 👇 SỬA: Thêm trạng thái duyệt cho từng người
   participants: [{
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    role: { type: String, default: 'Thành viên' }, // VD: Guitar, Vocal...
+    role: { type: String, default: 'Thành viên' },
+    status: { type: String, enum: ['pending', 'approved'], default: 'pending' }, // pending: Chờ duyệt, approved: Đã duyệt
     joinedAt: { type: Date, default: Date.now }
   }]
 
