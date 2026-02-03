@@ -15,7 +15,7 @@ const Dashboard = () => {
     estimatedRevenue: 0,
     showsThisMonth: 0,
     totalMembers: 0,
-    upcomingShows: [], // Initialized as empty array to prevent .length errors
+    upcomingShows: [],
     nextRehearsal: null
   });
 
@@ -27,14 +27,13 @@ const Dashboard = () => {
         const token = localStorage.getItem('token');
         const res = await axios.get(API_URL, { headers: { Authorization: `Bearer ${token}` } });
         
-        // Ensure data structure is correct, use defaults if API is missing fields
         setData({
           totalPendingFine: res.data?.totalPendingFine || 0,
           totalRevenue: res.data?.totalRevenue || 0,
           estimatedRevenue: res.data?.estimatedRevenue || 0,
           showsThisMonth: res.data?.showsThisMonth || 0,
           totalMembers: res.data?.totalMembers || 0,
-          upcomingShows: res.data?.upcomingShows || [], // Protect upcomingShows array
+          upcomingShows: res.data?.upcomingShows || [], 
           nextRehearsal: res.data?.nextRehearsal || null
         });
       } catch (error) {
@@ -44,7 +43,6 @@ const Dashboard = () => {
     fetchData();
   }, []);
 
-  // Currency formatter
   const fmt = (num) => (num || 0).toLocaleString('vi-VN') + 'đ';
 
   return (
@@ -136,10 +134,14 @@ const Dashboard = () => {
             </div>
 
             <div className="space-y-4">
-              {/* Optional Chaining and safe length check */}
               {(data.upcomingShows?.length || 0) > 0 ? (
                 data.upcomingShows.map((show) => (
-                  <div key={show._id} className="group flex flex-col md:flex-row items-center gap-6 bg-white p-5 rounded-2xl border border-gray-100 hover:border-pink-200 hover:shadow-lg hover:shadow-pink-100 transition-all">
+                  // 👇 THAY ĐỔI Ở ĐÂY: Dùng Link thay cho div để bấm được
+                  <Link 
+                    to={`/bookings/${show._id}`} 
+                    key={show._id} 
+                    className="group flex flex-col md:flex-row items-center gap-6 bg-white p-5 rounded-2xl border border-gray-100 hover:border-pink-200 hover:shadow-lg hover:shadow-pink-100 transition-all cursor-pointer block"
+                  >
                     <div className="flex-shrink-0 w-full md:w-20 h-20 bg-pink-50 text-pink-600 rounded-2xl flex flex-col items-center justify-center border border-pink-100 group-hover:bg-pink-600 group-hover:text-white transition">
                       <span className="text-xs font-bold uppercase">Tháng {new Date(show.date).getMonth() + 1}</span>
                       <span className="text-2xl font-black">{new Date(show.date).getDate()}</span>
@@ -155,7 +157,7 @@ const Dashboard = () => {
                     <div className="px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-gray-100 text-gray-500 group-hover:bg-pink-100 group-hover:text-pink-600 transition">
                       {show.status === 'confirmed' ? 'Đã chốt' : 'Đang chờ'}
                     </div>
-                  </div>
+                  </Link>
                 ))
               ) : (
                 <div className="text-center py-12 bg-white rounded-2xl border-2 border-dashed border-gray-200">

@@ -11,17 +11,22 @@ const showSchema = new mongoose.Schema({
   deposit: { type: Number, default: 0 },
   status: { type: String, enum: ['pending', 'confirmed', 'completed', 'cancelled'], default: 'pending' },
   notes: { type: String },
+  isRegistrationClosed: { type: Boolean, default: false },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 
-  // 👇 THÊM: Cờ khóa đăng ký (Chốt sổ thành viên)
-  isRegistrationClosed: { type: Boolean, default: false },
-
-  // 👇 SỬA: Thêm trạng thái duyệt cho từng người
   participants: [{
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     role: { type: String, default: 'Thành viên' },
-    status: { type: String, enum: ['pending', 'approved'], default: 'pending' }, // pending: Chờ duyệt, approved: Đã duyệt
+    status: { type: String, enum: ['pending', 'approved'], default: 'pending' },
     joinedAt: { type: Date, default: Date.now }
+  }],
+
+  // 👇 THÊM ĐOẠN NÀY: Danh sách bài hát (Setlist)
+  setlist: [{
+    title: { type: String, required: true }, // Tên bài
+    link: { type: String }, // Link beat/sheet (Drive/Youtube)
+    note: { type: String }, // Ghi chú (Tone, điệu...)
+    addedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
   }]
 
 }, { timestamps: true });

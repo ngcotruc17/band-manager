@@ -19,4 +19,7 @@ router.put('/:id/toggle-registration', protect, admin, controller.toggleRegistra
 
 router.put('/:id', protect, admin, controller.updateShow);
 
+router.post('/:id/setlist', protect, controller.addSongToSetlist); // Thêm nhạc
+router.delete('/:id/setlist/:songId', protect, controller.removeSongFromSetlist); // Xóa nhạc
+
 module.exports = router;

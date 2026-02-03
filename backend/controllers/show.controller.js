@@ -147,3 +147,43 @@ exports.updateShow = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// 11. Thêm bài hát vào Setlist
+exports.addSongToSetlist = async (req, res) => {
+  try {
+    const show = await Show.findById(req.params.id);
+    if (!show) return res.status(404).json({ message: "Không tìm thấy show" });
+
+    const { title, link, note } = req.body;
+    
+    // Thêm vào mảng setlist
+    show.setlist.push({ 
+      title, 
+      link, 
+      note,
+      addedBy: req.user.id 
+    });
+
+    await show.save();
+    
+    // Populate để trả về đầy đủ thông tin (nếu cần hiển thị người up)
+    await show.populate('setlist.addedBy', 'fullName');
+    
+    res.json(show.setlist);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// 12. Xóa bài hát khỏi Setlist
+exports.removeSongFromSetlist = async (req, res) => {
+  try {
+    const show = await Show.findById(req.params.id);
+    // Lọc bỏ bài hát có _id tương ứng
+    show.setlist = show.setlist.filter(item => item._id.toString() !== req.params.songId);
+    await show.save();
+    res.json(show.setlist);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
