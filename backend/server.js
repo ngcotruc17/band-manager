@@ -51,7 +51,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/comments', require('./routes/comment.routes'));
 app.use('/api/library', require('./routes/library.routes'));
 app.use('/api/shows', require('./routes/show.routes'));
-app.use('/api/songs', require('./routes/song.routes')); // (Nếu bạn dùng file riêng)
+app.use('/api/library', require('./routes/library.routes'));
 
 // Routes cho file upload
 const PORT = process.env.PORT || 5000;
