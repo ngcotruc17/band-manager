@@ -184,5 +184,5 @@ const Register = () => {
     </div>
   );
 };
-import { FileText } from "lucide-react"; // Đừng quên import icon này nếu chưa có
+import { FileText } from "lucide-react";
 export default Register;
