@@ -52,6 +52,7 @@ app.use('/api/comments', require('./routes/comment.routes'));
 app.use('/api/library', require('./routes/library.routes'));
 app.use('/api/shows', require('./routes/show.routes'));
 app.use('/api/songs', require('./routes/song.routes')); // (Nếu bạn dùng file riêng)
-  
+
+// Routes cho file upload
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server đang chạy tại port ${PORT}`));
