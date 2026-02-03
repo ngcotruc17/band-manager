@@ -4,7 +4,7 @@ import { AuthContext } from "../context/AuthContext";
 import { 
   Calendar, MapPin, User, Phone, DollarSign, 
   Plus, Search, CheckCircle, Clock, XCircle, Music, FileText, Loader,
-  Lock, Unlock, PlayCircle, Check, Edit
+  Lock, Unlock, PlayCircle, Check, Edit, Trash2
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
@@ -48,7 +48,7 @@ const BookingManager = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // 2. Mở Modal để SỬA (ĐÃ FIX LỖI NULL)
+  // 2. Mở Modal để SỬA
   const handleEditClick = (e, item) => {
     e.preventDefault(); 
     e.stopPropagation();
@@ -59,13 +59,13 @@ const BookingManager = () => {
     setFormData({
       title: item.title || "", 
       customerName: item.customerName || "",
-      phone: item.phone || "", // Chống null
+      phone: item.phone || "",
       date: formattedDate,
       time: item.time || "",
       location: item.location || "",
       price: item.price || 0,
       deposit: item.deposit || 0,
-      notes: item.notes || "" // Chống null
+      notes: item.notes || ""
     });
     setShowModal(true);
   };
@@ -101,7 +101,7 @@ const BookingManager = () => {
 
   const handleDelete = async (e, id) => {
     e.preventDefault(); e.stopPropagation();
-    if(!window.confirm("Bạn chắc chắn muốn xóa show này?")) return;
+    if(!window.confirm("Bạn chắc chắn muốn xóa show này? Hành động không thể hoàn tác!")) return;
     try { await axios.delete(`${API_URL}/${id}`, getHeaders()); toast.success("Đã xóa"); fetchBookings(); } catch (err) { toast.error("Lỗi xóa"); }
   };
 
@@ -235,19 +235,20 @@ const BookingManager = () => {
               {user?.role === 'admin' && (
                 <div className="bg-gray-50 border-t border-gray-100 p-3 flex justify-end gap-3 items-center">
                    
+                   {/* 👇 NÚT SỬA & XÓA (Luôn hiện để admin thao tác) */}
                    <button onClick={(e) => handleEditClick(e, item)} className="text-xs font-bold text-gray-600 bg-white border border-gray-300 px-3 py-2 rounded-lg hover:bg-gray-100 shadow-sm flex items-center gap-1">
                       <Edit size={14}/> Sửa
                    </button>
+                   
+                   <button onClick={(e) => handleDelete(e, item._id)} className="text-xs font-bold text-red-600 bg-white border border-red-200 px-3 py-2 rounded-lg hover:bg-red-50 shadow-sm flex items-center gap-1">
+                      <Trash2 size={14}/> Xóa
+                   </button>
 
+                   {/* NHÓM NÚT TRẠNG THÁI */}
                    {item.status === 'pending' && (
-                     <>
                         <button onClick={(e) => updateStatus(e, item._id, 'confirmed')} className="text-xs font-bold text-white bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700 shadow-sm flex items-center gap-1">
                            <PlayCircle size={14}/> Duyệt & Mở Đăng Ký
                         </button>
-                        <button onClick={(e) => handleDelete(e, item._id)} className="text-xs font-bold text-red-600 bg-white border border-red-200 px-3 py-2 rounded-lg hover:bg-red-50">
-                           Xóa
-                        </button>
-                     </>
                    )}
 
                    {item.status === 'confirmed' && (
