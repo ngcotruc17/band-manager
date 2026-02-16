@@ -1,4 +1,7 @@
 const Show = require('../models/Show');
+const User = require('../models/User'); 
+// 👇 Import bộ gửi mail vừa tạo
+const { sendNewShowEmail, sendApproveEmail } = require('../utils/sendEmail'); 
 
 // 1. Lấy danh sách Show (Mới nhất lên đầu)
 exports.getShows = async (req, res) => {
@@ -38,8 +41,20 @@ exports.deleteShow = async (req, res) => {
 exports.updateShowStatus = async (req, res) => {
   try {
     const { status } = req.body;
-    const show = await Show.findByIdAndUpdate(req.params.id, { status }, { new: true });
-    res.json(show);
+    
+    // Lấy show cũ để so sánh trạng thái
+    const oldShow = await Show.findById(req.params.id);
+    if (!oldShow) return res.status(404).json({ message: "Không tìm thấy show" });
+
+    const updatedShow = await Show.findByIdAndUpdate(req.params.id, { status }, { new: true });
+
+    // 👇 LOGIC GỬI MAIL: Nếu chuyển từ 'pending' -> 'confirmed' (Admin duyệt show)
+    if (oldShow.status === 'pending' && status === 'confirmed') {
+        // Chạy bất đồng bộ (không dùng await) để server phản hồi nhanh, mail gửi ngầm
+        sendNewShowEmail(updatedShow).catch(err => console.error(err));
+    }
+
+    res.json(updatedShow);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -48,7 +63,6 @@ exports.updateShowStatus = async (req, res) => {
 // 5. Lấy chi tiết 1 Show
 exports.getShowById = async (req, res) => {
   try {
-    // 👇 QUAN TRỌNG: Dòng này biến ID thành thông tin User (Lấy tên và email)
     const show = await Show.findById(req.params.id)
       .populate('participants.user', 'fullName email'); 
 
@@ -59,7 +73,7 @@ exports.getShowById = async (req, res) => {
   }
 };
 
-// 6. Đăng ký / Hủy đăng ký (Logic mới)
+// 6. Đăng ký / Hủy đăng ký
 exports.joinShow = async (req, res) => {
   try {
     const show = await Show.findById(req.params.id);
@@ -76,7 +90,7 @@ exports.joinShow = async (req, res) => {
     }
 
     if (isJoined) {
-      // Hủy đăng ký (Rời show)
+      // Hủy đăng ký
       show.participants = show.participants.filter(p => p.user.toString() !== req.user.id);
       await show.save();
       return res.json({ message: "Đã hủy đăng ký" });
@@ -91,7 +105,7 @@ exports.joinShow = async (req, res) => {
   }
 };
 
-// 7. Duyệt thành viên (Chỉ Admin)
+// 7. Duyệt thành viên (Chỉ Admin) -> CÓ GỬI MAIL
 exports.approveParticipant = async (req, res) => {
   try {
     const show = await Show.findById(req.params.id);
@@ -100,9 +114,17 @@ exports.approveParticipant = async (req, res) => {
     if (participant) {
       participant.status = 'approved'; // Chuyển sang chính thức
       await show.save();
+
+      // 👇 LOGIC GỬI MAIL: Báo user đã được duyệt
+      // Tìm thông tin user để lấy email
+      const user = await User.findById(req.body.userId);
+      if (user && user.email) {
+          sendApproveEmail(user.email, show.title, user.fullName).catch(err => console.error(err));
+      }
+
       res.json({ message: "Đã duyệt thành viên" });
     } else {
-      res.status(404).json({ message: "Không tìm thấy thành viên" });
+      res.status(404).json({ message: "Không tìm thấy thành viên trong danh sách đăng ký" });
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -139,7 +161,7 @@ exports.updateShow = async (req, res) => {
     const updatedShow = await Show.findByIdAndUpdate(
       req.params.id, 
       req.body, 
-      { new: true } // Trả về dữ liệu mới sau khi sửa
+      { new: true } 
     );
     if (!updatedShow) return res.status(404).json({ message: "Không tìm thấy show" });
     res.json(updatedShow);
@@ -165,8 +187,6 @@ exports.addSongToSetlist = async (req, res) => {
     });
 
     await show.save();
-    
-    // Populate để trả về đầy đủ thông tin (nếu cần hiển thị người up)
     await show.populate('setlist.addedBy', 'fullName');
     
     res.json(show.setlist);
