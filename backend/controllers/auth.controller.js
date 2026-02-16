@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs'); // Import thêm để dùng nếu cần, dù model đã handle
 
 // Hàm tạo Token
 const generateToken = (id) => {
@@ -8,39 +9,30 @@ const generateToken = (id) => {
   });
 };
 
-// 1. Đăng ký
+// 1. Đăng ký (CẬP NHẬT: Thêm email, phone)
 exports.register = async (req, res) => {
   try {
-    const fullName = req.body.fullName || req.body.fullname || req.body.name;
-    let username = req.body.username || req.body.user || req.body.email;
-    let email = req.body.email;
-    const password = req.body.password || req.body.pass;
+    // Lấy dữ liệu từ body (đã clean code hơn)
+    const { fullName, username, password, email, phone } = req.body;
 
-    if (email && !email.includes('@')) {
-        username = email; 
-        email = undefined; 
-    }
-    if (email && !username) {
-        username = email.split('@')[0];
+    if (!fullName || !username || !password) {
+      return res.status(400).json({ message: "Vui lòng nhập đủ: Họ tên, Username, Mật khẩu" });
     }
 
-    if (!fullName || (!username && !email) || !password) {
-      return res.status(400).json({ message: "Vui lòng nhập đủ thông tin" });
-    }
-
-    const query = [];
-    if (username) query.push({ username });
+    // Kiểm tra trùng lặp (Username HOẶC Email)
+    const query = [{ username }];
     if (email) query.push({ email });
     
     const userExists = await User.findOne({ $or: query });
     if (userExists) {
-      return res.status(400).json({ message: "Tài khoản hoặc Email đã tồn tại!" });
+      return res.status(400).json({ message: "Tên đăng nhập hoặc Email đã tồn tại!" });
     }
 
     const user = await User.create({
       fullName,
       username,
-      email, 
+      email: email || undefined, // Nếu rỗng thì để undefined để tránh lỗi unique
+      phone: phone || "",
       password 
     });
     
@@ -62,28 +54,26 @@ exports.register = async (req, res) => {
   }
 };
 
-// 2. Đăng Nhập (ĐÃ FIX LOGIC: Dùng dấu !)
+// 2. Đăng Nhập (CẬP NHẬT: Tìm bằng Username HOẶC Email)
 exports.login = async (req, res) => {
   try {
-    const { username, password } = req.body; 
+    const { username, password } = req.body; // 'username' ở đây là input người dùng nhập (có thể là email)
 
+    // Tìm user có username TRÙNG hoặc email TRÙNG với input
     const user = await User.findOne({
        $or: [{ username: username }, { email: username }]
     });
 
-    if (!user) return res.status(400).json({ message: "Sai tên đăng nhập hoặc mật khẩu" });
+    if (!user) return res.status(400).json({ message: "Sai tên đăng nhập/Email hoặc mật khẩu" });
 
-    // 👇 SỬA QUAN TRỌNG: Dùng !user.isApproved để bắt cả false và undefined
     if (!user.isApproved && user.role !== 'admin') {
         return res.status(403).json({ message: "Tài khoản chưa được duyệt! Vui lòng liên hệ Admin." });
     }
 
-    // const isMatch = await bcrypt.compare(password, user.password); 
     const isMatch = await user.matchPassword(password); 
+    if (!isMatch) return res.status(400).json({ message: "Sai tên đăng nhập/Email hoặc mật khẩu" });
 
-    if (!isMatch) return res.status(400).json({ message: "Sai tên đăng nhập hoặc mật khẩu" });
-
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+    const token = generateToken(user._id);
 
     res.json({
       _id: user._id,
@@ -119,7 +109,7 @@ exports.adminCreateUser = async (req, res) => {
         instrument: instrument || 'Chưa phân công',
         mustChangePassword: true,
         status: 'active',
-        isApproved: true // Admin tạo thì duyệt luôn
+        isApproved: true 
     });
 
     await user.save();
@@ -166,7 +156,7 @@ exports.resetUserPassword = async (req, res) => {
 
     user.password = "123456"; 
     user.mustChangePassword = true; 
-    user.isApproved = true; // 👇 Đảm bảo luôn duyệt khi reset
+    user.isApproved = true; 
 
     await user.save(); 
     res.json({ message: `Đã reset mật khẩu của ${user.fullName} về 123456 thành công!` });

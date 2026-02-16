@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const { protect } = require('../middleware/auth');
+const { updateProfile } = require('../controllers/user.controller'); // 👇 Import Controller mới
 
 // Middleware chỉ cho Admin
 const adminOnly = (req, res, next) => {
@@ -12,7 +13,11 @@ const adminOnly = (req, res, next) => {
   }
 };
 
-// 1. Lấy danh sách thành viên
+// 👇 0. Route Cập nhật Profile (Dành cho mọi User đã đăng nhập)
+// Đặt cái này LÊN TRÊN CÙNG để không bị nhầm 'profile' là ':id'
+router.put('/profile', protect, updateProfile);
+
+// 1. Lấy danh sách thành viên (Admin)
 router.get('/', protect, adminOnly, async (req, res) => {
   try {
     const users = await User.find().select('-password').sort({ status: -1, createdAt: -1 });
@@ -20,7 +25,7 @@ router.get('/', protect, adminOnly, async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
-// 2. Cập nhật thành viên
+// 2. Cập nhật thành viên (Admin sửa người khác)
 router.put('/:id', protect, adminOnly, async (req, res) => {
   try {
     const { status, role, instrument } = req.body;
@@ -29,7 +34,7 @@ router.put('/:id', protect, adminOnly, async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
-// 3. Xóa thành viên
+// 3. Xóa thành viên (Admin)
 router.delete('/:id', protect, adminOnly, async (req, res) => {
   try {
     await User.findByIdAndDelete(req.params.id);
@@ -37,5 +42,4 @@ router.delete('/:id', protect, adminOnly, async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
-// 🔥 QUAN TRỌNG NHẤT: PHẢI CÓ DÒNG NÀY Ở CUỐI 🔥
 module.exports = router;

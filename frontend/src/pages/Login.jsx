@@ -16,21 +16,17 @@ const Login = () => {
     const toastId = toast.loading("Đang kết nối tới server...");
 
     try {
-      // 1. Gọi hàm login và HỨNG LẤY KẾT QUẢ TRẢ VỀ (res.data từ AuthContext)
       const userData = await login(formData);
 
       toast.success("Chào mừng trở lại! 🎉", { id: toastId });
 
-      // 2. 👇👇👇 KIỂM TRA NGAY LẬP TỨC TẠI ĐÂY 👇👇👇
-      // Nếu Backend bảo "Phải đổi mật khẩu" -> Đá sang trang change-password NGAY
       if (userData && userData.mustChangePassword) {
         navigate("/change-password");
       } else {
         navigate("/dashboard");
       }
     } catch (err) {
-      const msg =
-        err.response?.data?.message || "Lỗi kết nối hoặc sai thông tin! 😭";
+      const msg = err.response?.data?.message || "Lỗi kết nối hoặc sai thông tin! 😭";
       toast.error(msg, { id: toastId });
     } finally {
       setLoading(false);
@@ -64,9 +60,10 @@ const Login = () => {
               className="absolute left-4 top-3.5 text-gray-400 group-focus-within:text-blue-600 transition"
               size={20}
             />
+            {/* CẬP NHẬT PLACEHOLDER */}
             <input
               type="text"
-              placeholder="Tên đăng nhập"
+              placeholder="Tên đăng nhập hoặc Email"
               className="w-full pl-12 pr-4 py-3.5 bg-gray-50/50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition shadow-sm font-medium"
               onChange={(e) =>
                 setFormData({ ...formData, username: e.target.value })
