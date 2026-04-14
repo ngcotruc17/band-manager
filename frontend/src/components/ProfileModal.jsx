@@ -1,18 +1,12 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
-import { X, User, Mail, Phone, Music, Save } from "lucide-react";
+import api from "../services/api";
+import { X, User, Mail, Phone, Music, Save, Camera } from "lucide-react";
 import toast from "react-hot-toast";
 
 const ProfileModal = ({ user, onClose, onUpdateSuccess }) => {
-  const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-    phone: "",
-    instrument: ""
-  });
+  const [formData, setFormData] = useState({ fullName: "", email: "", phone: "", instrument: "" });
   const [loading, setLoading] = useState(false);
 
-  // Điền dữ liệu cũ vào form
   useEffect(() => {
     if (user) {
       setFormData({
@@ -24,23 +18,14 @@ const ProfileModal = ({ user, onClose, onUpdateSuccess }) => {
     }
   }, [user]);
 
-  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      // Gọi API cập nhật
-      const res = await axios.put(
-        "https://band-manager-s9tm.onrender.com/api/users/profile", 
-        formData,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      
-      toast.success("Cập nhật hồ sơ thành công!");
-      onUpdateSuccess(res.data); // Báo cho Navbar biết để cập nhật giao diện
-      onClose(); // Đóng modal
+      const res = await api.put("/users/profile", formData);
+      toast.success("Hồ sơ đã được cập nhật! ✨");
+      onUpdateSuccess(res.data);
+      onClose();
     } catch (err) {
       toast.error(err.response?.data?.message || "Lỗi cập nhật");
     } finally {
@@ -49,60 +34,53 @@ const ProfileModal = ({ user, onClose, onUpdateSuccess }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
-      <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-scale-up">
-        
-        {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4 flex justify-between items-center text-white">
-          <h3 className="font-bold text-lg flex items-center gap-2">
-            <User size={20}/> Cập nhật Hồ Sơ
-          </h3>
-          <button onClick={onClose} className="hover:bg-white/20 p-1 rounded-full transition">
-            <X size={20}/>
-          </button>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+      <div className="bg-white rounded-[40px] w-full max-w-md shadow-2xl overflow-hidden animate-slide-up">
+        <div className="relative h-32 bg-gradient-to-r from-violet-600 to-fuchsia-600">
+           <button onClick={onClose} className="absolute top-6 right-6 p-2 bg-white/20 hover:bg-white/40 rounded-full text-white transition"><X size={20}/></button>
+           <div className="absolute -bottom-12 left-1/2 -translate-x-1/2">
+              <div className="relative group">
+                <div className="w-24 h-24 rounded-[32px] bg-white p-1.5 shadow-xl">
+                   <div className="w-full h-full rounded-[26px] bg-slate-100 flex items-center justify-center text-3xl font-black text-violet-600">
+                      {user?.fullName?.charAt(0)}
+                   </div>
+                </div>
+              </div>
+           </div>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          
-          <div>
-            <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Họ và Tên</label>
-            <div className="relative">
-              <User className="absolute left-3 top-3 text-gray-400" size={18}/>
-              <input name="fullName" value={formData.fullName} onChange={handleChange} type="text" className="w-full pl-10 p-2.5 border rounded-xl focus:ring-2 ring-purple-500 outline-none bg-gray-50 transition" placeholder="Nhập họ tên..." required />
+        <form onSubmit={handleSubmit} className="p-8 pt-16 space-y-5">
+          <div className="text-center mb-6">
+            <h3 className="text-xl font-black text-slate-800">Cài đặt hồ sơ</h3>
+            <p className="text-sm text-slate-500 font-medium">Cập nhật thông tin để band liên lạc dễ hơn</p>
+          </div>
+
+          <div className="space-y-4">
+            <div className="relative group">
+              <User className="absolute left-4 top-3.5 text-slate-400 group-focus-within:text-violet-500 transition" size={18}/>
+              <input value={formData.fullName} onChange={e => setFormData({...formData, fullName: e.target.value})} className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 ring-violet-500 outline-none font-bold text-slate-800 transition" placeholder="Họ và tên..."/>
+            </div>
+
+            <div className="relative group">
+              <Mail className="absolute left-4 top-3.5 text-slate-400 group-focus-within:text-violet-500 transition" size={18}/>
+              <input value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 ring-violet-500 outline-none font-bold text-slate-800 transition" placeholder="Email nhận thông báo..."/>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+               <div className="relative group">
+                  <Phone className="absolute left-4 top-3.5 text-slate-400 group-focus-within:text-violet-500 transition" size={18}/>
+                  <input value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 ring-violet-500 outline-none font-bold text-slate-800 transition text-sm" placeholder="SĐT..."/>
+               </div>
+               <div className="relative group">
+                  <Music className="absolute left-4 top-3.5 text-slate-400 group-focus-within:text-violet-500 transition" size={18}/>
+                  <input value={formData.instrument} onChange={e => setFormData({...formData, instrument: e.target.value})} className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 ring-violet-500 outline-none font-bold text-slate-800 transition text-sm" placeholder="Nhạc cụ..."/>
+               </div>
             </div>
           </div>
 
-          <div>
-            <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Email (Quan trọng)</label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-3 text-gray-400" size={18}/>
-              <input name="email" value={formData.email} onChange={handleChange} type="email" className="w-full pl-10 p-2.5 border rounded-xl focus:ring-2 ring-purple-500 outline-none bg-gray-50 transition" placeholder="email@example.com" />
-            </div>
-          </div>
-
-          <div>
-            <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Số điện thoại</label>
-            <div className="relative">
-              <Phone className="absolute left-3 top-3 text-gray-400" size={18}/>
-              <input name="phone" value={formData.phone} onChange={handleChange} type="text" className="w-full pl-10 p-2.5 border rounded-xl focus:ring-2 ring-purple-500 outline-none bg-gray-50 transition" placeholder="090..." />
-            </div>
-          </div>
-
-          <div>
-            <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Nhạc cụ / Vai trò</label>
-            <div className="relative">
-              <Music className="absolute left-3 top-3 text-gray-400" size={18}/>
-              <input name="instrument" value={formData.instrument} onChange={handleChange} type="text" className="w-full pl-10 p-2.5 border rounded-xl focus:ring-2 ring-purple-500 outline-none bg-gray-50 transition" placeholder="Guitar, Drum, Vocal..." />
-            </div>
-          </div>
-
-          <div className="pt-2">
-            <button disabled={loading} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-blue-200 transition active:scale-95">
-              {loading ? "Đang lưu..." : <><Save size={18}/> Lưu Thay Đổi</>}
-            </button>
-          </div>
-
+          <button disabled={loading} className="w-full bg-slate-900 hover:bg-black text-white font-black py-4 rounded-2xl shadow-xl shadow-slate-200 transition transform active:scale-95 flex items-center justify-center gap-2 mt-4 uppercase tracking-widest text-xs">
+            {loading ? "Đang lưu..." : <><Save size={18}/> Lưu Thay Đổi</>}
+          </button>
         </form>
       </div>
     </div>

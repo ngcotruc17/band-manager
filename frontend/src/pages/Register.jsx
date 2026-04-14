@@ -3,25 +3,26 @@ import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import {
   UserPlus, Mail, Lock, User, X, ArrowDown, CheckSquare, Square,
-  AlertTriangle, Clock, DollarSign, Music, Phone, FileText
+  AlertTriangle, Clock, DollarSign, Music, Phone, FileText, ArrowRight, Sparkles,
+  Shield, LogOut // 👈 Thêm 2 icon này vào
 } from "lucide-react";
+import toast from "react-hot-toast";
 
 const Register = () => {
   // --- STATE ---
-  const [formData, setFormData] = useState({ 
-    fullName: "", 
-    username: "", // Thêm username
-    email: "", 
-    phone: "",    // Thêm phone
-    password: "", 
-    confirmPassword: "" 
+  const [formData, setFormData] = useState({
+    fullName: "",
+    username: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: ""
   });
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [canCheck, setCanCheck] = useState(false);
   const [agreed, setAgreed] = useState(false);
-  
+
   const termsBodyRef = useRef(null);
   const navigate = useNavigate();
 
@@ -29,9 +30,8 @@ const Register = () => {
 
   const handleInitialSubmit = (e) => {
     e.preventDefault();
-    setError("");
-    if (formData.password !== formData.confirmPassword) return setError("Mật khẩu nhập lại không khớp");
-    if (formData.password.length < 6) return setError("Mật khẩu phải hơn 6 ký tự");
+    if (formData.password !== formData.confirmPassword) return toast.error("Mật khẩu nhập lại không khớp");
+    if (formData.password.length < 6) return toast.error("Mật khẩu phải từ 6 ký tự trở lên");
 
     setShowTerms(true);
     setCanCheck(false);
@@ -49,17 +49,19 @@ const Register = () => {
   const handleFinalRegister = async () => {
     if (!agreed) return;
     setLoading(true);
+    const toastId = toast.loading("Đang khởi tạo tài khoản...");
     try {
       await axios.post("https://band-manager-s9tm.onrender.com/api/auth/register", {
         fullName: formData.fullName,
-        username: formData.username, // Gửi username
-        email: formData.email,       // Gửi email
-        phone: formData.phone,       // Gửi phone
+        username: formData.username,
+        email: formData.email,
+        phone: formData.phone,
         password: formData.password,
       });
-      navigate("/login", { state: { message: "🎉 Đăng ký thành công! Vui lòng chờ Admin duyệt.", type: "success" } });
+      toast.success("Đăng ký thành công! Vui lòng chờ Admin duyệt nhé. 🎸", { id: toastId });
+      navigate("/login");
     } catch (err) {
-      setError(err.response?.data?.message || "Lỗi đăng ký");
+      toast.error(err.response?.data?.message || "Lỗi đăng ký", { id: toastId });
       setShowTerms(false);
     } finally {
       setLoading(false);
@@ -67,104 +69,174 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4 relative">
-      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-slate-900 font-sans">
+      {/* Background Blobs (Đồng bộ với Login) */}
+      <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-blue-600 rounded-full mix-blend-screen filter blur-[100px] opacity-40 animate-blob"></div>
+      <div className="absolute bottom-[-10%] left-[-10%] w-96 h-96 bg-violet-600 rounded-full mix-blend-screen filter blur-[100px] opacity-40 animate-blob animation-delay-2000"></div>
+
+      {/* Box Đăng ký */}
+      <div className="relative w-full max-w-lg glass-dark rounded-[32px] p-8 sm:p-10 z-10 animate-fade-in my-10">
         <div className="text-center mb-8">
-          <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-            <UserPlus size={32} className="text-green-600" />
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-500 to-violet-500 text-white shadow-lg mb-4">
+            <UserPlus size={28} />
           </div>
-          <h2 className="text-3xl font-bold text-gray-800">Tạo tài khoản</h2>
-          <p className="text-gray-500">Tham gia hệ thống quản lý Sắc Band</p>
+          <h2 className="text-3xl font-black text-white tracking-tight">Gia Nhập Sắc Band</h2>
+          <p className="text-slate-400 text-sm mt-2 font-medium">Bắt đầu hành trình âm nhạc chuyên nghiệp</p>
         </div>
 
-        {error && <div className="bg-red-100 text-red-700 p-3 rounded-lg mb-4 text-sm font-medium text-center">{error}</div>}
-
         <form onSubmit={handleInitialSubmit} className="space-y-4">
-          <div className="relative"><User className="absolute left-3 top-3 text-gray-400" size={20} /><input name="fullName" type="text" placeholder="Họ và tên hiển thị" className="w-full pl-10 p-3 border rounded-xl focus:ring-2 ring-green-500 outline-none" onChange={handleChange} required /></div>
-          
-          {/* USERNAME */}
-          <div className="relative"><UserPlus className="absolute left-3 top-3 text-gray-400" size={20} /><input name="username" type="text" placeholder="Tên đăng nhập (viết liền)" className="w-full pl-10 p-3 border rounded-xl focus:ring-2 ring-green-500 outline-none" onChange={handleChange} required /></div>
-          
-          {/* EMAIL */}
-          <div className="relative"><Mail className="absolute left-3 top-3 text-gray-400" size={20} /><input name="email" type="email" placeholder="Email (để nhận thông báo)" className="w-full pl-10 p-3 border rounded-xl focus:ring-2 ring-green-500 outline-none" onChange={handleChange} required /></div>
-          
-          {/* PHONE */}
-          <div className="relative"><Phone className="absolute left-3 top-3 text-gray-400" size={20} /><input name="phone" type="text" placeholder="Số điện thoại" className="w-full pl-10 p-3 border rounded-xl focus:ring-2 ring-green-500 outline-none" onChange={handleChange} required /></div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="relative group">
+              <User className="absolute left-4 top-3.5 text-slate-500 group-focus-within:text-blue-400 transition" size={18} />
+              <input name="fullName" placeholder="Họ và tên" className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-2 ring-blue-500/50 text-white transition text-sm" onChange={handleChange} required />
+            </div>
+            <div className="relative group">
+              <Music className="absolute left-4 top-3.5 text-slate-500 group-focus-within:text-blue-400 transition" size={18} />
+              <input name="username" placeholder="Tên đăng nhập" className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-2 ring-blue-500/50 text-white transition text-sm" onChange={handleChange} required />
+            </div>
+          </div>
 
-          <div className="relative"><Lock className="absolute left-3 top-3 text-gray-400" size={20} /><input name="password" type="password" placeholder="Mật khẩu" className="w-full pl-10 p-3 border rounded-xl focus:ring-2 ring-green-500 outline-none" onChange={handleChange} required /></div>
-          <div className="relative"><Lock className="absolute left-3 top-3 text-gray-400" size={20} /><input name="confirmPassword" type="password" placeholder="Nhập lại mật khẩu" className="w-full pl-10 p-3 border rounded-xl focus:ring-2 ring-green-500 outline-none" onChange={handleChange} required /></div>
-          
-          <button disabled={loading} className="w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 transition shadow-lg shadow-green-200">Tiếp tục</button>
+          <div className="relative group">
+            <Mail className="absolute left-4 top-3.5 text-slate-500 group-focus-within:text-blue-400 transition" size={18} />
+            <input name="email" type="email" placeholder="Địa chỉ Email" className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-2 ring-blue-500/50 text-white transition text-sm" onChange={handleChange} required />
+          </div>
+
+          <div className="relative group">
+            <Phone className="absolute left-4 top-3.5 text-slate-500 group-focus-within:text-blue-400 transition" size={18} />
+            <input name="phone" placeholder="Số điện thoại" className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-2 ring-blue-500/50 text-white transition text-sm" onChange={handleChange} required />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="relative group">
+              <Lock className="absolute left-4 top-3.5 text-slate-500 group-focus-within:text-blue-400 transition" size={18} />
+              <input name="password" type="password" placeholder="Mật khẩu" className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-2 ring-blue-500/50 text-white transition text-sm" onChange={handleChange} required />
+            </div>
+            <div className="relative group">
+              <Lock className="absolute left-4 top-3.5 text-slate-500 group-focus-within:text-blue-400 transition" size={18} />
+              <input name="confirmPassword" type="password" placeholder="Nhập lại" className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-2 ring-blue-500/50 text-white transition text-sm" onChange={handleChange} required />
+            </div>
+          </div>
+
+          <button className="w-full bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-black py-4 rounded-xl shadow-xl shadow-blue-900/20 transform active:scale-95 transition-all flex items-center justify-center gap-2 mt-4 tracking-widest text-xs">
+            TIẾP TỤC <ArrowRight size={18} />
+          </button>
         </form>
-        <p className="text-center mt-6 text-gray-600">Đã có tài khoản? <Link to="/login" className="text-green-600 font-bold hover:underline">Đăng nhập</Link></p>
+
+        <p className="text-center mt-8 text-slate-500 text-sm font-medium">
+          Đã có tài khoản? <Link to="/login" className="text-blue-400 font-bold hover:text-blue-300 transition underline underline-offset-4">Đăng nhập ngay</Link>
+        </p>
       </div>
 
-      {/* --- MODAL ĐIỀU KHOẢN (GIỮ NGUYÊN CODE CŨ CỦA BẠN) --- */}
+      {/* --- MODAL ĐIỀU KHOẢN (DESIGN MỚI) --- */}
       {showTerms && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col shadow-2xl animate-scale-up">
-            <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-              <h3 className="font-bold text-xl text-gray-800 flex items-center gap-2"><FileText size={20}/> Quy Định Thành Viên</h3>
-              <button onClick={() => setShowTerms(false)} className="text-gray-400 hover:text-red-500 transition"><X size={24} /></button>
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[60] flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-slate-900 border border-white/10 rounded-[32px] max-w-xl w-full max-h-[85vh] overflow-hidden flex flex-col shadow-2xl animate-slide-up">
+            <div className="p-6 border-b border-white/5 flex justify-between items-center bg-white/5">
+              <h3 className="font-black text-xl text-white flex items-center gap-2">
+                <FileText size={24} className="text-blue-400" /> Quy Định Nội Bộ
+              </h3>
+              <button onClick={() => setShowTerms(false)} className="text-slate-500 hover:text-white transition bg-white/5 p-2 rounded-full"><X size={20} /></button>
             </div>
-            
-            <div ref={termsBodyRef} onScroll={handleScroll} className="p-6 overflow-y-auto space-y-6 text-sm text-gray-600 relative scroll-smooth bg-gray-50/50">
-              <div className="space-y-2">
-                <h4 className="font-bold text-gray-900 flex items-center gap-2"><AlertTriangle size={16} className="text-red-500"/> 1. Tài khoản & Bảo mật</h4>
-                <p>Thành viên có trách nhiệm tự bảo quản tài khoản. Không chia sẻ tài khoản cho người ngoài ban nhạc.</p>
-                <div className="bg-blue-50 p-3 rounded-lg border border-blue-200 text-blue-800 text-xs">
-                  <strong>⚠️ LƯU Ý QUAN TRỌNG:</strong><br/>
-                  Hệ thống <strong>KHÔNG</strong> hỗ trợ tự lấy lại mật khẩu qua Email.<br/>
-                  Nếu quên mật khẩu, vui lòng liên hệ trực tiếp <strong>Admin (Trưởng nhóm)</strong> để yêu cầu Reset.<br/>
-                  Mật khẩu mặc định sau khi reset là <code>123456</code>. Bạn bắt buộc phải reload trang sau khi đăng nhập bằng mật khẩu mặc định và đổi mật khẩu mới ngay lập tức.
-                </div>
+
+            <div ref={termsBodyRef} onScroll={handleScroll} className="p-8 overflow-y-auto space-y-8 text-slate-400 text-sm leading-relaxed scroll-smooth">
+
+              {/* 1. Tài khoản & Bảo mật */}
+              <div className="space-y-3">
+                <h4 className="font-bold text-white flex items-center gap-2 text-base">
+                  <Shield size={18} className="text-blue-400" /> 1. Bảo mật Hệ thống
+                </h4>
+                <p>Thành viên có trách nhiệm bảo mật tài khoản cá nhân. Tuyệt đối không cung cấp thông tin đăng nhập hoặc link nội bộ (Sheet nhạc, Beat, Lịch diễn) cho người ngoài ban nhạc. Mọi hành vi làm rò rỉ dữ liệu sẽ bị đình chỉ tư cách thành viên ngay lập tức.</p>
               </div>
-              <div className="space-y-2">
-                <h4 className="font-bold text-gray-900 flex items-center gap-2"><Clock size={16} className="text-orange-500"/> 2. Giờ giấc & Kỷ luật</h4>
-                <ul className="list-disc pl-5 space-y-1">
-                  <li><strong>Đi trễ tập:</strong> Trễ quá 15 phút không lý do chính đáng sẽ bị phạt <strong>50.000đ</strong> vào quỹ nhóm.</li>
-                  <li><strong>Đi trễ Show:</strong> Tuyệt đối cấm kỵ. Trễ show gây ảnh hưởng uy tín sẽ bị xem xét tư cách thành viên.</li>
-                  <li><strong>Vắng mặt:</strong> Phải thông báo trước ít nhất 24h (với lịch tập) và 7 ngày (với lịch diễn).</li>
+
+              {/* 2. Kỷ luật Giờ giấc */}
+              <div className="space-y-3">
+                <h4 className="font-bold text-white flex items-center gap-2 text-base">
+                  <Clock size={18} className="text-amber-500" /> 2. Kỷ luật Giờ giấc & Sự hiện diện
+                </h4>
+                <ul className="space-y-2 list-none">
+                  <li className="flex gap-2">
+                    <span className="text-amber-500 font-bold">●</span>
+                    <span><strong>Tập luyện:</strong> Có mặt trước giờ tập 10 phút để setup nhạc cụ. Trễ quá 15 phút không lý do chính đáng: phạt <strong>50.000đ</strong> vào quỹ nhóm.</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-amber-500 font-bold">●</span>
+                    <span><strong>Biểu diễn (Gigs):</strong> Tuyệt đối không được trễ. Có mặt ít nhất 45-60 phút trước giờ diễn để soundcheck.</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-amber-500 font-bold">●</span>
+                    <span><strong>Vắng mặt:</strong> Phải báo trước ít nhất 3 ngày (lịch tập) và 10 ngày (lịch diễn) để Admin tìm người thay thế (sub).</span>
+                  </li>
                 </ul>
               </div>
-              <div className="space-y-2">
-                <h4 className="font-bold text-gray-900 flex items-center gap-2"><Music size={16} className="text-purple-500"/> 3. Chuyên môn & Tập luyện</h4>
-                <ul className="list-disc pl-5 space-y-1">
-                  <li>Phải thuộc bài (cấu trúc, hợp âm, lời) <strong>TRƯỚC</strong> khi đến phòng tập.</li>
-                  <li>Phòng tập là nơi để ráp band, không phải nơi để tập cá nhân.</li>
-                  <li>Tôn trọng ý kiến đóng góp của Leader và các thành viên khác.</li>
+
+              {/* 3. Chuyên môn & Chất lượng */}
+              <div className="space-y-3">
+                <h4 className="font-bold text-white flex items-center gap-2 text-base">
+                  <Music size={18} className="text-fuchsia-400" /> 3. Chuẩn bị Chuyên môn
+                </h4>
+                <p>Phòng tập là nơi để **ráp Band**, không phải nơi để tập cá nhân. Thành viên bắt buộc phải thuộc lòng cấu trúc bài, hợp âm và nhịp phách dựa trên tài liệu trong Kho Nhạc trước khi đến buổi tập chính thức. Nếu không chuẩn bị bài gây ảnh hưởng tiến độ chung, Admin có quyền mời thành viên đó ra khỏi buổi tập.</p>
+              </div>
+
+              {/* 4. Tài chính & Quyền lợi */}
+              <div className="space-y-3">
+                <h4 className="font-bold text-white flex items-center gap-2 text-base">
+                  <DollarSign size={18} className="text-emerald-400" /> 4. Phân chia Cát-xê & Quỹ nhóm
+                </h4>
+                <ul className="space-y-2 list-none">
+                  <li className="flex gap-2">
+                    <span className="text-emerald-400 font-bold">●</span>
+                    <span><strong>Cát-xê:</strong> Được công khai minh bạch và thanh toán trong vòng 24h sau khi Show kết thúc hoặc nhận được tiền từ đối tác.</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-emerald-400 font-bold">●</span>
+                    <span><strong>Quỹ chung:</strong> Trích 10% từ mỗi Show diễn vào Quỹ Band để chi trả chi phí phòng tập, bảo trì thiết bị chung và vận hành hệ thống.</span>
+                  </li>
                 </ul>
               </div>
-              <div className="space-y-2">
-                <h4 className="font-bold text-gray-900 flex items-center gap-2"><DollarSign size={16} className="text-green-500"/> 4. Tài chính & Cát-xê</h4>
-                <ul className="list-disc pl-5 space-y-1">
-                  <li>Cát-xê được chia công khai, minh bạch sau mỗi show diễn hoặc tổng kết cuối tháng.</li>
-                  <li>Trích <strong>5-10%</strong> cát-xê vào quỹ chung (dùng để duy trì web, mua dây đàn, nước uống...).</li>
-                  <li>Thành viên làm hỏng thiết bị chung do sơ suất phải chịu trách nhiệm đền bù 100%.</li>
-                </ul>
+
+              {/* 5. Tác phong & Hình ảnh */}
+              <div className="space-y-3">
+                <h4 className="font-bold text-white flex items-center gap-2 text-base">
+                  <User size={18} className="text-violet-400" /> 5. Tác phong & Trang phục
+                </h4>
+                <p>Tuân thủ đúng Concept trang phục được yêu cầu cho từng Show diễn. Giữ thái độ hòa nhã, lịch sự với khách hàng và nhân viên tại điểm diễn để giữ uy tín cho Sắc Band.</p>
               </div>
-              <div className="space-y-2">
-                <h4 className="font-bold text-gray-900">5. Hình ảnh & Truyền thông</h4>
-                <p>Thành viên đồng ý cho phép Ban nhạc sử dụng hình ảnh khi biểu diễn để phục vụ mục đích quảng bá trên Fanpage/Website.</p>
+
+              {/* 6. Rời nhóm (Exit Policy) */}
+              <div className="space-y-3">
+                <h4 className="font-bold text-white flex items-center gap-2 text-base">
+                  <LogOut size={18} className="text-rose-500" /> 6. Quy định Rời nhóm
+                </h4>
+                <p>Thành viên muốn rời nhóm cần thông báo trước ít nhất **30 ngày** và có trách nhiệm hoàn thành nốt các Show diễn đã được chốt lịch trước đó. Bàn giao lại đầy đủ tài sản và các tài liệu chuyên môn thuộc sở hữu của Band.</p>
               </div>
-              <div className="space-y-2">
-                <h4 className="font-bold text-gray-900">6. Rời nhóm</h4>
-                <p>Thành viên muốn rời nhóm phải thông báo trước <strong>30 ngày</strong> và hoàn thành các show đã nhận lịch. Bàn giao đầy đủ tài sản, bài vở trước khi nghỉ.</p>
+
+              <div className="p-5 bg-gradient-to-r from-blue-500/10 to-violet-500/10 border border-blue-500/20 rounded-2xl text-blue-300 text-xs italic text-center leading-relaxed">
+                "Âm nhạc là cảm xúc, nhưng làm việc là kỷ luật. Bằng việc nhấn xác nhận, bạn cam kết cùng Sắc Band xây dựng một tập thể chuyên nghiệp và văn minh."
               </div>
-              <p className="italic text-gray-400 text-xs pt-4 text-center">Bằng việc nhấn "Đồng ý", bạn cam kết thực hiện nghiêm túc các quy định trên vì sự phát triển chung của Sắc Band.</p>
+
               {!canCheck && (
-                  <div className="sticky bottom-0 bg-white/90 backdrop-blur border-t p-2 text-center text-blue-600 font-bold text-xs animate-bounce rounded-b-lg shadow-lg">
-                      <ArrowDown size={16} className="inline mr-1"/> Vui lòng đọc hết quy định để tiếp tục
-                  </div>
+                <div className="sticky bottom-0 bg-slate-900/90 backdrop-blur-sm p-4 text-center text-blue-400 font-bold text-xs animate-bounce flex items-center justify-center gap-2 border border-blue-500/20 rounded-xl">
+                  <ArrowDown size={16} /> Cuộn xuống để đồng ý với nội quy mới
+                </div>
               )}
             </div>
-            <div className="p-5 border-t border-gray-100 bg-gray-50 flex flex-col gap-3">
-              <button onClick={() => canCheck && setAgreed(!agreed)} disabled={!canCheck} className={`flex items-start gap-3 text-sm transition p-2 rounded-lg ${canCheck ? 'hover:bg-gray-100 cursor-pointer text-gray-800' : 'text-gray-400 cursor-not-allowed'}`}>
-                <div className="mt-0.5">{agreed ? <CheckSquare className="text-blue-600 shrink-0" /> : <Square className="shrink-0"/>}</div>
-                <span className="leading-tight">Tôi xác nhận đã đọc kỹ, hiểu rõ và cam kết tuân thủ toàn bộ nội quy của Ban nhạc.</span>
+
+            <div className="p-6 border-t border-white/5 bg-white/5 flex flex-col gap-4">
+              <button
+                onClick={() => canCheck && setAgreed(!agreed)}
+                disabled={!canCheck}
+                className={`flex items-start gap-3 text-sm transition p-3 rounded-2xl ${canCheck ? 'hover:bg-white/5 cursor-pointer text-slate-200' : 'text-slate-600 cursor-not-allowed'}`}
+              >
+                <div className="mt-0.5">{agreed ? <CheckSquare className="text-blue-400 shrink-0" /> : <Square className="shrink-0 text-slate-600" />}</div>
+                <span className="font-medium">Tôi đã đọc kỹ, hiểu rõ và cam kết tuân thủ toàn bộ nội quy của Sắc Band.</span>
               </button>
-              <button onClick={handleFinalRegister} disabled={!agreed || loading} className={`w-full py-3 rounded-xl font-bold shadow-lg transition active:scale-95 flex items-center justify-center gap-2 ${agreed ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200' : 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-none'}`}>
-                {loading ? "Đang xử lý..." : "Xác Nhận Đăng Ký"}
+
+              <button
+                onClick={handleFinalRegister}
+                disabled={!agreed || loading}
+                className={`w-full py-4 rounded-2xl font-black tracking-widest text-xs transition-all duration-300 shadow-2xl ${agreed ? 'bg-gradient-to-r from-blue-600 to-violet-600 text-white shadow-blue-500/20 hover:scale-[1.02]' : 'bg-slate-800 text-slate-500 cursor-not-allowed'}`}
+              >
+                {loading ? "ĐANG XỬ LÝ..." : "XÁC NHẬN ĐĂNG KÝ"}
               </button>
             </div>
           </div>

@@ -3,7 +3,6 @@ const User = require('../models/User');
 const dotenv = require('dotenv');
 dotenv.config();
 
-// Cấu hình Transporter (Người đưa thư)
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -12,88 +11,134 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+const fmtMoney = (val) => new Intl.NumberFormat('vi-VN').format(val || 0) + 'đ';
+
 // 1. Gửi mail cho TOÀN BỘ thành viên khi có Show mới
 const sendNewShowEmail = async (show) => {
   try {
-    // Chỉ lấy những user có email hợp lệ
-    const users = await User.find({ email: { $exists: true, $ne: null } });
-    
-    const emails = users
-        .map(u => u.email)
-        .filter(email => email && email.includes('@')); // Lọc kỹ lại lần nữa
+    const users = await User.find({ email: { $exists: true, $ne: null }, isApproved: true });
+    const emails = users.map(u => u.email).filter(email => email && email.includes('@'));
+    if (emails.length === 0) return;
 
-    if (emails.length === 0) {
-        console.log("⚠️ Không tìm thấy email nào để gửi.");
-        return;
-    }
+    // Link web (Bạn đổi link này khi deploy)
+    const webUrl = `https://sacband.vercel.app/bookings/${show._id}`;
 
     const mailOptions = {
       from: `"Sắc Band Manager" <${process.env.EMAIL_USER}>`,
-      bcc: emails, // Dùng BCC để bảo mật danh sách email (người nhận không thấy email người khác)
-      subject: `🔥 SHOW MỚI: ${show.title} - Đăng ký ngay!`,
+      bcc: emails,
+      subject: `🔥 SHOW MỚI: ${show.title}`,
       html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 10px; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #d00000; text-align: center;">🎸 Có Show Mới Anh Em Ơi!</h2>
-          <p>Admin vừa duyệt và mở đăng ký cho show mới. Vào xí chỗ ngay kẻo hết slot!</p>
-          
-          <div style="background: #f9f9f9; padding: 15px; border-radius: 5px; margin: 15px 0;">
-            <h3 style="margin: 0 0 10px 0; color: #333;">${show.title}</h3>
-            <p><strong>📅 Ngày:</strong> ${new Date(show.date).toLocaleDateString('vi-VN')}</p>
-            <p><strong>⏰ Giờ:</strong> ${show.time}</p>
-            <p><strong>📍 Địa điểm:</strong> ${show.location}</p>
-            <p><strong>💰 Cát-xê dự kiến:</strong> ${show.price ? show.price.toLocaleString() : 0}đ</p>
-          </div>
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;background-color:#F8FAFC;padding:40px 0;">
+          <tbody>
+            <tr>
+              <td align="center">
+                <table border="0" cellpadding="0" cellspacing="0" width="500" style="background-color:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #E2E8F0;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)">
+                  <tbody>
+                    <!-- Header -->
+                    <tr>
+                      <td align="center" style="background-color:#4F46E5;padding:30px 20px;">
+                        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#ffffff;font-size:24px;font-weight:800;letter-spacing:1px;">SẮC BAND</div>
+                      </td>
+                    </tr>
+                    <!-- Body -->
+                    <tr>
+                      <td style="padding:40px 30px;">
+                        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:18px;font-weight:700;color:#1E293B;margin-bottom:10px;">🎸 Có show mới anh em ơi!</div>
+                        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:14px;color:#64748B;line-height:22px;margin-bottom:25px;">Admin vừa duyệt một show diễn mới. Anh em kiểm tra thông tin và đăng ký tham gia ngay nhé.</div>
+                        
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#F1F5F9;border-radius:12px;padding:20px;">
+                          <tbody>
+                            <tr>
+                              <td style="padding-bottom:15px;border-bottom:1px solid #E2E8F0;">
+                                <div style="font-family:sans-serif;font-size:16px;font-weight:800;color:#4F46E5;">${show.title}</div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style="padding-top:15px;">
+                                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                  <tr>
+                                    <td width="80" style="font-family:sans-serif;font-size:13px;color:#64748B;padding-bottom:8px;">📅 Ngày:</td>
+                                    <td style="font-family:sans-serif;font-size:13px;font-weight:600;color:#1E293B;padding-bottom:8px;">${new Date(show.date).toLocaleDateString('vi-VN')}</td>
+                                  </tr>
+                                  <tr>
+                                    <td style="font-family:sans-serif;font-size:13px;color:#64748B;padding-bottom:8px;">⏰ Giờ:</td>
+                                    <td style="font-family:sans-serif;font-size:13px;font-weight:600;color:#1E293B;padding-bottom:8px;">${show.time}</td>
+                                  </tr>
+                                  <tr>
+                                    <td style="font-family:sans-serif;font-size:13px;color:#64748B;padding-bottom:8px;">📍 Địa điểm:</td>
+                                    <td style="font-family:sans-serif;font-size:13px;font-weight:600;color:#1E293B;padding-bottom:8px;">${show.location}</td>
+                                  </tr>
+                                  <tr>
+                                    <td style="font-family:sans-serif;font-size:13px;color:#64748B;">💰 Cát-xê:</td>
+                                    <td style="font-family:sans-serif;font-size:15px;font-weight:800;color:#059669;">${fmtMoney(show.price)}</td>
+                                  </tr>
+                                </table>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
 
-          <div style="text-align: center;">
-            <a href="https://sacband.vercel.app/bookings/${show._id}" style="background-color: #2563eb; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
-              👉 Vào Web Đăng Ký Ngay
-            </a>
-          </div>
-          <p style="margin-top: 20px; font-size: 12px; color: #888; text-align: center;">Email tự động từ hệ thống Sắc Band.</p>
-        </div>
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top:30px;">
+                          <tr>
+                            <td align="center">
+                              <a href="${webUrl}" style="background-color:#1E293B;color:#ffffff;display:inline-block;padding:16px 32px;border-radius:10px;text-decoration:none;font-family:sans-serif;font-size:14px;font-weight:700;">ĐĂNG KÝ THAM GIA 🚀</a>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                    <!-- Footer -->
+                    <tr>
+                      <td style="padding:0 30px 40px 30px;text-align:center;">
+                        <div style="font-family:sans-serif;font-size:11px;color:#94A3B8;text-transform:uppercase;letter-spacing:1px;">Email tự động từ Sắc Band Manager</div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       `
     };
-
     await transporter.sendMail(mailOptions);
-    console.log(`📧 Đã gửi thông báo show mới tới ${emails.length} người.`);
-  } catch (error) {
-    console.error("❌ Lỗi gửi email show mới:", error);
-  }
+  } catch (error) { console.error("Lỗi mail show mới:", error); }
 };
 
 // 2. Gửi mail cho 1 NGƯỜI khi được duyệt đi show
 const sendApproveEmail = async (userEmail, showTitle, userName) => {
   try {
     if (!userEmail || !userEmail.includes('@')) return;
-
     const mailOptions = {
       from: `"Sắc Band Manager" <${process.env.EMAIL_USER}>`,
       to: userEmail,
       subject: `✅ BẠN ĐÃ ĐƯỢC DUYỆT: ${showTitle}`,
       html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #4ade80; border-radius: 10px; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #16a34a; text-align: center;">🎉 Chúc mừng ${userName}!</h2>
-          <p>Admin đã <strong>DUYỆT</strong> bạn vào đội hình chính thức cho show: <strong>${showTitle}</strong>.</p>
-          
-          <div style="background: #f0fdf4; padding: 15px; border-radius: 5px; margin: 15px 0;">
-            <p>Hãy nhớ lịch tập và chuẩn bị bài vở kỹ càng nhé!</p>
-          </div>
-
-          <div style="text-align: center; margin-top: 15px;">
-             <a href="https://sacband.vercel.app/bookings" style="background-color: #16a34a; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
-              Xem Lịch Diễn
-            </a>
-          </div>
-          <p style="margin-top: 20px; font-size: 12px; color: #888; text-align: center;">Email tự động từ hệ thống Sắc Band.</p>
-        </div>
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#F0FDF4;padding:40px 0;">
+          <tr>
+            <td align="center">
+              <table border="0" cellpadding="0" cellspacing="0" width="500" style="background-color:#ffffff;border-radius:16px;border:1px solid #DCFCE7;">
+                <tr>
+                  <td align="center" style="background-color:#10B981;padding:30px;border-radius:16px 16px 0 0;">
+                    <div style="font-family:sans-serif;color:#ffffff;font-size:20px;font-weight:800;">CHÚC MỪNG 🎉</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:40px 30px;text-align:center;">
+                    <div style="font-family:sans-serif;font-size:16px;color:#1E293B;margin-bottom:10px;">Chào <b>${userName}</b>,</div>
+                    <div style="font-family:sans-serif;font-size:14px;color:#475569;line-height:22px;">Admin đã <b>DUYỆT</b> bạn vào đội hình chính thức cho show diễn:</div>
+                    <div style="font-family:sans-serif;font-size:18px;font-weight:800;color:#059669;margin:20px 0;padding:15px;background-color:#F0FDF4;border-radius:10px;border:1px dashed #10B981;">${showTitle}</div>
+                    <div style="font-family:sans-serif;font-size:13px;color:#64748B;">Hãy chuẩn bị bài vở thật kỹ nhé!</div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
       `
     };
-
     await transporter.sendMail(mailOptions);
-    console.log(`📧 Đã gửi mail duyệt tới ${userEmail}`);
-  } catch (error) {
-    console.error("❌ Lỗi gửi email duyệt:", error);
-  }
+  } catch (error) { console.error("Lỗi mail duyệt:", error); }
 };
 
 module.exports = { sendNewShowEmail, sendApproveEmail };

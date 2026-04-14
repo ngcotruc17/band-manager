@@ -18,7 +18,7 @@ const adminOnly = (req, res, next) => {
 router.put('/profile', protect, updateProfile);
 
 // 1. Lấy danh sách thành viên (Admin)
-router.get('/', protect, adminOnly, async (req, res) => {
+router.get('/', protect, async (req, res) => {
   try {
     const users = await User.find().select('-password').sort({ status: -1, createdAt: -1 });
     res.json(users);

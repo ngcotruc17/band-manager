@@ -1,0 +1,101 @@
+📁 band-booking-app (Thư mục gốc)
+├── 📂 [backend]
+│   ├── 📄 .env
+│   ├── 📂 [config]
+│   │   └── 📄 db.js
+│   ├── 📂 [controllers]
+│   │   ├── 📄 auth.controller.js
+│   │   ├── 📄 booking.controller.js
+│   │   ├── 📄 comment.controller.js
+│   │   ├── 📄 dashboard.controller.js
+│   │   ├── 📄 event.controller.js
+│   │   ├── 📄 finance.controller.js
+│   │   ├── 📄 library.controller.js
+│   │   ├── 📄 notification.controller.js
+│   │   ├── 📄 rehearsal.controller.js
+│   │   ├── 📄 show.controller.js
+│   │   └── 📄 user.controller.js
+│   ├── 📂 [middleware]
+│   │   ├── 📄 auth.js
+│   │   └── 📄 upload.js
+│   ├── 📂 [models]
+│   │   ├── 📄 Booking.js
+│   │   ├── 📄 Comment.js
+│   │   ├── 📄 Event.js
+│   │   ├── 📄 LibrarySong.js
+│   │   ├── 📄 Notification.js
+│   │   ├── 📄 Rehearsal.js
+│   │   ├── 📄 Show.js
+│   │   ├── 📄 Song.js
+│   │   ├── 📄 Transaction.js
+│   │   └── 📄 User.js
+│   ├── 📄 package-lock.json
+│   ├── 📄 package.json
+│   ├── 📂 [routes]
+│   │   ├── 📄 auth.routes.js
+│   │   ├── 📄 booking.routes.js
+│   │   ├── 📄 comment.routes.js
+│   │   ├── 📄 dashboard.routes.js
+│   │   ├── 📄 event.routes.js
+│   │   ├── 📄 finance.routes.js
+│   │   ├── 📄 library.routes.js
+│   │   ├── 📄 notification.routes.js
+│   │   ├── 📄 rehearsals.routes.js
+│   │   ├── 📄 show.routes.js
+│   │   └── 📄 users.routes.js
+│   ├── 📄 seed.js
+│   ├── 📄 server.js
+│   ├── 📂 [uploads]
+│   └── 📂 [utils]
+│       └── 📄 sendEmail.js
+├── 📂 [frontend]
+│   ├── 📄 .gitignore
+│   ├── 📄 eslint.config.js
+│   ├── 📄 index.html
+│   ├── 📄 package-lock.json
+│   ├── 📄 package.json
+│   ├── 📄 postcss.config.js
+│   ├── 📂 [public]
+│   │   └── 📄 vite.svg
+│   ├── 📄 README.md
+│   ├── 📂 [src]
+│   │   ├── 📄 App.jsx
+│   │   ├── 📂 [assets]
+│   │   │   └── 📄 react.svg
+│   │   ├── 📂 [components]
+│   │   │   ├── 📄 BookingModal.jsx
+│   │   │   ├── 📄 CommentSection.jsx
+│   │   │   ├── 📄 GlobalAudioPlayer.jsx
+│   │   │   ├── 📄 Layout.jsx
+│   │   │   ├── 📄 Navbar.jsx
+│   │   │   ├── 📄 ProfileModal.jsx
+│   │   │   ├── 📄 ProtectedRoute.jsx
+│   │   │   ├── 📄 Skeleton.jsx
+│   │   │   └── 📂 [UI]
+│   │   ├── 📂 [context]
+│   │   │   ├── 📄 AudioContext.jsx
+│   │   │   └── 📄 AuthContext.jsx
+│   │   ├── 📄 index.css
+│   │   ├── 📄 main.jsx
+│   │   ├── 📂 [pages]
+│   │   │   ├── 📄 BookingDetail.jsx
+│   │   │   ├── 📄 BookingManager.jsx
+│   │   │   ├── 📄 ChangePassword.jsx
+│   │   │   ├── 📄 Dashboard.jsx
+│   │   │   ├── 📄 EventDetail.jsx
+│   │   │   ├── 📄 FinanceManager.jsx
+│   │   │   ├── 📄 Login.jsx
+│   │   │   ├── 📄 MemberManager.jsx
+│   │   │   ├── 📄 Register.jsx
+│   │   │   ├── 📄 RehearsalManager.jsx
+│   │   │   ├── 📄 Repertoire.jsx
+│   │   │   └── 📄 SongLibrary.jsx
+│   │   └── 📂 [services]
+│   │       └── 📄 api.js
+│   ├── 📄 tailwind.config.js
+│   ├── 📄 vercel.json
+│   └── 📄 vite.config.js
+├── 📄 gopcode.js
+├── 📄 package-lock.json
+├── 📄 package.json
+└── 📄 toan_bo_code.txt

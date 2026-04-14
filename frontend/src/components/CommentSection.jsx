@@ -1,7 +1,8 @@
 import { useState, useEffect, useContext, useRef } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
-import { Send, Trash2, MessageCircle } from 'lucide-react';
+import { Send, Trash2, MessageCircle, Clock } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const CommentSection = ({ eventId }) => {
   const [comments, setComments] = useState([]);
@@ -9,13 +10,10 @@ const CommentSection = ({ eventId }) => {
   const { user } = useContext(AuthContext);
   const bottomRef = useRef(null);
 
-  const getHeaders = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
-
   const fetchComments = async () => {
     try {
-      const res = await axios.get(`https://band-manager-s9tm.onrender.com/api/comments/${eventId}`, getHeaders());
+      const res = await api.get(`/comments/${eventId}`);
       setComments(res.data);
-      // Tự động cuộn xuống dưới cùng khi mới vào
       setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
     } catch (err) { console.error(err); }
   };
@@ -26,78 +24,84 @@ const CommentSection = ({ eventId }) => {
     e.preventDefault();
     if (!content.trim()) return;
     try {
-      const res = await axios.post('https://band-manager-s9tm.onrender.com/api/comments', { content, eventId }, getHeaders());
-      setComments([...comments, res.data]); // Thêm comment mới vào list ngay lập tức
+      const res = await api.post('/comments', { content, eventId });
+      setComments([...comments, res.data]);
       setContent('');
       setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
-    } catch (err) { alert('Lỗi gửi bình luận'); }
+    } catch (err) { toast.error('Không gửi được tin nhắn'); }
   };
 
   const handleDelete = async (commentId) => {
-    if(!window.confirm("Xóa bình luận này?")) return;
+    if(!window.confirm("Xóa tin nhắn này?")) return;
     try {
-      await axios.delete(`https://band-manager-s9tm.onrender.com/api/comments/${commentId}`, getHeaders());
+      await api.delete(`/comments/${commentId}`);
       setComments(comments.filter(c => c._id !== commentId));
-    } catch (err) { alert('Lỗi xóa'); }
+    } catch (err) { toast.error('Lỗi xóa'); }
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow mt-8 border border-gray-200">
-      <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-        <MessageCircle className="text-blue-600"/> Thảo luận & Trao đổi
-      </h3>
+    <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden flex flex-col h-[500px]">
+      {/* Header */}
+      <div className="p-5 border-b border-slate-100 flex items-center gap-3 bg-slate-50/50">
+        <div className="w-10 h-10 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center shadow-inner">
+          <MessageCircle size={20}/>
+        </div>
+        <div>
+          <h3 className="font-black text-slate-800 leading-tight">Thảo luận Show</h3>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nội bộ ban nhạc</p>
+        </div>
+      </div>
 
-      {/* KHUNG HIỂN THỊ CHAT */}
-      <div className="bg-gray-50 p-4 rounded-lg h-80 overflow-y-auto mb-4 border border-gray-100">
+      {/* Tin nhắn */}
+      <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/30">
         {comments.length === 0 ? (
-          <p className="text-center text-gray-400 mt-10 italic">Chưa có bình luận nào. Hãy mở lời trước nhé!</p>
+          <div className="h-full flex flex-col items-center justify-center text-slate-300 opacity-60">
+             <MessageCircle size={48} className="mb-2"/>
+             <p className="text-sm font-medium italic">Chưa có trao đổi nào...</p>
+          </div>
         ) : (
-          <div className="space-y-4">
-            {comments.map((c) => {
-              const isMe = c.user._id === user._id;
-              return (
-                <div key={c._id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`flex gap-3 max-w-[80%] ${isMe ? 'flex-row-reverse' : ''}`}>
-                    {/* AVATAR (Chữ cái đầu) */}
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shadow-sm flex-shrink-0 ${isMe ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-700'}`}>
-                      {c.user.fullName ? c.user.fullName.charAt(0).toUpperCase() : 'U'}
-                    </div>
+          comments.map((c) => {
+            const isMe = c.user?._id === user?._id;
+            return (
+              <div key={c._id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} animate-fade-in`}>
+                <div className={`flex gap-3 max-w-[85%] ${isMe ? 'flex-row-reverse' : ''}`}>
+                  {/* Avatar */}
+                  <div className={`w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center font-black text-[10px] shadow-sm ${isMe ? 'bg-slate-900 text-white' : 'bg-white border border-slate-200 text-violet-600'}`}>
+                    {c.user?.fullName?.charAt(0) || 'U'}
+                  </div>
 
-                    {/* NỘI DUNG CHAT */}
-                    <div className={`p-3 rounded-lg text-sm shadow-sm relative group ${isMe ? 'bg-blue-100 text-blue-900 rounded-tr-none' : 'bg-white text-gray-800 rounded-tl-none border border-gray-200'}`}>
-                      {!isMe && <p className="text-xs font-bold text-gray-500 mb-1">{c.user.fullName}</p>}
+                  <div className={`space-y-1 ${isMe ? 'items-end' : 'items-start'}`}>
+                    <div className={`px-4 py-2.5 rounded-2xl text-sm font-medium shadow-sm leading-relaxed ${
+                      isMe ? 'bg-violet-600 text-white rounded-tr-none' : 'bg-white text-slate-700 border border-slate-100 rounded-tl-none'
+                    }`}>
+                      {!isMe && <p className="text-[10px] font-black uppercase text-violet-500 mb-1 tracking-tighter">{c.user?.fullName}</p>}
                       <p className="whitespace-pre-wrap">{c.content}</p>
-                      
-                      {/* TIME & DELETE BUTTON */}
-                      <div className="flex items-center gap-2 mt-1 justify-end">
-                        <span className="text-[10px] text-gray-400">
-                          {new Date(c.createdAt).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})} {new Date(c.createdAt).toLocaleDateString('vi-VN')}
-                        </span>
-                        {(isMe || user?.role === 'admin') && (
-                          <button onClick={() => handleDelete(c._id)} className="hidden group-hover:block text-red-400 hover:text-red-600">
-                            <Trash2 size={12}/>
-                          </button>
-                        )}
-                      </div>
+                    </div>
+                    
+                    <div className={`flex items-center gap-2 text-[9px] font-bold text-slate-400 uppercase tracking-tighter ${isMe ? 'flex-row-reverse' : ''}`}>
+                       <span>{new Date(c.createdAt).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})}</span>
+                       {(isMe || user?.role === 'admin') && (
+                          <button onClick={() => handleDelete(c._id)} className="hover:text-rose-500 transition"><Trash2 size={10}/></button>
+                       )}
                     </div>
                   </div>
                 </div>
-              );
-            })}
-            <div ref={bottomRef} />
-          </div>
+              </div>
+            );
+          })
         )}
+        <div ref={bottomRef} />
       </div>
 
-      {/* Ô NHẬP LIỆU */}
-      <form onSubmit={handleSubmit} className="flex gap-2">
+      {/* Ô nhập liệu */}
+      <form onSubmit={handleSubmit} className="p-4 bg-white border-t border-slate-100 flex gap-2">
         <input 
-          className="flex-1 border p-2 rounded-lg focus:outline-none focus:ring-2 ring-blue-500"
-          placeholder="Viết bình luận..."
+          className="flex-1 bg-slate-50 border border-slate-100 px-5 py-3 rounded-2xl text-sm focus:outline-none focus:ring-2 ring-violet-500 font-medium transition"
+          placeholder="Nhập nội dung trao đổi..."
           value={content}
           onChange={e => setContent(e.target.value)}
         />
-        <button className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition shadow">
+        <button className="bg-slate-900 text-white p-3 rounded-2xl hover:bg-black transition shadow-lg shadow-slate-200">
           <Send size={20}/>
         </button>
       </form>

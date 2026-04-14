@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 import { 
   Trash2, Edit, XCircle, Clock, Shirt, 
   CheckCircle, PlusCircle, MinusCircle, DollarSign, Music, 
@@ -15,8 +15,8 @@ const EventDetail = () => {
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
   
-  const BASE_URL = (import.meta.env.VITE_API_URL || 'https://band-manager-s9tm.onrender.com/api');
-  const getHeaders = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+//   const BASE_URL = (import.meta.env.VITE_API_URL || 'https://band-manager-s9tm.onrender.com/api');
+//   const getHeaders = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
 
   const [data, setData] = useState({ event: null, songs: [] });
   const [isEditing, setIsEditing] = useState(false);
@@ -33,7 +33,7 @@ const EventDetail = () => {
 
   const loadData = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/events/${id}`, getHeaders());
+      const res = await api.get('/events');
       setData(res.data);
       if (res.data.event) {
         setEditEventData({
@@ -89,7 +89,7 @@ const EventDetail = () => {
 
   const fetchLibrary = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/library`, getHeaders());
+      const res = await api.get('/library');
       setLibrarySongs(res.data);
       setShowLibModal(true);
     } catch (err) { console.error(err); }
