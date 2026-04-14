@@ -41,7 +41,7 @@ const Dashboard = () => {
             <div>
               <p className="text-violet-300 font-bold tracking-widest text-sm uppercase mb-1">Tổng quan hệ thống</p>
               <h2 className="text-3xl md:text-4xl font-extrabold mb-2">
-                Chào <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-violet-400">{user?.fullName?.split(' ').pop()}</span>, sẵn sàng quẩy chưa? 🎸
+                Chào <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-violet-400">{user?.fullName?.split(' ').pop()}</span>, sẵn sàng quẩy chưa?
               </h2>
             </div>
 
