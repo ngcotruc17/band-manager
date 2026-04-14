@@ -80,7 +80,7 @@ const Register = () => {
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-500 to-violet-500 text-white shadow-lg mb-4">
             <UserPlus size={28} />
           </div>
-          <h2 className="text-3xl font-black text-white tracking-tight">Gia Nhập Sắc Band</h2>
+          <h2 className="text-3xl font-black text-white tracking-tight">ĐĂNG KÝ THÀNH VIÊN</h2>
           <p className="text-slate-400 text-sm mt-2 font-medium">Bắt đầu hành trình âm nhạc chuyên nghiệp</p>
         </div>
 

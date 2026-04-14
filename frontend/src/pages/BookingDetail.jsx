@@ -189,7 +189,6 @@ const BookingDetail = () => {
                         {isJoined ? (approvedMembers.find(p=>p.user?._id === user._id) ? "✅ Đã được duyệt" : "⏳ Đang chờ duyệt") : "Chưa đăng ký"}
                       </span>
                     </p>
-                    <p className="text-sm text-slate-500 mt-1">Đăng ký sớm để Admin chốt đội hình nhé.</p>
                   </div>
                   {isJoined ? (
                      <button onClick={handleJoin} className="bg-white border border-slate-300 text-slate-600 px-6 py-2.5 rounded-xl font-bold hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition whitespace-nowrap">Hủy đăng ký</button>
@@ -246,7 +245,6 @@ const BookingDetail = () => {
                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 border-b border-slate-100 pb-4">
                   <div>
                     <h3 className="text-xl font-extrabold text-slate-800 flex items-center gap-2"><Music className="text-violet-500" size={24}/> Setlist Bài Hát</h3>
-                    <p className="text-sm text-slate-500 mt-1 font-medium">Danh sách nhạc sẽ đánh trong show này</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <button onClick={fetchLibrary} disabled={!canEditMusic} className="text-sm font-bold text-violet-600 bg-violet-50 hover:bg-violet-100 px-4 py-2 rounded-xl flex items-center gap-1.5 transition disabled:opacity-50 disabled:cursor-not-allowed">

@@ -73,9 +73,8 @@ const SongLibrary = () => {
               <span className="bg-gradient-to-tr from-blue-600 to-indigo-600 text-white p-2.5 rounded-2xl shadow-lg shadow-blue-200">
                 <Music size={28} />
               </span>
-              Kho Nhạc Của Band
+              KHO BEAT & SHEET
             </h1>
-            <p className="text-slate-500 mt-1 font-medium">Lưu trữ file Sheet và Beat tập luyện chung.</p>
           </div>
 
           <div className="flex items-center gap-3 w-full md:w-auto">
@@ -89,7 +88,7 @@ const SongLibrary = () => {
               />
             </div>
             <button onClick={() => setShowModal(true)} className="bg-slate-900 hover:bg-black text-white px-6 py-3.5 rounded-2xl font-bold shadow-xl transition flex items-center gap-2 whitespace-nowrap">
-              <Plus size={20} /> <span className="hidden sm:inline">Thêm Bài</span>
+              <Plus size={20} /> <span className="hidden sm:inline">Thêm</span>
             </button>
           </div>
         </div>

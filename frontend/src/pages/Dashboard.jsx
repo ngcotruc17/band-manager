@@ -120,7 +120,7 @@ const Dashboard = () => {
           <div className="lg:col-span-2 space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="text-2xl font-extrabold text-slate-800 flex items-center gap-2">
-                <Sparkles className="text-violet-600" /> Show Sắp Tới
+                <Sparkles className="text-violet-600" /> SHOW SẮP TỚI
               </h3>
               <Link to="/bookings" className="text-sm font-bold text-violet-600 hover:bg-violet-50 px-4 py-2 rounded-xl transition">Xem tất cả</Link>
             </div>
@@ -149,7 +149,7 @@ const Dashboard = () => {
 
                     <div className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest border ${show.status === 'confirmed' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-amber-50 text-amber-600 border-amber-100'
                       }`}>
-                      {show.status === 'confirmed' ? 'Đã chốt' : 'Đang chờ'}
+                      {show.status === 'confirmed' ? 'ĐÃ DUYỆT' : 'CHỜ DUYỆT'}
                     </div>
                   </Link>
                 ))

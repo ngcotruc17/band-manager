@@ -43,11 +43,8 @@ const Login = () => {
             <Music size={32} />
           </div>
           <h2 className="text-3xl font-extrabold text-white tracking-tight mb-2">
-            Sắc Band
+            CHÀO MỪNG TRỞ LẠI SẮC BAND
           </h2>
-          <p className="text-slate-400 text-sm flex items-center justify-center gap-1.5 font-medium">
-            Hệ sinh thái quản lý ban nhạc <Sparkles size={14} className="text-fuchsia-400" />
-          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -75,7 +72,7 @@ const Login = () => {
             disabled={loading}
             className="w-full mt-4 bg-gradient-to-r from-violet-600 hover:from-violet-500 to-fuchsia-600 hover:to-fuchsia-500 text-white font-bold py-3.5 rounded-xl shadow-[0_0_20px_rgba(192,38,211,0.4)] transform active:scale-95 transition-all flex items-center justify-center gap-2"
           >
-            {loading ? "Đang mở cửa..." : <><span className="tracking-wide">VÀO HỆ THỐNG</span> <ArrowRight size={18} /></>}
+            {loading ? "ĐANG ĐĂNG NHẬP" : <><span className="tracking-wide">ĐĂNG NHẬP</span> <ArrowRight size={18} /></>}
           </button>
         </form>
 

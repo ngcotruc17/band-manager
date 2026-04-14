@@ -62,9 +62,8 @@ const MemberManager = () => {
               <span className="bg-gradient-to-tr from-indigo-600 to-blue-600 text-white p-2.5 rounded-2xl shadow-lg shadow-indigo-200">
                 <Users size={28} />
               </span>
-              Quản Lý Nhân Sự
+              QUẢN LÝ THÀNH VIÊN
             </h1>
-            <p className="text-slate-500 mt-1 font-medium">Theo dõi thông tin và cấp quyền thành viên.</p>
           </div>
           <div className="relative w-full md:w-96">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />

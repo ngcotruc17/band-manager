@@ -56,9 +56,8 @@ const FinanceManager = () => {
           <span className="bg-gradient-to-tr from-blue-600 to-indigo-600 text-white p-2.5 rounded-2xl shadow-lg shadow-blue-200">
             <Wallet size={28} />
           </span>
-          Két Sắt Của Band
+          TÀI CHÍNH & THỐNG KÊ
         </h1>
-        <p className="text-slate-500 mt-1 font-medium">Thống kê thu nhập show diễn và các khoản chi tiêu.</p>
       </div>
 
       {/* STATS */}

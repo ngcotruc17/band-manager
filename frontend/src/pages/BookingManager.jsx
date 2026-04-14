@@ -114,9 +114,8 @@ const BookingManager = () => {
           <div>
             <h1 className="text-3xl font-extrabold text-slate-800 flex items-center gap-3">
               <span className="bg-gradient-to-tr from-violet-600 to-fuchsia-600 text-white p-2.5 rounded-xl shadow-[0_0_20px_rgba(139,92,246,0.3)]"><Music size={28} /></span>
-              Quản Lý Booking
+              QUẢN LÝ BOOKING
             </h1>
-            <p className="text-slate-500 mt-1 font-medium text-sm">Quản lý lịch trình, đối tác và doanh thu show diễn.</p>
           </div>
           {user?.role === 'admin' && (
             <button onClick={handleCreateClick} className="flex items-center gap-2 bg-slate-900 text-white px-5 py-3 rounded-xl font-bold shadow-xl hover:bg-black transition transform active:scale-95">

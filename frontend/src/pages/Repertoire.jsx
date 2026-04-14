@@ -60,9 +60,8 @@ const Repertoire = () => {
               <span className="bg-gradient-to-r from-amber-500 to-orange-500 text-white p-2 rounded-xl shadow-lg shadow-orange-200">
                 <BookOpen size={28} />
               </span>
-              Repertoire - Menu Bài Hát
+              Repertoire
             </h1>
-            <p className="text-gray-500 mt-1 text-sm">Danh sách các bài hát Sắc Band có thể biểu diễn ({songs.length} bài)</p>
           </div>
           
           <div className="flex items-center gap-3 w-full md:w-auto">
