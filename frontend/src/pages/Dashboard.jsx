@@ -149,7 +149,7 @@ const Dashboard = () => {
 
                     <div className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest border ${show.status === 'confirmed' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-amber-50 text-amber-600 border-amber-100'
                       }`}>
-                      {show.status === 'confirmed' ? 'ĐÃ DUYỆT' : 'CHỜ DUYỆT'}
+                      {show.status === 'confirmed' ? 'ĐANG MỞ' : 'CHỜ DUYỆT'}
                     </div>
                   </Link>
                 ))
