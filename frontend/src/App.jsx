@@ -18,6 +18,7 @@ import FinanceManager from "./pages/FinanceManager";
 import ChangePassword from './pages/ChangePassword';
 import BookingDetail from './pages/BookingDetail'; 
 import CheckIn from "./pages/CheckIn";
+import AdminNotifications from "./pages/AdminNotifications";
 
 import Layout from "./components/Layout"; 
 import GlobalAudioPlayer from "./components/GlobalAudioPlayer"; // 👈 MỚI: Import Player
@@ -67,6 +68,7 @@ function App() {
             <Route path="/checkin/:rehearsalId" element={<ProtectedRoute><Layout><CheckIn /></Layout></ProtectedRoute>} />
             <Route path="/members" element={<ProtectedRoute><Layout><MemberManager /></Layout></ProtectedRoute>} />
             <Route path="/finance" element={<ProtectedRoute><Layout><FinanceManager /></Layout></ProtectedRoute>} />
+            <Route path="/admin-notifications" element={<ProtectedRoute><Layout><AdminNotifications /></Layout></ProtectedRoute>} />
             
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>

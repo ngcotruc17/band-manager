@@ -427,7 +427,7 @@ const BookingDetail = () => {
                       <span className="font-black text-slate-800">{(show.salarySplit?.totalPrice || show.price || 0).toLocaleString()}đ</span>
                     </div>
                     <div className="flex justify-between py-1 border-b border-slate-100">
-                      <span className="text-slate-550 font-bold">Trích Quỹ Band ({show.salarySplit?.bandFundPercent || 10}%):</span>
+                      <span className="text-slate-550 font-bold">Trích Quỹ Band ({show.salarySplit?.bandFundPercent || 5}%):</span>
                       <span className="font-black text-rose-500">-{(show.salarySplit?.bandFundAmount || 0).toLocaleString()}đ</span>
                     </div>
                     <div className="flex justify-between py-1 border-b border-slate-100">

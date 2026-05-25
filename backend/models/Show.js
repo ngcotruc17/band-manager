@@ -32,7 +32,7 @@ const showSchema = new mongoose.Schema({
   // Tự động phân chia cát-xê
   salarySplit: {
     totalPrice: { type: Number, default: 0 },
-    bandFundPercent: { type: Number, default: 10 },
+    bandFundPercent: { type: Number, default: 5 },
     bandFundAmount: { type: Number, default: 0 },
     memberAmount: { type: Number, default: 0 },
     members: [{

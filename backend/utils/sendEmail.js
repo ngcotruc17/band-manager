@@ -7,7 +7,7 @@ const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
+    pass: (process.env.EMAIL_PASS || '').replace(/\s+/g, '')
   }
 });
 
@@ -291,9 +291,66 @@ const sendSalarySplitEmail = async (show) => {
   } catch (error) { console.error("Lỗi gửi mail cát-xê hoàn thành:", error); }
 };
 
+// 5. Gửi mail thông báo tùy chỉnh từ Admin
+const sendCustomAdminEmail = async (subject, contentHtml, recipientEmails) => {
+  try {
+    if (!recipientEmails || recipientEmails.length === 0) return;
+    
+    const mailOptions = {
+      from: `"Sắc Band Manager" <${process.env.EMAIL_USER}>`,
+      subject: `[THÔNG BÁO] ${subject}`,
+      html: `
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;background-color:#F8FAFC;padding:40px 0;margin:0;">
+          <tbody>
+            <tr>
+              <td align="center">
+                <table border="0" cellpadding="0" cellspacing="0" width="800" style="max-width: 800px; width: 95%; background-color:#ffffff;border-radius:24px;overflow:hidden;border:1px solid #E2E8F0;box-shadow:0 10px 15px -3px rgba(0,0,0,0.05);">
+                  <tbody>
+                    <!-- Header -->
+                    <tr>
+                      <td align="center" style="background: linear-gradient(135deg, #6366F1 0%, #EC4899 100%); background-color:#6366F1; padding:40px 20px;">
+                        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#ffffff;font-size:24px;font-weight:900;letter-spacing:1.5px;text-shadow:0 2px 4px rgba(0,0,0,0.1);">SẮC BAND</div>
+                        <div style="font-family:sans-serif;color:#E0E7FF;font-size:11px;font-weight:700;margin-top:6px;text-transform:uppercase;letter-spacing:1px;">Thông Báo Từ Admin</div>
+                      </td>
+                    </tr>
+                    <!-- Body -->
+                    <tr>
+                      <td style="padding:40px 35px;">
+                        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:18px;font-weight:900;color:#1E293B;margin-bottom:18px;">${subject}</div>
+                        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:14px;color:#334155;line-height:26px;white-space:pre-wrap;">${contentHtml}</div>
+                      </td>
+                    </tr>
+                    <!-- Footer -->
+                    <tr>
+                      <td style="padding:0 35px 40px 35px;text-align:center;border-top:1px solid #F1F5F9;padding-top:20px;">
+                        <div style="font-family:sans-serif;font-size:11px;color:#94A3B8;text-transform:uppercase;letter-spacing:1px;font-weight:600;">Email tự động gửi từ hệ thống Sắc Band Manager</div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      `
+    };
+
+    if (recipientEmails.length === 1) {
+      mailOptions.to = recipientEmails[0];
+    } else {
+      mailOptions.bcc = recipientEmails;
+    }
+
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    console.error("Lỗi gửi mail tùy chỉnh:", error);
+  }
+};
+
 module.exports = { 
   sendNewShowEmail, 
   sendApproveEmail, 
   sendNewRehearsalEmail, 
-  sendSalarySplitEmail 
+  sendSalarySplitEmail,
+  sendCustomAdminEmail
 };

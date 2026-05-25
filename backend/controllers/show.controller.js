@@ -35,7 +35,7 @@ exports.updateShowStatus = async (req, res) => {
 
     let salarySplit = {
       totalPrice: 0,
-      bandFundPercent: 10,
+      bandFundPercent: 5,
       bandFundAmount: 0,
       memberAmount: 0,
       members: []
@@ -45,7 +45,7 @@ exports.updateShowStatus = async (req, res) => {
       const approvedParticipants = oldShow.participants.filter(p => p.status === 'approved');
       const N = approvedParticipants.length;
       const totalPrice = oldShow.price || 0;
-      const bandFundPercent = 10;
+      const bandFundPercent = 5;
       const bandFundAmount = Math.round(totalPrice * (bandFundPercent / 100));
       const remainingAmount = totalPrice - bandFundAmount;
       const memberAmount = N > 0 ? Math.round(remainingAmount / N) : 0;

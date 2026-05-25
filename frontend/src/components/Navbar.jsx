@@ -70,13 +70,17 @@ const Navbar = () => {
 
   const navItems = [
     { name: "Tổng quan", path: "/dashboard" },
-    { name: "Menu Bài", path: "/repertoire" },
+    ...(user?.role === 'admin' ? [{ name: "Menu Bài", path: "/repertoire" }] : []),
     { name: "Kho Nhạc", path: "/library" },
     { name: "Booking", path: "/bookings" },
     { name: "Lịch Tập", path: "/rehearsals" },
     { name: "Nhân sự", path: "/members" },
     { name: "Tài Chính", path: "/finance" },
   ];
+
+  if (user?.role === 'admin') {
+    navItems.push({ name: "Gửi Thông Báo", path: "/admin-notifications" });
+  }
 
   const isActive = (path) => location.pathname === path || (path !== '/dashboard' && location.pathname.startsWith(path));
 
