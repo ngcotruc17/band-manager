@@ -324,7 +324,7 @@ const Dashboard = () => {
            {/* Cột 2: BXH Vua Phạt */}
            <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200/60 shadow-sm relative overflow-hidden">
               <h3 className="text-base font-black text-slate-800 flex items-center gap-2 mb-6 pb-4 border-b border-slate-100">
-                <AlertCircle className="text-rose-500" size={20}/> BXH TÍCH LŨY PHẠT (VUA PHẠT)
+                <AlertCircle className="text-rose-500" size={20}/> BXH TÍCH LŨY PHẠT
               </h3>
               <div className="space-y-4">
                  {leaderboard.fineLeaderboard.slice(0, 5).map((user, idx) => (

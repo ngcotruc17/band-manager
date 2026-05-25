@@ -182,7 +182,7 @@ const CheckIn = () => {
         {/* TIÊU ĐỀ CHÍNH */}
         <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200/50 shadow-sm text-center">
           <h1 className="text-2xl font-black text-slate-850 tracking-tight">
-            ĐIỂM DANH BUỔI TẬP RÁP
+            ĐIỂM DANH BUỔI TẬP
           </h1>
           <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1.5">
             Check-in nhanh bằng mã QR

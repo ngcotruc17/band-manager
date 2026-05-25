@@ -1,6 +1,7 @@
 const Rehearsal = require('../models/Rehearsal');
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const { sendNewRehearsalEmail } = require('../utils/sendEmail');
 
 // 1. Lấy danh sách lịch tập (Tự động đồng bộ thành viên)
 exports.getRehearsals = async (req, res) => {
@@ -59,6 +60,7 @@ exports.createRehearsal = async (req, res) => {
     });
 
     await newRehearsal.save();
+    sendNewRehearsalEmail(newRehearsal).catch(err => console.error("Lỗi gửi mail lịch tập mới:", err));
     res.status(201).json(newRehearsal);
   } catch (error) {
     res.status(500).json({ message: error.message });

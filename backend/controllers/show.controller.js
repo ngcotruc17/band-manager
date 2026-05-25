@@ -1,7 +1,7 @@
 const Show = require('../models/Show');
 const User = require('../models/User'); 
 const Transaction = require('../models/Transaction');
-const { sendNewShowEmail, sendApproveEmail } = require('../utils/sendEmail'); 
+const { sendNewShowEmail, sendApproveEmail, sendSalarySplitEmail } = require('../utils/sendEmail'); 
 const { notifyAllMembers, notifyAdmins, notifyUser } = require('./notification.controller'); // 👈 Thêm dòng này
 
 exports.getShows = async (req, res) => {
@@ -113,6 +113,7 @@ exports.updateShowStatus = async (req, res) => {
           message: `🎉 SHOW HOÀN THÀNH: "${updatedShow.title}" đã được thanh toán & chia cát-xê!`,
           link: `/bookings/${updatedShow._id}`
         });
+        sendSalarySplitEmail(updatedShow).catch(err => console.error("Lỗi gửi mail chia cát-xê:", err));
     }
 
     res.json(updatedShow);
