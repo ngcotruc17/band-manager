@@ -24,6 +24,7 @@ const BookingDetail = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState(0);
   const [paymentDescription, setPaymentDescription] = useState("");
+  const [showPaymentTest, setShowPaymentTest] = useState(false);
 
   const fetchShow = useCallback(async () => {
     try {
@@ -338,13 +339,13 @@ const BookingDetail = () => {
                                 <Download size={13}/> Xem / Tải Sheet Beat
                               </a>
                             )}
-                            <button onClick={() => handleRemoveMusic(song._id)} className="text-slate-400 hover:bg-rose-50 hover:text-rose-500 p-2 rounded-xl transition"><X size={16}/></button>
                          </div>
                       </div>
                     ))
                   ) : (
                     <div className="text-center py-12 border border-dashed border-slate-200 rounded-3xl bg-slate-50/50">
                        <Music size={32} className="mx-auto text-slate-300 mb-3"/>
+                       <p className="text-slate-550 text-xs font-semibold">{canEditMusic ? "Chưa có bài hát nào trong Setlist." : "Chỉ có thể thêm nhạc sau khi Show được duyệt."}</p>
                     </div>
                   )}
                </div>
@@ -353,9 +354,23 @@ const BookingDetail = () => {
 
           {/* RIGHT COLUMN: Customer Detail Card, Payment & Salary Split */}
           <div className="space-y-8">
+             {/* TOGGLE THANH TOÁN (TEST CHẾ ĐỘ) */}
+             <div className="bg-white rounded-[24px] p-5 border border-slate-200/60 shadow-sm flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                   <div className={`w-2 h-2 rounded-full ${showPaymentTest ? 'bg-indigo-500 animate-pulse' : 'bg-slate-350'}`}></div>
+                   <span className="text-xs font-black text-slate-850 uppercase tracking-wider">Chế độ thanh toán (Test)</span>
+                </div>
+                <button 
+                  onClick={() => setShowPaymentTest(!showPaymentTest)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 outline-none ${showPaymentTest ? 'bg-indigo-650' : 'bg-slate-250'}`}
+                >
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${showPaymentTest ? 'translate-x-6' : 'translate-x-1'}`} />
+                </button>
+             </div>
+
              {/* THANH TOÁN CARD */}
-             {show.status !== 'completed' && show.status !== 'cancelled' && (show.deposit > 0 || show.price > 0) && (
-               <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200/60 shadow-sm">
+             {showPaymentTest && show.status !== 'completed' && show.status !== 'cancelled' && (show.deposit > 0 || show.price > 0) && (
+               <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200/60 shadow-sm bg-gradient-to-br from-blue-50/10 to-white">
                   <h3 className="font-extrabold text-slate-850 mb-6 text-sm flex items-center gap-2 pb-4 border-b border-slate-100">
                     <FileText className="text-blue-500"/> THANH TOÁN / ĐẶT CỌC
                   </h3>
@@ -363,7 +378,7 @@ const BookingDetail = () => {
                      {show.deposit > 0 && (
                         <div className="flex flex-col gap-2">
                            <div className="flex justify-between items-center text-xs">
-                              <span className="text-slate-550 font-bold">Số tiền đặt cọc:</span>
+                              <span className="text-slate-555 font-bold">Số tiền đặt cọc:</span>
                               <span className="font-extrabold text-slate-800">{show.deposit.toLocaleString()}đ</span>
                            </div>
                            <button 
@@ -381,7 +396,7 @@ const BookingDetail = () => {
                      {show.price > 0 && (
                         <div className="flex flex-col gap-2 pt-2 border-t border-slate-100">
                            <div className="flex justify-between items-center text-xs">
-                              <span className="text-slate-550 font-bold">Tổng chi phí Show:</span>
+                              <span className="text-slate-555 font-bold">Tổng chi phí Show:</span>
                               <span className="font-extrabold text-slate-800">{show.price.toLocaleString()}đ</span>
                            </div>
                            <button 
