@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
-import { Html5QrcodeScanner } from "html5-qrcode";
+import { Html5Qrcode } from "html5-qrcode";
 import api from "../services/api";
 import { Camera, RefreshCw, CheckCircle, XCircle, AlertTriangle, ArrowLeft, Loader, HelpCircle } from "lucide-react";
 import toast from "react-hot-toast";
@@ -17,6 +17,10 @@ const CheckIn = () => {
   const [availableRehearsals, setAvailableRehearsals] = useState([]);
   const [selectedRehearsal, setSelectedRehearsal] = useState("");
   const [manualToken, setManualToken] = useState("");
+  
+  // States quản lý camera
+  const [cameraActive, setCameraActive] = useState(false);
+  const [cameraError, setCameraError] = useState("");
   const scannerRef = useRef(null);
 
   // 1. Nếu có token và rehearsalId từ URL, gọi API check-in trực tiếp
@@ -79,21 +83,26 @@ const CheckIn = () => {
 
   const startScanner = () => {
     if (scannerRef.current) return;
+    setCameraError("");
+    setCameraActive(false);
+
+    // Kiểm tra Secure Context (Chỉ HTTPS mới chạy được camera trên điện thoại di động)
+    if (!window.isSecureContext && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
+      setCameraError("Cảnh báo bảo mật: Trình duyệt yêu cầu kết nối an toàn (HTTPS) để truy cập Camera trên thiết bị di động. Vui lòng sử dụng hình thức 'Nhập thủ công' hoặc quét mã QR bằng ứng dụng camera mặc định của điện thoại.");
+      return;
+    }
 
     try {
-      const scanner = new Html5QrcodeScanner(
-        "qr-reader",
-        { 
-          fps: 10, 
-          qrbox: { width: 250, height: 250 },
-          rememberLastUsedCamera: true
-        },
-        /* verbose= */ false
-      );
+      const html5QrCode = new Html5Qrcode("qr-reader");
+      scannerRef.current = html5QrCode;
 
-      scanner.render(
+      html5QrCode.start(
+        { facingMode: "environment" }, // Ưu tiên camera sau
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 }
+        },
         (decodedText) => {
-          // Xử lý chuỗi QR code nhận được
           // URL có dạng: http://localhost:3000/checkin/REHEARSAL_ID?token=JWT_TOKEN
           try {
             const url = new URL(decodedText);
@@ -103,8 +112,7 @@ const CheckIn = () => {
               const rId = pathParts[checkinIndex + 1];
               const token = url.searchParams.get("token");
               if (rId && token) {
-                scanner.clear();
-                scannerRef.current = null;
+                stopScanner();
                 setScanning(false);
                 handleAutoCheckIn(rId, token);
               } else {
@@ -114,30 +122,40 @@ const CheckIn = () => {
               toast.error("Mã QR không đúng định dạng check-in!");
             }
           } catch (e) {
-            // Không phải là URL, thử kiểm tra xem có phải token thuần túy không
             toast.error("Định dạng QR không đúng. Vui lòng quét mã QR từ admin.");
           }
         },
         (error) => {
-          // Lỗi quét (xảy ra liên tục khi chưa thấy QR) - không cần báo toast
+          // Verbose errors (bỏ qua để không spam màn hình)
         }
-      );
+      )
+      .then(() => {
+        setCameraActive(true);
+        setCameraError("");
+      })
+      .catch((err) => {
+        console.error("Camera startup error:", err);
+        setCameraError("Không thể truy cập camera. Vui lòng kiểm tra quyền truy cập camera trong cài đặt trình duyệt của thiết bị.");
+      });
 
-      scannerRef.current = scanner;
     } catch (err) {
-      console.error("Camera error:", err);
-      toast.error("Không thể khởi chạy camera");
+      console.error("Scanner init error:", err);
+      setCameraError("Lỗi khởi tạo trình quét QR.");
     }
   };
 
   const stopScanner = () => {
     if (scannerRef.current) {
+      const scanner = scannerRef.current;
+      scannerRef.current = null;
+      setCameraActive(false);
       try {
-        scannerRef.current.clear();
+        if (scanner.isScanning) {
+          scanner.stop().catch(err => console.error("Error stopping scanner:", err));
+        }
       } catch (e) {
         console.error(e);
       }
-      scannerRef.current = null;
     }
   };
 
@@ -248,10 +266,33 @@ const CheckIn = () => {
                </button>
             </div>
 
-            <div className="relative overflow-hidden rounded-2xl bg-black aspect-square max-w-sm mx-auto shadow-inner border border-slate-800">
-              <div id="qr-reader" className="w-full h-full border-none"></div>
+            <div className="relative overflow-hidden rounded-[32px] bg-slate-950 aspect-square max-w-sm mx-auto shadow-2xl border border-slate-800 flex items-center justify-center">
+              {/* Hiển thị màn hình chờ/lỗi nếu camera chưa chạy */}
+              {!cameraActive && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center text-slate-500 space-y-3 z-10 bg-slate-950">
+                  {!cameraError ? (
+                    <>
+                      <Loader className="animate-spin text-indigo-500" size={32} />
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest animate-pulse">Đang khởi động Camera...</p>
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center p-4">
+                      <AlertTriangle className="text-rose-500 mb-2" size={32} />
+                      <p className="text-xs font-bold text-rose-500 mb-2 uppercase tracking-wide">Lỗi Truy Cập Camera</p>
+                      <p className="text-[10px] text-slate-400 font-medium leading-relaxed max-w-xs">
+                        {cameraError}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div id="qr-reader" className="w-full h-full border-none z-0"></div>
+              
               {/* Neon scanner overlay line */}
-              <div className="absolute left-0 right-0 h-0.5 bg-indigo-500/80 animate-bounce top-1/2 shadow-[0_0_8px_#6366f1]"></div>
+              {cameraActive && (
+                <div className="absolute left-0 right-0 h-0.5 bg-indigo-500/80 animate-bounce top-1/2 shadow-[0_0_8px_#6366f1] z-20"></div>
+              )}
             </div>
 
             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">
@@ -264,7 +305,7 @@ const CheckIn = () => {
         {!loading && !result && !scanning && (
           <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200/50 shadow-sm space-y-6">
             <div className="flex justify-between items-center pb-3 border-b border-slate-100">
-               <h3 className="font-extrabold text-slate-800 text-sm flex items-center gap-2">
+               <h3 className="font-extrabold text-slate-850 text-sm flex items-center gap-2">
                  <HelpCircle size={18} className="text-indigo-600" /> Điểm danh thủ công
                </h3>
                <button 
