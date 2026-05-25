@@ -1,8 +1,17 @@
 import axios from 'axios';
 
+const getBaseURL = () => {
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'http://localhost:5000/api';
+    }
+  }
+  return 'https://band-manager-s9tm.onrender.com/api';
+};
+
 const api = axios.create({
-  baseURL: 'https://band-manager-s9tm.onrender.com/api',
-  // baseURL: 'http://localhost:5000/api',
+  baseURL: getBaseURL(),
 });
 
 // Interceptor: Gắn token vào header

@@ -16,7 +16,17 @@ export const AudioProvider = ({ children }) => {
   }, []);
 
   const playTrack = (url, title) => {
-    const fullUrl = url.includes('http') ? url : `https://band-manager-s9tm.onrender.com/${url}`;
+    const getBaseUrl = () => {
+      if (typeof window !== 'undefined') {
+        const hostname = window.location.hostname;
+        if (hostname === 'localhost' || hostname === '127.0.0.1') {
+          return 'http://localhost:5000';
+        }
+      }
+      return 'https://band-manager-s9tm.onrender.com';
+    };
+    const cleanedUrl = url.startsWith('/') ? url.substring(1) : url;
+    const fullUrl = url.includes('http') ? url : `${getBaseUrl()}/${cleanedUrl}`;
     
     // Nếu bấm lại bài đang phát
     if (currentTrack?.url === fullUrl) {

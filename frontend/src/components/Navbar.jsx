@@ -7,6 +7,7 @@ import ProfileModal from "./ProfileModal";
 
 const Navbar = () => {
   const { user, logout } = useContext(AuthContext);
+
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -81,7 +82,7 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="fixed top-0 w-full z-40 bg-white/90 backdrop-blur-md border-b border-slate-100 shadow-sm">
+      <nav className="fixed top-0 w-full z-40 bg-white/85 backdrop-blur-xl border-b border-slate-200/30 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16">
           <div className="flex justify-between items-center h-full">
             
@@ -91,19 +92,19 @@ const Navbar = () => {
                 <div className="bg-indigo-600 text-white p-1.5 rounded-lg transition-transform group-hover:rotate-12">
                   <Music size={22} />
                 </div>
-                <span className="font-black text-lg sm:text-xl tracking-tight text-slate-800">Sắc Band</span>
+                <span className="font-black text-lg sm:text-xl tracking-tight text-slate-850 bg-gradient-to-r from-indigo-600 to-fuchsia-600 bg-clip-text text-transparent">Sắc Band</span>
               </Link>
               
               {/* DESKTOP MENU */}
-              <div className="hidden lg:flex items-center gap-1 bg-slate-100/50 p-1 rounded-xl">
+              <div className="hidden lg:flex items-center gap-1 bg-slate-100/60 p-1 rounded-xl">
                 {navItems.map((item) => (
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`px-3.5 py-1.5 rounded-lg text-sm font-bold transition-all ${
+                    className={`px-3.5 py-1.5 rounded-lg text-sm font-extrabold transition-all duration-200 ${
                       isActive(item.path) 
-                      ? "bg-white text-indigo-600 shadow-sm" 
-                      : "text-slate-500 hover:text-slate-800 hover:bg-slate-200/50"
+                      ? "bg-white text-indigo-600 shadow-sm shadow-slate-200/50" 
+                      : "text-slate-500 hover:text-slate-850 hover:bg-white/60"
                     }`}
                   >
                     {item.name}
@@ -114,8 +115,7 @@ const Navbar = () => {
 
             {/* RIGHT SECTION */}
             <div className="flex items-center gap-1 sm:gap-4">
-              
-              {/* CHUÔNG THÔNG BÁO */}
+                  {/* CHUÔNG THÔNG BÁO */}
               <div className="relative" ref={notiRef}>
                 <button
                   onClick={() => setIsNotiOpen(!isNotiOpen)}
@@ -191,7 +191,7 @@ const Navbar = () => {
               </div>
 
               {/* Mobile Menu Button */}
-              <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="lg:hidden p-2 text-slate-500">
+              <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="lg:hidden p-2 text-slate-500 hover:bg-slate-100 rounded-xl">
                 {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
               </button>
             </div>
@@ -207,7 +207,9 @@ const Navbar = () => {
                 to={item.path}
                 onClick={() => setIsMenuOpen(false)}
                 className={`block px-4 py-3 rounded-xl text-base font-bold transition ${
-                  isActive(item.path) ? "bg-indigo-50 text-indigo-600" : "text-slate-600"
+                  isActive(item.path) 
+                  ? "bg-indigo-50 text-indigo-600" 
+                  : "text-slate-600 hover:bg-slate-50"
                 }`}
               >
                 {item.name}

@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom"; 
 import { AuthProvider, AuthContext } from "./context/AuthContext";
 import { AudioProvider } from "./context/AudioContext"; // 👈 MỚI: Import AudioProvider
+import { ThemeProvider } from "./context/ThemeContext"; // 👈 MỚI: Import ThemeProvider
 import { useContext } from "react";
 import { Toaster } from 'react-hot-toast'; 
 
@@ -16,6 +17,7 @@ import MemberManager from "./pages/MemberManager";
 import FinanceManager from "./pages/FinanceManager";
 import ChangePassword from './pages/ChangePassword';
 import BookingDetail from './pages/BookingDetail'; 
+import CheckIn from "./pages/CheckIn";
 
 import Layout from "./components/Layout"; 
 import GlobalAudioPlayer from "./components/GlobalAudioPlayer"; // 👈 MỚI: Import Player
@@ -24,7 +26,7 @@ const ProtectedRoute = ({ children }) => {
   const { user, loading } = useContext(AuthContext);
   const location = useLocation();
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50">⏳ Đang tải...</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] text-slate-800 font-bold">⏳ Đang tải...</div>;
   if (!user) return <Navigate to="/login" replace />;
   if (user.mustChangePassword && location.pathname !== '/change-password') return <Navigate to="/change-password" replace />;
   if (!user.mustChangePassword && location.pathname === '/change-password') return <Navigate to="/dashboard" replace />;
@@ -34,10 +36,17 @@ const ProtectedRoute = ({ children }) => {
 
 function App() {
   return (
-    <AuthProvider>
-      <AudioProvider> {/* 👈 MỚI: Bọc ngoài ứng dụng */}
-        <BrowserRouter> 
-          <Toaster position="bottom-right" reverseOrder={false} />
+    <ThemeProvider>
+      <AuthProvider>
+        <AudioProvider> {/* 👈 MỚI: Bọc ngoài ứng dụng */}
+          <BrowserRouter> 
+            <Toaster 
+              position="bottom-right" 
+              reverseOrder={false}
+              toastOptions={{
+                className: 'bg-white text-slate-800 border-slate-200/80 border shadow-xl rounded-2xl font-bold text-xs uppercase tracking-wide',
+              }}
+            />
           
           <Routes>
             <Route path="/login" element={<Login />} />
@@ -54,6 +63,8 @@ function App() {
             <Route path="/repertoire" element={<ProtectedRoute><Layout><Repertoire /></Layout></ProtectedRoute>} />
             
             <Route path="/rehearsals" element={<ProtectedRoute><Layout><RehearsalManager /></Layout></ProtectedRoute>} />
+            <Route path="/checkin" element={<ProtectedRoute><Layout><CheckIn /></Layout></ProtectedRoute>} />
+            <Route path="/checkin/:rehearsalId" element={<ProtectedRoute><Layout><CheckIn /></Layout></ProtectedRoute>} />
             <Route path="/members" element={<ProtectedRoute><Layout><MemberManager /></Layout></ProtectedRoute>} />
             <Route path="/finance" element={<ProtectedRoute><Layout><FinanceManager /></Layout></ProtectedRoute>} />
             
@@ -66,6 +77,7 @@ function App() {
         </BrowserRouter>
       </AudioProvider>
     </AuthProvider>
+    </ThemeProvider>
   );
 }
 

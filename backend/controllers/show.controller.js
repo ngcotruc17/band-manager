@@ -1,5 +1,6 @@
 const Show = require('../models/Show');
 const User = require('../models/User'); 
+const Transaction = require('../models/Transaction');
 const { sendNewShowEmail, sendApproveEmail } = require('../utils/sendEmail'); 
 const { notifyAllMembers, notifyAdmins, notifyUser } = require('./notification.controller'); // 👈 Thêm dòng này
 
@@ -24,8 +25,78 @@ exports.deleteShow = async (req, res) => {
 exports.updateShowStatus = async (req, res) => {
   try {
     const { status } = req.body;
-    const oldShow = await Show.findById(req.params.id);
-    const updatedShow = await Show.findByIdAndUpdate(req.params.id, { status }, { new: true });
+    const oldShow = await Show.findById(req.params.id).populate('participants.user');
+    if (!oldShow) {
+      return res.status(404).json({ message: "Không tìm thấy Show" });
+    }
+
+    // Luôn xóa các giao dịch tài chính cũ liên quan đến show này để tránh bị lặp
+    await Transaction.deleteMany({ showId: req.params.id });
+
+    let salarySplit = {
+      totalPrice: 0,
+      bandFundPercent: 10,
+      bandFundAmount: 0,
+      memberAmount: 0,
+      members: []
+    };
+
+    if (status === 'completed') {
+      const approvedParticipants = oldShow.participants.filter(p => p.status === 'approved');
+      const N = approvedParticipants.length;
+      const totalPrice = oldShow.price || 0;
+      const bandFundPercent = 10;
+      const bandFundAmount = Math.round(totalPrice * (bandFundPercent / 100));
+      const remainingAmount = totalPrice - bandFundAmount;
+      const memberAmount = N > 0 ? Math.round(remainingAmount / N) : 0;
+
+      salarySplit = {
+        totalPrice,
+        bandFundPercent,
+        bandFundAmount,
+        memberAmount,
+        members: approvedParticipants.map(p => ({
+          user: p.user._id,
+          amount: memberAmount
+        }))
+      };
+
+      // Tạo các bản ghi giao dịch
+      if (totalPrice > 0) {
+        // 1. Giao dịch thu nhập (Tổng tiền show)
+        const incomeTrans = new Transaction({
+          title: `Doanh thu Show: ${oldShow.title}`,
+          amount: totalPrice,
+          type: 'income',
+          category: 'show',
+          showId: oldShow._id,
+          performedBy: req.user.id
+        });
+        await incomeTrans.save();
+
+        // 2. Chi cát-xê cho từng thành viên tham gia
+        for (const p of approvedParticipants) {
+          if (memberAmount > 0 && p.user) {
+            const expenseTrans = new Transaction({
+              title: `Cát-xê ${p.user.fullName || 'Thành viên'} - Show: ${oldShow.title}`,
+              amount: -memberAmount, // Chi ra là âm
+              type: 'expense',
+              category: 'show',
+              showId: oldShow._id,
+              performedBy: p.user._id
+            });
+            await expenseTrans.save();
+          }
+        }
+      }
+    }
+
+    // Cập nhật show với status mới và thông tin salarySplit
+    const updatedShow = await Show.findByIdAndUpdate(
+      req.params.id, 
+      { status, salarySplit }, 
+      { new: true }
+    ).populate('participants.user', 'fullName email');
 
     // 👇 GỬI THÔNG BÁO CHO CẢ BAND KHI ADMIN DUYỆT SHOW
     if (oldShow.status === 'pending' && status === 'confirmed') {
@@ -35,8 +106,20 @@ exports.updateShowStatus = async (req, res) => {
           link: `/bookings/${updatedShow._id}` 
         });
     }
+
+    // 👇 GỬI THÔNG BÁO KHI SHOW HOÀN THÀNH VÀ CHIA CÁT-XÊ
+    if (status === 'completed' && updatedShow.price > 0) {
+        await notifyAllMembers({
+          message: `🎉 SHOW HOÀN THÀNH: "${updatedShow.title}" đã được thanh toán & chia cát-xê!`,
+          link: `/bookings/${updatedShow._id}`
+        });
+    }
+
     res.json(updatedShow);
-  } catch (error) { res.status(500).json({ message: error.message }); }
+  } catch (error) { 
+    console.error("Lỗi trong updateShowStatus:", error);
+    res.status(500).json({ message: error.message }); 
+  }
 };
 
 exports.getShowById = async (req, res) => {

@@ -27,7 +27,19 @@ const showSchema = new mongoose.Schema({
     link: { type: String }, // Link beat/sheet (Drive/Youtube)
     note: { type: String }, // Ghi chú (Tone, điệu...)
     addedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
-  }]
+  }],
+
+  // Tự động phân chia cát-xê
+  salarySplit: {
+    totalPrice: { type: Number, default: 0 },
+    bandFundPercent: { type: Number, default: 10 },
+    bandFundAmount: { type: Number, default: 0 },
+    memberAmount: { type: Number, default: 0 },
+    members: [{
+      user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      amount: { type: Number, default: 0 }
+    }]
+  }
 
 }, { timestamps: true });
 

@@ -7,33 +7,31 @@
 
 body {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  background-color: #f1f5f9;
-  /* slate-100 */
-  color: #0f172a;
-  /* slate-900 */
+  @apply bg-[#f8fafc] text-slate-800;
   -webkit-font-smoothing: antialiased;
 }
 
 @layer utilities {
 
-  /* Hiệu ứng Kính mờ siêu xịn */
+  /* Hiệu ứng Kính mờ siêu xịn cho Light Mode */
   .glass {
-    @apply bg-white/70 backdrop-blur-xl border border-white/50;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+    @apply bg-white/80 backdrop-blur-xl border border-white/60;
+    box-shadow: 0 10px 40px -10px rgba(15, 23, 42, 0.04), 0 1px 3px -1px rgba(15, 23, 42, 0.02);
   }
 
+  /* Kính mờ tối cho các Banner đặc biệt cần độ tương phản cao */
   .glass-dark {
-    @apply bg-slate-900/80 backdrop-blur-xl border border-white/10 shadow-2xl;
+    @apply bg-slate-900 backdrop-blur-xl border border-slate-800 shadow-xl;
   }
 
   /* Chữ đổ màu Gradient */
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-500;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-600;
   }
 
   /* Card tương tác */
   .card-hover {
-    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-violet-500/10;
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-500/5;
   }
 }
 

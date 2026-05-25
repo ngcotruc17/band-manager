@@ -8,8 +8,17 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 👇 Sửa lại tên biến cho thống nhất
-  const API_URL = "https://band-manager-s9tm.onrender.com/api/auth";
+  const getAPIUrl = () => {
+    if (typeof window !== 'undefined') {
+      const hostname = window.location.hostname;
+      if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return 'http://localhost:5000/api/auth';
+      }
+    }
+    return 'https://band-manager-s9tm.onrender.com/api/auth';
+  };
+
+  const API_URL = getAPIUrl();
 
   // Hàm load user khi F5 trang
   const loadUser = async () => {
