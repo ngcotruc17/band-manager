@@ -1,6 +1,10 @@
 import axios from 'axios';
 
 const getAPIUrl = (): string => {
+  // Ưu tiên biến môi trường nếu có
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return `${process.env.NEXT_PUBLIC_API_URL}/api`;
+  }
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
