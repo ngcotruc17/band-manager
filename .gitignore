@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+*/node_modules/
+**/node_modules/
+
+# Build output
+.next/
+*/.next/
+dist/
+*/dist/
+build/
+*/build/
+
+# Environment files (QUAN TRỌNG - không push lên GitHub)
+.env
+.env.local
+.env.*.local
+backend/.env
+backend-v2/.env
+frontend/.env.local
+frontend-v2/.env.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/settings.json
+*.swp
+*.swo
+
+# Các file tạm
+toan_bo_code.txt
+CayThuMuc.txt
+tao_cay_thu_muc.js
+gopcode.js
