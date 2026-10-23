@@ -4,8 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "../context/AuthContext";
 import { AudioProvider } from "../context/AudioContext";
 import ProtectedRoute from "../components/ProtectedRoute";
-import Navbar from "../components/Navbar";
-import GlobalAudioPlayer from "../components/GlobalAudioPlayer";
+import AppShell from "../components/AppShell";
 import { Toaster } from "react-hot-toast";
 
 const jakartaSans = Plus_Jakarta_Sans({
@@ -52,11 +51,7 @@ export default function RootLayout({
                   }
                 }}
               />
-              <Navbar />
-              <main className="flex-1 flex flex-col pt-16 pb-20 relative">
-                {children}
-              </main>
-              <GlobalAudioPlayer />
+              <AppShell>{children}</AppShell>
             </ProtectedRoute>
           </AudioProvider>
         </AuthProvider>

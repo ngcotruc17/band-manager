@@ -45,31 +45,31 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
+    <div className="w-full flex-1 flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
       
       {/* Ambient concert stage lighting background */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-tr from-indigo-500/10 to-violet-500/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-gradient-to-tr from-indigo-500/10 to-violet-500/10 rounded-full blur-[130px] pointer-events-none" />
       <div className="absolute bottom-1/4 left-1/3 -translate-x-1/2 w-[400px] h-[400px] bg-gradient-to-tr from-amber-500/5 to-rose-500/5 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className="w-full max-w-md bg-white rounded-3xl p-7 sm:p-9 space-y-6 shadow-xl border border-slate-200/80 relative z-10">
+      <div className="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 space-y-5 shadow-xl border border-slate-200/80 relative z-10 my-auto">
         
         {/* Brand Header */}
-        <div className="text-center space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-700 to-violet-600 flex items-center justify-center text-white mx-auto shadow-lg shadow-indigo-600/25">
-            <Music size={26} />
+        <div className="text-center space-y-2.5">
+          <div className="w-13 h-13 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-700 to-violet-600 flex items-center justify-center text-white mx-auto shadow-lg shadow-indigo-600/25">
+            <Music size={24} />
           </div>
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200/80 text-[10px] font-extrabold uppercase tracking-widest mb-1.5">
+            <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200/80 text-[10px] font-extrabold uppercase tracking-widest mb-1.5">
               <Sparkles className="w-3 h-3 text-indigo-600" />
               <span>SẮC BAND ECOSYSTEM</span>
             </div>
             <h1 className="text-2xl font-black tracking-tight text-slate-900 uppercase">Đăng Nhập Hệ Thống</h1>
-            <p className="text-xs text-slate-500 font-medium mt-1">Cổng điều hành lịch diễn, tập ráp & sân khấu số</p>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">Cổng điều hành lịch diễn, tập ráp & sân khấu số</p>
           </div>
         </div>
 
         {/* Login Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3.5">
           <div className="space-y-1.5 text-left">
             <label className="block text-xs font-bold text-slate-700">
               Tên đăng nhập hoặc Email

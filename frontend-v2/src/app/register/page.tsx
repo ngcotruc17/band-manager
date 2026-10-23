@@ -86,9 +86,13 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex items-center justify-center p-4 sm:p-6 relative py-12">
+    <div className="w-full flex-1 flex items-center justify-center p-4 sm:p-6 relative overflow-hidden py-4 sm:py-6">
       
-      <div className="w-full max-w-lg ui-card p-6 sm:p-8 space-y-6 relative z-10 shadow-xl border border-slate-200">
+      {/* Ambient concert stage lighting background */}
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-gradient-to-tr from-indigo-500/10 to-violet-500/10 rounded-full blur-[130px] pointer-events-none" />
+      <div className="absolute bottom-1/4 left-1/3 -translate-x-1/2 w-[400px] h-[400px] bg-gradient-to-tr from-amber-500/5 to-rose-500/5 rounded-full blur-[100px] pointer-events-none" />
+
+      <div className="w-full max-w-lg ui-card p-6 sm:p-8 space-y-4 relative z-10 shadow-xl border border-slate-200 my-auto">
         
         {/* Header */}
         <div className="text-center space-y-2">
@@ -97,12 +101,12 @@ export default function Register() {
           </div>
           <div>
             <h1 className="text-xl font-extrabold tracking-tight text-slate-900 uppercase">Đăng Ký Thành Viên Sắc Band</h1>
-            <p className="text-xs text-slate-500 font-medium">Gia nhập hệ sinh thái biểu diễn & quản lý nội bộ</p>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">Gia nhập hệ sinh thái biểu diễn & quản lý nội bộ</p>
           </div>
         </div>
 
         {/* Form Đăng ký ban đầu */}
-        <form onSubmit={handleInitialSubmit} className="space-y-4">
+        <form onSubmit={handleInitialSubmit} className="space-y-3.5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="block text-xs font-bold text-slate-700">Họ và tên *</label>

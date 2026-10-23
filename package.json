@@ -4,6 +4,8 @@
   "description": "Sắc Band Manager Ecosystem (v2.0 - TypeScript, Next.js 16, Express 5, WebSockets)",
   "private": true,
   "scripts": {
+    "start": "node server.js",
+    "build": "npm --prefix backend-v2 run build",
     "dev:backend": "npm --prefix backend-v2 run dev",
     "dev:frontend": "npm --prefix frontend-v2 run dev",
     "build:backend": "npm --prefix backend-v2 run build",

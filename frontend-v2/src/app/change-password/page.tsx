@@ -48,7 +48,7 @@ export default function ChangePassword() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-[#f8fafc] font-sans">
+    <div className="w-full flex-1 flex items-center justify-center p-4 relative overflow-hidden bg-[#f8fafc] font-sans">
       {/* Premium Tech Grid Background */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-50 pointer-events-none"></div>
 
@@ -56,7 +56,7 @@ export default function ChangePassword() {
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-indigo-200/30 rounded-full mix-blend-multiply filter blur-[100px] opacity-70 pointer-events-none"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-fuchsia-200/20 rounded-full mix-blend-multiply filter blur-[100px] opacity-60 pointer-events-none"></div>
 
-      <div className="relative w-full max-w-md bg-white/70 backdrop-blur-xl border border-white/50 rounded-3xl p-8 sm:p-10 z-10 shadow-[0_30px_60px_rgba(15,23,42,0.08)] text-center">
+      <div className="relative w-full max-w-md bg-white/70 backdrop-blur-xl border border-white/50 rounded-3xl p-8 sm:p-10 z-10 shadow-[0_30px_60px_rgba(15,23,42,0.08)] text-center my-auto">
         <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-inner border border-indigo-100/50">
           <Key size={26} />
         </div>
