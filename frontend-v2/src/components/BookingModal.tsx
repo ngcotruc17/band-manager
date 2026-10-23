@@ -1,5 +1,5 @@
 import React from "react";
-import { Edit, Plus, X, Calendar, Clock, MapPin, DollarSign, User, Phone, Music, Users, Shirt, Tag, FileText } from "lucide-react";
+import { Edit, Plus, X, Calendar, Clock, MapPin, DollarSign, User, Phone, Music, Users, Shirt, Tag, FileText, ChevronDown } from "lucide-react";
 
 interface InputGroupProps {
   label: string;
@@ -15,15 +15,17 @@ interface InputGroupProps {
 const InputGroup = ({ label, icon: Icon, name, value, type = "text", placeholder, required, onChange }: InputGroupProps) => (
   <div className="space-y-1.5 text-left">
     <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1">{label}</label>
-    <div className="relative group">
-      <Icon className="absolute left-4 top-3.5 text-slate-400 group-focus-within:text-indigo-650 transition" size={18}/>
+    <div className="relative flex items-center">
+      <div className="absolute left-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-indigo-600 transition">
+        <Icon size={18}/>
+      </div>
       <input
         name={name}
         value={value}
         onChange={onChange}
         type={type}
         required={required}
-        className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200/50 rounded-2xl focus:ring-2 ring-indigo-500 outline-none font-bold text-slate-800 transition text-sm focus:bg-white"
+        className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 ring-indigo-500 outline-none font-bold text-slate-800 transition text-sm focus:bg-white"
         placeholder={placeholder}
       />
     </div>
@@ -55,18 +57,18 @@ export default function BookingModal({ isOpen, onClose, onSave, formData, handle
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4 animate-fade-in">
-      <div className="bg-white rounded-[40px] w-full max-w-2xl shadow-2xl overflow-hidden border border-slate-200">
+      <div className="bg-white rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden border border-slate-200">
         {/* Header */}
         <div className="p-7 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
           <div className="text-left">
             <h3 className="text-2xl font-black text-slate-800 flex items-center gap-3 leading-none">
               {editingId
-                ? <><Edit className="text-indigo-650" size={24}/> Cập nhật Show</>
+                ? <><Edit className="text-indigo-600" size={24}/> Cập nhật Show</>
                 : <><Plus className="text-indigo-600" size={24}/> Tạo Booking Mới</>}
             </h3>
             <p className="text-xs text-slate-400 font-medium mt-1.5">Điền thông tin chi tiết để lên lịch diễn</p>
           </div>
-          <button onClick={onClose} className="p-2.5 bg-white border border-slate-100 rounded-full text-slate-400 hover:text-rose-500 hover:border-rose-100 transition shadow-sm">
+          <button onClick={onClose} className="p-2.5 bg-white border border-slate-100 rounded-full text-slate-400 hover:text-rose-500 hover:border-rose-100 transition shadow-sm cursor-pointer">
             <X size={20}/>
           </button>
         </div>
@@ -82,17 +84,22 @@ export default function BookingModal({ isOpen, onClose, onSave, formData, handle
           {/* Loại sự kiện */}
           <div className="space-y-1.5 text-left">
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1">Loại Sự Kiện</label>
-            <div className="relative group">
-              <Tag className="absolute left-4 top-3.5 text-slate-400 group-focus-within:text-indigo-650 transition z-10" size={18}/>
+            <div className="relative flex items-center">
+              <div className="absolute left-4 flex items-center pointer-events-none text-slate-400 z-10">
+                <Tag size={18}/>
+              </div>
               <select
                 name="eventType"
                 value={formData.eventType}
                 onChange={handleChange}
-                className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200/50 rounded-2xl focus:ring-2 ring-indigo-500 outline-none font-bold text-slate-800 transition text-sm focus:bg-white appearance-none cursor-pointer"
+                className="w-full pl-12 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 ring-indigo-500 outline-none font-bold text-slate-800 transition text-sm focus:bg-white appearance-none cursor-pointer"
               >
                 <option value="">-- Chọn loại sự kiện --</option>
                 {EVENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
+              <div className="absolute right-4 pointer-events-none text-slate-400">
+                <ChevronDown size={16} />
+              </div>
             </div>
           </div>
 
@@ -113,7 +120,7 @@ export default function BookingModal({ isOpen, onClose, onSave, formData, handle
           </div>
 
           {/* Tài chính */}
-          <div className="grid grid-cols-3 gap-4 p-5 bg-emerald-50 rounded-[28px] border border-emerald-100">
+          <div className="grid grid-cols-3 gap-4 p-5 bg-emerald-50 rounded-2xl border border-emerald-100">
             <InputGroup label="Cát-xê / người" icon={DollarSign} name="price" value={formData.price} onChange={handleChange} type="number" placeholder="0"/>
             <InputGroup label="Tiền đã cọc" icon={DollarSign} name="deposit" value={formData.deposit} onChange={handleChange} type="number" placeholder="0"/>
             <InputGroup label="Phụ phí khác" icon={DollarSign} name="extraFee" value={formData.extraFee} onChange={handleChange} type="number" placeholder="0"/>
@@ -129,7 +136,7 @@ export default function BookingModal({ isOpen, onClose, onSave, formData, handle
               value={formData.notes}
               onChange={handleChange}
               rows={3}
-              className="w-full p-4 bg-slate-50 border border-slate-150 rounded-[20px] focus:ring-2 ring-indigo-500 outline-none font-medium text-slate-700 transition text-sm focus:bg-white resize-none"
+              className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 ring-indigo-500 outline-none font-medium text-slate-700 transition text-sm focus:bg-white resize-none"
               placeholder="Yêu cầu riêng của khách, setlist concept, bố cục sân khấu..."
             />
           </div>

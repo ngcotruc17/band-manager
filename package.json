@@ -1,5 +1,17 @@
 {
+  "name": "sac-band-manager",
+  "version": "2.0.0",
+  "description": "Sắc Band Manager Ecosystem (v2.0 - TypeScript, Next.js 16, Express 5, WebSockets)",
+  "private": true,
+  "scripts": {
+    "dev:backend": "npm --prefix backend-v2 run dev",
+    "dev:frontend": "npm --prefix frontend-v2 run dev",
+    "build:backend": "npm --prefix backend-v2 run build",
+    "build:frontend": "npm --prefix frontend-v2 run build",
+    "test:backend": "npm --prefix backend-v2 run test"
+  },
   "dependencies": {
     "mongodb": "^7.1.1"
   }
 }
+

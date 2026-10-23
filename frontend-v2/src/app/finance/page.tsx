@@ -95,7 +95,7 @@ export default function FinanceV2() {
         type: "expense",
         category: invoiceData.category
       });
-      toast.success("Đã ghi nhận chi phí phát sinh và khấu trừ Quỹ Band! 📉");
+      toast.success("Đã ghi nhận chi phí phát sinh và khấu trừ Quỹ Band!");
       setInvoiceData({ title: "", amount: "", category: "equipment", notes: "" });
       setInvoiceFile(null);
       setShowUploadModal(false);
@@ -143,7 +143,7 @@ export default function FinanceV2() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    toast.success("Xuất CSV thành công! 📂");
+    toast.success("Xuất CSV thành công!");
   };
  
   const formatCurrency = (val: number) => {
@@ -157,110 +157,119 @@ export default function FinanceV2() {
  
   if (loading && transactions.length === 0) {
     return (
-      <div className="min-h-screen bg-[#f8fafc] flex flex-col items-center justify-center gap-3">
-        <Loader className="animate-spin text-indigo-650" size={32} />
-        <span className="text-xs font-black uppercase tracking-wider text-slate-400">Đang đồng bộ sổ quỹ tài chính...</span>
+      <div className="flex-1 flex flex-col items-center justify-center py-24 gap-3">
+        <Loader className="animate-spin text-indigo-500" size={32} />
+        <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Đang đồng bộ sổ quỹ tài chính...</span>
       </div>
     );
   }
  
   return (
-    <div className="min-h-screen bg-[#f8fafc] p-6 md:p-10">
-      <div className="max-w-7xl mx-auto space-y-8">
-        
-        {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-black text-slate-800 flex items-center gap-3">
-              <span className="bg-gradient-to-tr from-emerald-500 to-teal-600 text-white p-2.5 rounded-2xl shadow-lg shadow-teal-500/10">
-                <DollarSign size={26} />
-              </span>
-              QUẢN LÝ TÀI CHÍNH & ĐỐI SOÁT
+    <div className="max-w-7xl mx-auto px-4 sm:px-8 py-6 space-y-6">
+      
+      {/* Header Banner */}
+      <div className="ui-card p-6 sm:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+              <DollarSign className="w-3.5 h-3.5 text-emerald-600" />
+              <span>QUẢN TRỊ TÀI CHÍNH</span>
+            </span>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+              Quản Lý Tài Chính & Đối Soát Ngân Hàng
             </h1>
-            <p className="text-xs text-slate-400 font-bold mt-1 uppercase tracking-wider">Hệ thống mở Open Banking & Kế toán dòng tiền v2.0</p>
           </div>
- 
-          <div className="flex gap-2 w-full md:w-auto">
-            {user?.role === 'admin' && (
-              <button
-                onClick={() => setShowUploadModal(true)}
-                className="flex-1 md:flex-none bg-slate-900 hover:bg-black text-white px-5 py-3 rounded-2xl font-black flex items-center justify-center gap-2 shadow-md transition transform active:scale-95 text-xs uppercase tracking-wider"
-              >
-                <Plus size={16} /> Tạo giao dịch quỹ
-              </button>
-            )}
+          <p className="text-xs sm:text-sm font-medium text-slate-600 mt-1">
+            Đối soát tự động qua Webhook ngân hàng (SePay/Cassso), quản lý ví cá nhân & sổ quỹ ban nhạc.
+          </p>
+        </div>
+
+        <div className="flex gap-2.5 w-full md:w-auto">
+          {user?.role === 'admin' && (
             <button
-              onClick={handleExportCSV}
-              className="flex-1 md:flex-none bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-2xl font-black flex items-center justify-center gap-2 shadow-md transition transform active:scale-95 text-xs uppercase tracking-wider"
+              onClick={() => setShowUploadModal(true)}
+              className="ui-button-primary flex items-center justify-center gap-2 text-xs uppercase tracking-wider cursor-pointer"
             >
-              <Download size={16} /> Xuất Báo Cáo
+              <Plus size={16} /> Tạo giao dịch quỹ
             </button>
-          </div>
+          )}
+          <button
+            onClick={handleExportCSV}
+            className="ui-button-secondary flex items-center justify-center gap-2 text-xs uppercase tracking-wider cursor-pointer"
+          >
+            <Download size={16} /> Xuất Báo Cáo CSV
+          </button>
         </div>
- 
-        {/* Các thẻ thông số chính */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-3xl border border-slate-150 p-6 shadow-sm flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="bg-emerald-550/10 text-emerald-600 p-4 rounded-2xl">
-                <TrendingUp size={24} />
-              </div>
-              <div>
-                <p className="text-[10px] text-slate-405 font-extrabold uppercase tracking-wider">Quỹ chung ban nhạc</p>
-                <p className="text-2xl font-black text-slate-850">{formatCurrency(totalFund)}</p>
-              </div>
+      </div>
+
+      {/* Các thẻ thông số chính */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="ui-card p-5 flex items-center justify-between ui-card-hover">
+          <div className="flex items-center gap-4">
+            <div className="bg-emerald-50 text-emerald-600 p-3 rounded-xl border border-emerald-200">
+              <TrendingUp size={20} />
             </div>
-            <span className="text-[9px] bg-emerald-50 text-emerald-600 font-black px-2 py-1 rounded-lg border border-emerald-100 uppercase">Hoạt động</span>
-          </div>
- 
-          <div className="bg-white rounded-3xl border border-slate-150 p-6 shadow-sm flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="bg-indigo-50 text-indigo-650 p-4 rounded-2xl">
-                <CreditCard size={24} />
-              </div>
-              <div>
-                <p className="text-[10px] text-slate-405 font-extrabold uppercase tracking-wider">Số dư ví cá nhân</p>
-                <p className="text-2xl font-black text-slate-850">{formatCurrency(user?.walletBalance || 0)}</p>
-              </div>
+            <div>
+              <p className="text-[10px] text-slate-500 font-extrabold uppercase tracking-wider">Quỹ chung ban nhạc</p>
+              <p className="text-2xl font-black text-emerald-600 tracking-tight">{formatCurrency(totalFund)}</p>
             </div>
-            <span className="text-[9px] bg-indigo-50 text-indigo-600 font-black px-2 py-1 rounded-lg border border-indigo-100 uppercase">Khả dụng</span>
           </div>
- 
-          <div className="bg-white rounded-3xl border border-slate-150 p-6 shadow-sm flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="bg-rose-50 text-rose-500 p-4 rounded-2xl">
-                <AlertCircle size={24} />
-              </div>
-              <div>
-                <p className="text-[10px] text-slate-405 font-extrabold uppercase tracking-wider">Tiền phạt đã đóng</p>
-                <p className="text-2xl font-black text-slate-850">{formatCurrency(user?.totalFinePaid || 0)}</p>
-              </div>
-            </div>
-            <span className="text-[9px] bg-rose-50 text-rose-600 font-black px-2 py-1 rounded-lg border border-rose-100 uppercase">Tích lũy</span>
-          </div>
+          <span className="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded-md border border-emerald-200 uppercase">Hoạt động</span>
         </div>
+
+        <div className="ui-card p-5 flex items-center justify-between ui-card-hover">
+          <div className="flex items-center gap-4">
+            <div className="bg-indigo-50 text-indigo-600 p-3 rounded-xl border border-indigo-200">
+              <CreditCard size={20} />
+            </div>
+
+            <div>
+              <p className="text-[10px] text-slate-500 font-extrabold uppercase tracking-wider">Số dư ví cá nhân</p>
+              <p className="text-2xl font-black text-slate-900 tracking-tight">{formatCurrency(user?.walletBalance || 0)}</p>
+            </div>
+          </div>
+          <span className="text-[9px] bg-indigo-50 text-indigo-700 font-bold px-2 py-0.5 rounded-md border border-indigo-200 uppercase">Khả dụng</span>
+        </div>
+
+        <div className="ui-card p-5 flex items-center justify-between ui-card-hover">
+          <div className="flex items-center gap-4">
+            <div className="bg-rose-50 text-rose-600 p-3 rounded-xl border border-rose-200">
+              <AlertCircle size={20} />
+            </div>
+            <div>
+              <p className="text-[10px] text-slate-500 font-extrabold uppercase tracking-wider">Tiền phạt đã đóng</p>
+              <p className="text-2xl font-black text-rose-600 tracking-tight">{formatCurrency(user?.totalFinePaid || 0)}</p>
+            </div>
+          </div>
+          <span className="text-[9px] bg-rose-50 text-rose-700 font-bold px-2 py-0.5 rounded-md border border-rose-200 uppercase">Tích lũy</span>
+        </div>
+      </div>
  
         {/* Khối Nội Dung: Giao Dịch & Nhật Ký Đối Soát */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           {/* CỘT TRÁI: DANH SÁCH GIAO DỊCH (7 cột) */}
-          <div className="lg:col-span-7 bg-white p-6 md:p-8 rounded-[32px] border border-slate-150 shadow-sm space-y-6">
+          <div className="lg:col-span-7 bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-4">
               <div>
-                <h3 className="text-lg font-black text-slate-850 flex items-center gap-2">
+                <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
                   <FileText size={20} className="text-indigo-600" /> Sổ Nhật Ký Thu Chi
                 </h3>
                 <p className="text-[10px] text-slate-400 font-bold uppercase mt-0.5">Lịch sử dòng tiền ban nhạc cập nhật thời gian thực</p>
               </div>
               
-              <div className="relative w-full sm:w-60">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+              <div className="relative w-full sm:w-64 flex items-center">
+                <div className="absolute left-3.5 flex items-center pointer-events-none text-slate-400">
+                  <Search size={16} />
+                </div>
                 <input
                   type="text"
                   placeholder="Tìm nội dung giao dịch..."
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 border border-slate-205 rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 ring-indigo-500 bg-slate-50 focus:bg-white"
+                  className="w-full pl-11 pr-3 py-2 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 ring-indigo-500 bg-slate-50 focus:bg-white transition-colors"
                 />
               </div>
             </div>
@@ -302,7 +311,7 @@ export default function FinanceV2() {
                       {user?.role === 'admin' && (
                         <button 
                           onClick={() => handleDeleteTransaction(t._id)}
-                          className="text-slate-350 hover:text-rose-500 p-1 rounded-lg transition"
+                          className="text-slate-400 hover:text-rose-500 p-1 rounded-lg transition"
                           title="Xóa giao dịch"
                         >
                           <Trash2 size={15} />
@@ -316,11 +325,11 @@ export default function FinanceV2() {
           </div>
  
           {/* CỘT PHẢI: WEBHOOK BANK LOGS (5 cột dành cho Admin) hoặc CƠ CHẾ NỘP TIỀN QUỸ (cho Member) */}
-          <div className="lg:col-span-5 bg-white p-6 md:p-8 rounded-[32px] border border-slate-150 shadow-sm space-y-6">
+          <div className="lg:col-span-5 bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
             {user?.role === "admin" ? (
               <>
                 <div>
-                  <h3 className="text-lg font-black text-slate-850 flex items-center gap-2">
+                  <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
                     <ShieldAlert size={20} className="text-indigo-600" /> Webhook Ngân Hàng
                   </h3>
                   <p className="text-[10px] text-slate-400 font-bold uppercase mt-0.5">Nhật ký truy vấn giao dịch trực tiếp từ TPBank/Cake</p>
@@ -331,7 +340,7 @@ export default function FinanceV2() {
                     <p className="text-center text-xs text-slate-400 italic py-10">Chưa có giao dịch webhook nào</p>
                   ) : (
                     webhookLogs.map(log => (
-                      <div key={log._id} className="p-4 rounded-2xl border border-slate-150 bg-slate-50/20 space-y-3 text-xs">
+                      <div key={log._id} className="p-4 rounded-2xl border border-slate-200 bg-slate-50/20 space-y-3 text-xs">
                         <div className="flex justify-between items-center">
                           <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">{log.transactionId}</span>
                           <span className={`text-[8px] font-black uppercase px-2.5 py-0.5 rounded-full ${
@@ -344,7 +353,7 @@ export default function FinanceV2() {
                         </div>
  
                         <div className="space-y-1 text-slate-700 font-semibold">
-                          <p className="font-extrabold text-slate-850">{log.senderName || "KHONG RO NGUOI GUI"}</p>
+                          <p className="font-extrabold text-slate-800">{log.senderName || "KHONG RO NGUOI GUI"}</p>
                           <p className="text-slate-500 italic">" {log.content} "</p>
                         </div>
  
@@ -361,18 +370,18 @@ export default function FinanceV2() {
               /* GIAO DIỆN HƯỚNG DẪN NỘP PHẠT/NOP QUY CỦA THÀNH VIÊN */
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-black text-slate-850 flex items-center gap-2">
-                    <ShieldAlert size={20} className="text-indigo-605" /> Nộp Quỹ & Đóng Phạt
+                  <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                    <ShieldAlert size={20} className="text-indigo-600" /> Nộp Quỹ & Đóng Phạt
                   </h3>
                   <p className="text-[10px] text-slate-400 font-bold uppercase mt-0.5">Cơ chế đối soát tự động qua Open Banking</p>
                 </div>
  
-                <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4 text-xs font-semibold text-slate-650">
+                <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4 text-xs font-semibold text-slate-700">
                   <p className="leading-relaxed">Anh em có thể nộp tiền quỹ hoặc đóng tiền phạt đi trễ bằng cách quét mã QR chuyển khoản ngân hàng. Hệ thống SePay sẽ tự động khớp mã đối soát thời gian thực.</p>
                   
                   <div className="p-4 bg-white rounded-xl border border-slate-100 space-y-2.5">
                     <h5 className="font-black text-slate-800 text-xs">Cú pháp đóng phạt tự động:</h5>
-                    <div className="bg-slate-50 p-3 rounded-lg font-mono text-[11px] text-indigo-650 border border-slate-200">
+                    <div className="bg-slate-50 p-3 rounded-lg font-mono text-[11px] text-indigo-600 border border-slate-200">
                       PHAT {user?._id}
                     </div>
                     <p className="text-[10px] text-slate-400 leading-normal">Chuyển khoản chính xác số tiền phạt của bạn với nội dung trên để hệ thống tự động xóa công nợ trễ/vắng.</p>
@@ -390,16 +399,14 @@ export default function FinanceV2() {
           </div>
  
         </div>
- 
-      </div>
- 
+
       {/* MODAL TẠO GIAO DỊCH QUỸ (Chi phí / Thu nhập phát sinh) */}
       {showUploadModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-[32px] w-full max-w-md shadow-2xl p-8 border border-slate-200">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl p-8 border border-slate-200">
             <div className="flex justify-between items-center border-b border-slate-100 pb-4 mb-6">
-              <h3 className="font-black text-lg text-slate-850 flex items-center gap-2">
-                <UploadCloud className="text-indigo-650" size={24} /> Kê khai chi tiêu / Thu nhập
+              <h3 className="font-black text-lg text-slate-900 flex items-center gap-2">
+                <UploadCloud className="text-indigo-600" size={24} /> Kê khai chi tiêu / Thu nhập
               </h3>
               <button onClick={() => setShowUploadModal(false)} className="text-slate-400 hover:text-rose-500 text-sm font-bold">Đóng</button>
             </div>
@@ -461,7 +468,7 @@ export default function FinanceV2() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 bg-indigo-650 hover:bg-indigo-700 text-white font-black rounded-2xl shadow-lg transition active:scale-[0.98] flex items-center justify-center gap-2 text-xs uppercase tracking-wider"
+                className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-2xl shadow-lg transition active:scale-[0.98] flex items-center justify-center gap-2 text-xs uppercase tracking-wider"
               >
                 {loading ? <Loader className="animate-spin" size={16} /> : "XÁC NHẬN GHI VÀO SỔ"}
               </button>

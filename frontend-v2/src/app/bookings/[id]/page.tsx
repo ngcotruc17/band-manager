@@ -6,7 +6,7 @@ import api from '../../../services/api';
 import { AuthContext } from "../../../context/AuthContext";
 import { 
   Calendar, Clock, MapPin, User, ArrowLeft, Music, 
-  Lock, Unlock, Check, X, AlertCircle, Plus, Search, FileText, PlayCircle, ShieldCheck, Loader, CheckCircle, Phone 
+  Lock, Unlock, Check, X, AlertCircle, Plus, Search, FileText, PlayCircle, ShieldCheck, Loader, CheckCircle, CheckSquare, Phone, Copy, Printer 
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -197,6 +197,23 @@ export default function BookingDetail() {
     }
   };
 
+  const handleCopySetlist = () => {
+    if (!show?.setlist || show.setlist.length === 0) {
+      return toast.error("Chưa có bài hát nào trong setlist để sao chép!");
+    }
+    const lines = [
+      `[SETLIST] ${show.title.toUpperCase()}`,
+      `Thời gian: ${new Date(show.date).toLocaleDateString("vi-VN")} - ${show.time}`,
+      `Địa điểm: ${show.location}`,
+      "----------------------------------",
+      ...show.setlist.map((s, idx) => `${idx + 1}. ${s.title}${s.note ? ` (${s.note})` : ""}`),
+      "----------------------------------",
+      "SẮC BAND - Chúc anh em biểu diễn thành công!"
+    ];
+    navigator.clipboard.writeText(lines.join("\n"));
+    toast.success("Đã sao chép Setlist gửi Zalo!");
+  };
+
   const getDownloadLink = (link?: string) => {
     if (!link) return "#";
     const getAPIBase = () => {
@@ -219,7 +236,7 @@ export default function BookingDetail() {
   if (loading || !show) {
     return (
       <div className="min-h-screen bg-[#f8fafc] flex flex-col items-center justify-center space-y-4">
-        <Loader className="animate-spin text-indigo-650" size={40} />
+        <Loader className="animate-spin text-indigo-600" size={40} />
         <p className="text-indigo-600 font-bold animate-pulse text-xs uppercase tracking-widest">Đang tải chi tiết Lịch diễn...</p>
       </div>
     );
@@ -241,21 +258,21 @@ export default function BookingDetail() {
       
       {/* HEADER: Back Button & Title */}
       <div className="max-w-6xl mx-auto space-y-6">
-        <button onClick={() => router.back()} className="flex items-center gap-1.5 text-xs font-bold text-slate-550 hover:text-slate-800 bg-white px-4 py-2.5 rounded-2xl border border-slate-200 shadow-sm transition">
+        <button onClick={() => router.back()} className="flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-slate-800 bg-white px-4 py-2.5 rounded-2xl border border-slate-200 shadow-sm transition">
           <ArrowLeft size={16}/> Quay lại
         </button>
 
-        <div className="bg-white rounded-[32px] p-6 md:p-8 border border-slate-200/50 shadow-sm">
+        <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200/50 shadow-sm">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div>
               <div className="flex flex-wrap gap-2 mb-3">
-                 {show.status === 'pending' && <span className="px-2.5 py-1 rounded-full bg-amber-50 border border-amber-250 text-amber-700 text-[10px] font-black uppercase tracking-widest animate-pulse">⏳ Chờ duyệt show</span>}
-                 {show.status === 'confirmed' && !show.isRegistrationClosed && <span className="px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-[10px] font-black uppercase tracking-widest">✅ Đang nhận đăng ký</span>}
+                 {show.status === 'pending' && <span className="px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"><Clock size={12}/> Chờ duyệt show</span>}
+                 {show.status === 'confirmed' && !show.isRegistrationClosed && <span className="px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"><CheckCircle size={12}/> Đang nhận đăng ký</span>}
                  {show.status === 'confirmed' && show.isRegistrationClosed && <span className="px-2.5 py-1 rounded-full bg-rose-50 border border-rose-200 text-rose-700 text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"><Lock size={12}/> Đã chốt sổ</span>}
-                 {show.status === 'completed' && <span className="px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-250 text-emerald-700 text-[10px] font-black uppercase tracking-widest">🎉 Đã hoàn thành</span>}
+                 {show.status === 'completed' && <span className="px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"><CheckSquare size={12}/> Đã hoàn thành</span>}
               </div>
               
-              <h1 className="text-2xl md:text-3xl font-black text-slate-850 tracking-tight leading-tight mb-4">{show.title}</h1>
+              <h1 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight leading-tight mb-4">{show.title}</h1>
               
               <div className="flex flex-wrap gap-4 text-slate-500 font-bold text-xs">
                 <span className="flex items-center gap-1.5"><Calendar className="text-indigo-600" size={16}/> {new Date(show.date).toLocaleDateString('vi-VN')}</span>
@@ -303,7 +320,7 @@ export default function BookingDetail() {
                     </p>
                   </div>
                   {canRegister && (
-                     <button onClick={handleJoin} className={`px-5 py-2 rounded-xl font-bold transition text-xs whitespace-nowrap ${isJoined ? 'bg-white border border-slate-350 text-slate-600 hover:bg-rose-50 hover:text-rose-600' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}>
+                     <button onClick={handleJoin} className={`px-5 py-2 rounded-xl font-bold transition text-xs whitespace-nowrap ${isJoined ? 'bg-white border border-slate-400 text-slate-600 hover:bg-rose-50 hover:text-rose-600' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}>
                        {isJoined ? "Rút tên đăng ký" : "Đăng ký đi diễn ngay"}
                      </button>
                   )}
@@ -347,7 +364,7 @@ export default function BookingDetail() {
                                {member.user.fullName?.charAt(0)}
                              </div>
                              <div>
-                               <p className="font-extrabold text-xs text-slate-850">{member.user.fullName}</p>
+                               <p className="font-extrabold text-xs text-slate-800">{member.user.fullName}</p>
                                <p className="text-[9px] text-slate-500 font-bold">Nhạc cụ: {member.user.instrument || '---'}</p>
                              </div>
                            </div>
@@ -369,12 +386,24 @@ export default function BookingDetail() {
                   <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
                     <Music className="text-indigo-600" size={22}/> SETLIST BÀI BIỂU DIỄN ({show.setlist?.length || 0})
                   </h3>
-                  {isAdmin && (
-                    <div className="flex gap-2">
-                      <button onClick={fetchLibrary} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-1.5 rounded-xl font-extrabold text-xs transition">Chọn từ Kho</button>
-                      <button onClick={() => setShowAddMusicModal(true)} className="bg-indigo-650 hover:bg-indigo-700 text-white px-3.5 py-1.5 rounded-xl font-black text-xs transition shadow-sm flex items-center gap-1"><Plus size={12}/> Thêm bài</button>
-                    </div>
-                  )}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {show.setlist && show.setlist.length > 0 && (
+                      <button 
+                        onClick={handleCopySetlist} 
+                        className="bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 px-3 py-1.5 rounded-xl font-bold text-xs transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                        title="Sao chép toàn bộ danh sách bài gửi Zalo"
+                      >
+                        <Copy size={13} className="text-amber-600" />
+                        <span>Copy Zalo</span>
+                      </button>
+                    )}
+                    {isAdmin && (
+                      <>
+                        <button onClick={fetchLibrary} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-1.5 rounded-xl font-extrabold text-xs transition cursor-pointer">Chọn từ Kho</button>
+                        <button onClick={() => setShowAddMusicModal(true)} className="ui-button-primary text-xs py-1.5 px-3.5 flex items-center gap-1 cursor-pointer"><Plus size={12}/> Thêm bài</button>
+                      </>
+                    )}
+                  </div>
                </div>
 
                {show.setlist?.length === 0 ? (
@@ -400,7 +429,7 @@ export default function BookingDetail() {
                              href={getDownloadLink(song.link)} 
                              target="_blank" 
                              rel="noreferrer"
-                             className="flex items-center gap-1 bg-white border border-slate-200 px-3 py-1.5 rounded-lg text-slate-700 font-bold text-[10px] hover:border-indigo-600 hover:text-indigo-650 transition shadow-sm"
+                             className="flex items-center gap-1 bg-white border border-slate-200 px-3 py-1.5 rounded-lg text-slate-700 font-bold text-[10px] hover:border-indigo-600 hover:text-indigo-600 transition shadow-sm"
                            >
                              <FileText size={12} className="text-rose-500"/> Tài liệu / Sheet
                            </a>
@@ -408,7 +437,7 @@ export default function BookingDetail() {
                            <span className="text-[9px] font-bold text-slate-400 italic">Không có file đính kèm</span>
                          )}
                          {isAdmin && (
-                           <button onClick={() => handleRemoveMusic(song._id)} className="text-slate-350 hover:text-rose-500 p-1.5 rounded-lg transition"><X size={15}/></button>
+                           <button onClick={() => handleRemoveMusic(song._id)} className="text-slate-400 hover:text-rose-500 p-1.5 rounded-lg transition"><X size={15}/></button>
                          )}
                        </div>
                      </div>
@@ -425,7 +454,7 @@ export default function BookingDetail() {
             <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200/60 shadow-sm space-y-5">
               <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest border-b border-slate-100 pb-3">Thông tin Khách & Hợp Đồng</h3>
 
-              <div className="space-y-4 text-xs font-semibold text-slate-650">
+              <div className="space-y-4 text-xs font-semibold text-slate-600">
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Khách hàng liên hệ</p>
                   <p className="text-slate-800 text-sm font-extrabold">{show.customerName || "—"}</p>
@@ -439,7 +468,7 @@ export default function BookingDetail() {
                 {show.eventType && (
                   <div>
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Loại sự kiện</p>
-                    <span className="inline-block px-2.5 py-1 bg-indigo-50 text-indigo-650 text-[10px] font-black rounded-lg border border-indigo-100">{show.eventType}</span>
+                    <span className="inline-block px-2.5 py-1 bg-indigo-50 text-indigo-600 text-[10px] font-black rounded-lg border border-indigo-100">{show.eventType}</span>
                   </div>
                 )}
                 {show.dresscode && (
@@ -503,10 +532,10 @@ export default function BookingDetail() {
       {/* MODAL THÊM NHẠC THỦ CÔNG */}
       {showAddMusicModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-[32px] w-full max-w-md shadow-2xl p-6 border border-slate-200">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl p-6 border border-slate-200">
             <div className="flex justify-between items-center border-b border-slate-100 pb-4 mb-4">
-              <h3 className="font-black text-lg text-slate-850 flex items-center gap-2">
-                <Music className="text-indigo-650" size={22}/> Thêm nhạc vào Setlist
+              <h3 className="font-black text-lg text-slate-800 flex items-center gap-2">
+                <Music className="text-indigo-600" size={22}/> Thêm nhạc vào Setlist
               </h3>
               <button onClick={() => setShowAddMusicModal(false)} className="text-slate-400 hover:text-rose-500 font-bold text-sm">Đóng</button>
             </div>
@@ -528,7 +557,7 @@ export default function BookingDetail() {
                 <input 
                   type="text"
                   placeholder="Link Google Drive, YouTube..."
-                  className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-slate-850 text-xs focus:bg-white focus:ring-1 ring-indigo-500 transition"
+                  className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-slate-800 text-xs focus:bg-white focus:ring-1 ring-indigo-500 transition"
                   value={musicForm.link}
                   onChange={e => setMusicForm({ ...musicForm, link: e.target.value })}
                 />
@@ -555,21 +584,23 @@ export default function BookingDetail() {
       {/* MODAL CHỌN NHẠC TỪ KHO */}
       {showLibraryModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-[32px] w-full max-w-lg shadow-2xl overflow-hidden border border-slate-200">
+          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden border border-slate-200">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <h3 className="font-black text-lg text-slate-850 flex items-center gap-2">
-                <Music className="text-indigo-650" size={22}/> Chọn từ Kho Beat & Sheet
+              <h3 className="font-black text-lg text-slate-800 flex items-center gap-2">
+                <Music className="text-indigo-600" size={22}/> Chọn từ Kho Beat & Sheet
               </h3>
               <button onClick={() => setShowLibraryModal(false)} className="text-slate-400 hover:text-rose-500 font-bold text-sm">Đóng</button>
             </div>
 
             <div className="p-6 space-y-4">
-              <div className="relative">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16}/>
+              <div className="relative flex items-center">
+                <div className="absolute left-3.5 flex items-center pointer-events-none text-slate-400">
+                  <Search size={16}/>
+                </div>
                 <input 
                   type="text" 
                   placeholder="Tìm bài hát trong kho..."
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-800 transition focus:bg-white"
+                  className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-800 transition focus:bg-white"
                   value={librarySearchTerm}
                   onChange={e => setLibrarySearchTerm(e.target.value)}
                 />

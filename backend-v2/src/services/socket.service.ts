@@ -7,15 +7,12 @@ export class SocketService {
   public static init(server: HTTPServer): SocketIOServer {
     this.io = new SocketIOServer(server, {
       cors: {
-        origin: [
-          'http://localhost:3000',
-          'http://localhost:5173',
-          'https://sacband.vercel.app'
-        ],
+        origin: true, // Cho phép kết nối WebSocket từ mọi origin hợp lệ (Localhost, LAN IP, Production)
         methods: ['GET', 'POST'],
         credentials: true
       }
     });
+
 
     this.io.on('connection', (socket: Socket) => {
       console.log(`🔌 Thiết bị kết nối WebSocket: ${socket.id}`);

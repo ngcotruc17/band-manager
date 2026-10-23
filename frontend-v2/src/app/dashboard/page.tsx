@@ -1,5 +1,5 @@
 "use client";
- 
+
 import React, { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import api from "../../services/api";
@@ -7,9 +7,10 @@ import Link from "next/link";
 import { 
   TrendingUp, Calendar, DollarSign, Award, 
   Clock, MapPin, AlertCircle, Sparkles, 
-  ChevronRight, ArrowUpRight, Trophy, Zap, Loader
+  ChevronRight, ArrowUpRight, Trophy, Zap, Loader,
+  CheckCircle, Radio, UserCheck, ShieldAlert, Crown, Medal
 } from "lucide-react";
- 
+
 interface Show {
   _id: string;
   title: string;
@@ -19,7 +20,7 @@ interface Show {
   price: number;
   status: string;
 }
- 
+
 interface Rehearsal {
   _id: string;
   date: string;
@@ -27,7 +28,7 @@ interface Rehearsal {
   location: string;
   content?: string;
 }
- 
+
 interface DashboardData {
   totalPendingFine: number;
   totalRevenue: number;
@@ -38,7 +39,7 @@ interface DashboardData {
   nextRehearsal: Rehearsal | null;
   monthlyRevenue?: { month: string; amount: number }[];
 }
- 
+
 interface LeaderboardMember {
   userId: string;
   fullName: string;
@@ -48,12 +49,12 @@ interface LeaderboardMember {
   totalFines: number;
   attendanceRate: number;
 }
- 
+
 interface LeaderboardData {
   attendanceLeaderboard: LeaderboardMember[];
   fineLeaderboard: LeaderboardMember[];
 }
- 
+
 export default function DashboardV2() {
   const { user } = useContext(AuthContext);
   const [currentTime, setCurrentTime] = useState<string>("");
@@ -75,8 +76,7 @@ export default function DashboardV2() {
   });
   
   const [loading, setLoading] = useState(true);
- 
-  // Cập nhật đồng hồ thời gian thực
+
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
@@ -87,8 +87,7 @@ export default function DashboardV2() {
     const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
   }, []);
- 
-  // Nạp dữ liệu từ API
+
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
@@ -104,344 +103,341 @@ export default function DashboardV2() {
         setLoading(false);
       }
     };
-    
-    if (user) {
-      fetchDashboard();
-    }
-  }, [user]);
- 
-  const formatCurrency = (val: number) => {
-    return (val || 0).toLocaleString("vi-VN") + "đ";
+    fetchDashboard();
+  }, []);
+
+  const formatVND = (amount: number) => {
+    return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount || 0);
   };
- 
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f8fafc] flex flex-col items-center justify-center gap-3">
-        <Loader className="animate-spin text-indigo-650" size={36} />
-        <span className="text-xs font-black uppercase tracking-wider text-slate-400">Đang đồng bộ hóa hệ thống v2.0...</span>
+      <div className="flex-1 flex flex-col items-center justify-center py-24">
+        <Loader className="w-8 h-8 text-indigo-600 animate-spin mb-3" />
+        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Đang nạp dữ liệu Tổng quan...</p>
       </div>
     );
   }
- 
-  // Thống kê 4 thẻ
-  const stats = [
-    { 
-      title: "Số dư Ví Cát-xê", 
-      value: formatCurrency(user?.walletBalance || 0), 
-      icon: <DollarSign size={22} />, 
-      trend: "Cát-xê túi cá nhân của bạn", 
-      trendUp: true, 
-      color: "from-blue-600 to-indigo-650" 
-    },
-    { 
-      title: "Quỹ Band tích lũy", 
-      value: formatCurrency(dashboardData.totalRevenue), 
-      icon: <TrendingUp size={22} />, 
-      trend: "Tổng thu thực tế các show", 
-      trendUp: true, 
-      color: "from-emerald-500 to-teal-600" 
-    },
-    { 
-      title: "Công nợ Phạt quỹ", 
-      value: formatCurrency(dashboardData.totalPendingFine), 
-      icon: <AlertCircle size={22} />, 
-      trend: "Tổng quỹ phạt chưa thu", 
-      trendUp: false, 
-      color: "from-rose-500 to-amber-600" 
-    },
-    { 
-      title: "Điểm chuyên cần", 
-      value: `${user?.points || 0} PTS`, 
-      icon: <Award size={22} />, 
-      trend: `Tỷ lệ đi tập: ${user?.attendanceRate || 100}%`, 
-      trendUp: true, 
-      color: "from-fuchsia-500 to-purple-600" 
-    }
-  ];
- 
-  // Huy hiệu thành viên
-  const badges = [
-    { name: "Chiến thần đúng giờ", icon: <Clock size={20} />, description: "Đi tập ráp đúng giờ 100% trong tháng", color: "bg-emerald-50 text-emerald-600 border-emerald-250" },
-    { name: "Vua Chạy Show", icon: <Trophy size={20} />, description: "Tham gia đầy đủ các show diễn chính thức", color: "bg-amber-50 text-amber-600 border-amber-250" },
-    { name: "Cánh Tay Đắc Lực", icon: <Zap size={20} />, description: "Hỗ trợ chuẩn bị nhạc cụ biểu diễn hiệu quả", color: "bg-indigo-50 text-indigo-600 border-indigo-250" }
-  ];
- 
-  // Doanh thu thực tế theo tháng lấy từ API
-  const revenueData = dashboardData.monthlyRevenue || [
-    { month: "T1", amount: 0 },
-    { month: "T2", amount: 0 },
-    { month: "T3", amount: 0 },
-    { month: "T4", amount: 0 },
-    { month: "T5", amount: 0 },
-    { month: "T6", amount: 0 }
-  ];
 
-  const maxAmount = Math.max(10, ...revenueData.map(d => d.amount));
- 
   return (
-    <div className="min-h-screen bg-[#f8fafc] p-6 md:p-10">
-      <div className="max-w-7xl mx-auto space-y-8">
-        
-        {/* Banner tiêu đề chào mừng */}
-        <div className="relative overflow-hidden rounded-[32px] bg-white border border-slate-200/60 p-6 md:p-8 shadow-xl shadow-slate-200/10">
-          <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-indigo-200/30 rounded-full mix-blend-multiply filter blur-[80px] opacity-60"></div>
-          <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-64 h-64 bg-fuchsia-200/20 rounded-full mix-blend-multiply filter blur-[80px] opacity-50"></div>
- 
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div>
-              <p className="text-indigo-650 font-extrabold tracking-widest text-[10px] uppercase mb-1.5 flex items-center gap-1.5">
-                <Sparkles size={14} className="animate-pulse text-indigo-500" /> Hệ thống quản trị tự động v2.0
-              </p>
-              <h2 className="text-2xl md:text-3xl font-black mb-2 tracking-tight text-slate-850">
-                Chào mừng trở lại, <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-fuchsia-600 font-black">{user?.fullName || "Thành viên"}</span>!
-              </h2>
-              <p className="text-slate-500 text-xs font-semibold">Tất cả dịch vụ điểm danh GPS, đối soát tự động TPBank/Cake và Live Mode lật nhạc đã sẵn sàng.</p>
+    <div className="max-w-7xl mx-auto px-4 sm:px-8 py-6 space-y-6">
+      
+      {/* Modern Concert Console Hero Banner */}
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 p-6 sm:p-8 text-white border border-slate-800 shadow-xl flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+        {/* Ambient neon light glow */}
+        <div className="absolute -right-16 -top-16 w-72 h-72 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute right-1/3 -bottom-16 w-60 h-60 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10">
+          <div className="flex flex-wrap items-center gap-3 mb-2.5">
+            <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-indigo-200 border border-white/15 text-[11px] font-bold uppercase tracking-wider flex items-center gap-2 shadow-inner">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>SẮC BAND STAGE CONSOLE</span>
+            </span>
+            <span className="text-xs font-medium text-slate-400 capitalize">{currentDate}</span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5">
+            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+              Xin chào, {user?.fullName || "Nhạc Công"}
+            </h1>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-200 text-xs font-bold backdrop-blur-md">
+              <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+              <span>{user?.instrument || (user?.role === 'admin' ? 'Trưởng Ban' : 'Thành Viên')}</span>
+            </span>
+          </div>
+
+          <p className="text-xs sm:text-sm font-medium text-slate-300 mt-1.5 max-w-xl leading-relaxed">
+            Trung tâm điều phối biểu diễn, lịch tập ráp & đối soát tài chính nội bộ Sắc Band.
+          </p>
+        </div>
+
+        {/* Digital Stage Hardware Clock & Quick Console Actions */}
+        <div className="relative z-10 flex flex-wrap items-center gap-2.5">
+          <div className="bg-slate-900/90 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/10 text-right shadow-inner">
+            <div className="flex items-center justify-end gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+              <span className="text-xl font-black text-emerald-400 font-mono tracking-tight">{currentTime}</span>
             </div>
- 
-            <div className="flex flex-wrap items-center gap-4">
-              <div className="bg-slate-50 px-5 py-3 rounded-2xl border border-slate-200/40 flex flex-col items-center justify-center min-w-[150px] text-center shadow-sm">
-                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Thời gian thực</span>
-                <span className="text-lg font-black font-mono mt-0.5 text-indigo-655 tracking-wide">{currentTime}</span>
-                <span className="text-[9px] text-slate-550 font-bold mt-0.5 capitalize">{currentDate}</span>
-              </div>
+            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mt-0.5">Thời Gian Thực</span>
+          </div>
+
+          <Link
+            href="/rehearsals"
+            className="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white font-bold text-xs flex items-center gap-1.5 transition backdrop-blur-md shadow-sm"
+          >
+            <Clock className="w-3.5 h-3.5 text-indigo-300" />
+            <span>Lịch Tập Ráp</span>
+          </Link>
+
+          <Link
+            href="/notifications"
+            className="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white font-bold text-xs flex items-center gap-1.5 transition backdrop-blur-md shadow-sm"
+          >
+            <Zap className="w-3.5 h-3.5 text-amber-400" />
+            <span>Thông Báo</span>
+          </Link>
+
+          <Link
+            href="/live-stand"
+            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white font-extrabold text-xs uppercase tracking-wider flex items-center gap-2 transition shadow-lg shadow-indigo-500/30 active:scale-95"
+          >
+            <Radio className="w-4 h-4 text-emerald-300 animate-pulse" />
+            <span>Lên Sân Khấu</span>
+          </Link>
+        </div>
+      </section>
+
+      {/* 4 Clean Metric Cards */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        
+        {/* Card 1: Revenue */}
+        <div className="ui-card p-5 ui-card-hover">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Doanh thu thực tế</span>
+            <div className="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-200">
+              <DollarSign className="w-4 h-4" />
             </div>
           </div>
+          <div className="text-2xl font-black text-slate-900 tracking-tight">
+            {formatVND(dashboardData.totalRevenue)}
+          </div>
+          <div className="mt-2 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600">
+            <TrendingUp className="w-3.5 h-3.5" />
+            <span>Đã đối soát ngân hàng</span>
+          </div>
         </div>
- 
-        {/* Các thẻ thông số (Cards Stats) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {stats.map((stat, i) => (
-            <div key={i} className="bg-white rounded-3xl border border-slate-150 p-5 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 overflow-hidden relative group">
-              {/* Decorative gradient accent bar at top */}
-              <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${stat.color} opacity-60 group-hover:opacity-100 transition-opacity`}></div>
-              
-              {/* Row: Icon + Title */}
-              <div className="flex items-center gap-3.5 mb-4">
-                <div className={`p-3 rounded-2xl bg-gradient-to-tr ${stat.color} text-white shadow-lg shrink-0`}>
-                  {stat.icon}
-                </div>
-                <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider leading-tight">{stat.title}</p>
-              </div>
-              
-              {/* Value */}
-              <p className="text-[1.6rem] font-black text-slate-800 tracking-tight leading-none mb-2">{stat.value}</p>
-              
-              {/* Trend with colored dot */}
-              <div className="flex items-center gap-1.5">
-                <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${stat.trendUp ? "bg-emerald-400" : "bg-rose-400"}`}></span>
-                <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider truncate">{stat.trend}</p>
-              </div>
+
+        {/* Card 2: Estimated Revenue */}
+        <div className="ui-card p-5 ui-card-hover">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Dự kiến tháng này</span>
+            <div className="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-200">
+              <TrendingUp className="w-4 h-4" />
             </div>
-          ))}
+          </div>
+          <div className="text-2xl font-black text-slate-900 tracking-tight">
+            {formatVND(dashboardData.estimatedRevenue)}
+          </div>
+          <div className="mt-2 text-[11px] font-medium text-slate-500">
+            Tổng {dashboardData.showsThisMonth} show diễn trong tháng
+          </div>
         </div>
- 
-        {/* Khối Nội dung Chính: Biểu đồ & Lịch trình */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
-          {/* CỘT TRÁI: Lịch diễn sắp tới & Biểu đồ doanh thu SVG (8 cột) */}
-          <div className="lg:col-span-8 space-y-8">
-            
-            {/* Thẻ Lịch Diễn Sắp Tới */}
-            <div className="bg-white p-6 md:p-8 rounded-[32px] border border-slate-150 shadow-sm space-y-6">
-              <div className="flex justify-between items-center border-b border-slate-100 pb-4">
-                <div>
-                  <h3 className="text-lg font-black text-slate-850 flex items-center gap-2">
-                    <Calendar size={20} className="text-indigo-600" /> Lịch Trình Biểu Diễn Sắp Tới
-                  </h3>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase mt-0.5">Các sự kiện biểu diễn đã được chốt đội hình</p>
-                </div>
-                <Link href="/bookings" className="text-xs text-indigo-600 font-black uppercase hover:underline flex items-center gap-1">
-                  Xem tất cả <ChevronRight size={14} />
-                </Link>
+
+        {/* Card 3: Pending Fine */}
+        <div className="ui-card p-5 ui-card-hover">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tiền phạt chờ nộp</span>
+            <div className="w-9 h-9 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-200">
+              <AlertCircle className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="text-2xl font-black text-rose-600 tracking-tight">
+            {formatVND(dashboardData.totalPendingFine)}
+          </div>
+          <div className="mt-2 text-[11px] font-medium text-rose-600">
+            Chuyển khoản: PHAT [USER_ID]
+          </div>
+        </div>
+
+        {/* Card 4: Total Members */}
+        <div className="ui-card p-5 ui-card-hover">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Thành viên Ban Nhạc</span>
+            <div className="w-9 h-9 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center border border-violet-200">
+              <UserCheck className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="text-2xl font-black text-slate-900 tracking-tight">
+            {dashboardData.totalMembers} <span className="text-xs text-slate-500 font-normal">Nhạc công</span>
+          </div>
+          <div className="mt-2 text-[11px] font-semibold text-indigo-600">
+            Sẵn sàng nhận lịch diễn
+          </div>
+        </div>
+
+      </section>
+
+      {/* Main Content Grid: Upcoming Shows & Next Rehearsal */}
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Upcoming Shows (2 Columns) */}
+        <div className="lg:col-span-2 ui-card p-6 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-200">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-indigo-600" />
+                <h3 className="font-bold text-sm text-slate-900 uppercase tracking-wider">Show Diễn Sắp Tới</h3>
               </div>
- 
-              <div className="space-y-4">
-                {dashboardData.upcomingShows.length === 0 ? (
-                  <div className="text-center py-10 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
-                    <p className="text-xs text-slate-400 font-bold italic">Chưa có show diễn nào sắp tới</p>
-                  </div>
-                ) : (
-                  dashboardData.upcomingShows.map((show) => (
-                    <div key={show._id} className="flex flex-col md:flex-row md:items-center justify-between p-5 bg-slate-50/50 hover:bg-slate-50 rounded-2xl border border-slate-100 transition duration-200 gap-4">
-                      <div className="flex gap-4 items-center">
-                        <div className="bg-indigo-50 text-indigo-650 w-12 h-12 rounded-xl flex items-center justify-center shrink-0">
-                          <Calendar size={20} />
-                        </div>
-                        <div className="min-w-0">
-                          <h4 className="font-extrabold text-sm text-slate-800 truncate">{show.title}</h4>
-                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-slate-450 text-[11px] font-bold mt-1">
-                            <span className="flex items-center gap-1">
-                              <Clock size={12}/>{new Date(show.date).toLocaleDateString('vi-VN')} vào {show.time}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <MapPin size={12}/>{show.location}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex justify-between md:justify-end items-center gap-4 w-full md:w-auto">
-                        <span className="text-xs font-black text-slate-700 bg-white border border-slate-200 px-3 py-1.5 rounded-xl">
-                          Cát-xê: {formatCurrency(show.price)}
-                        </span>
-                        <Link href={`/bookings/${show._id}`} className="p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md transition duration-200">
-                          <ArrowUpRight size={16} />
-                        </Link>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
+              <Link href="/bookings" className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
+                <span>Xem tất cả</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </Link>
             </div>
 
-            {/* Thẻ Biểu Đồ Doanh Thu */}
-            <div className="bg-white p-6 md:p-8 rounded-[32px] border border-slate-150 shadow-sm space-y-6">
-              <div className="flex justify-between items-center border-b border-slate-100 pb-4">
-                <div>
-                  <h3 className="text-lg font-black text-slate-850 flex items-center gap-2">
-                    <TrendingUp size={20} className="text-indigo-600" /> Doanh Thu Hoạt Động Show
-                  </h3>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase mt-0.5">Biểu đồ tổng quan doanh số theo tháng (Triệu VND)</p>
-                </div>
-                <span className="text-xs bg-slate-100 text-slate-650 px-3 py-1.5 rounded-xl font-bold">Tháng 1 - Tháng 6</span>
+            {dashboardData.upcomingShows.length === 0 ? (
+              <div className="text-center py-10 text-slate-500 text-xs font-medium">
+                Chưa có show diễn nào được lên lịch sắp tới.
               </div>
- 
-              {/* Biểu đồ SVG Tự chế bằng Tailwind CSS */}
-              <div className="relative h-64 w-full flex items-end justify-between pt-6 px-4">
-                {/* Đường lưới nền */}
-                <div className="absolute inset-x-0 bottom-0 h-full flex flex-col justify-between pointer-events-none">
-                  <div className="border-t border-dashed border-slate-100 w-full"></div>
-                  <div className="border-t border-dashed border-slate-100 w-full"></div>
-                  <div className="border-t border-dashed border-slate-100 w-full"></div>
-                  <div className="border-t border-dashed border-slate-100 w-full"></div>
-                  <div className="h-0 w-full"></div>
-                </div>
- 
-                {revenueData.map((data, idx) => {
-                  const barHeight = `${(data.amount / maxAmount) * 100}%`;
-                  return (
-                    <div key={idx} className="h-[200px] flex flex-col justify-end items-center gap-2 w-1/12 group relative z-10">
-                      {/* Tooltip hiển thị giá trị */}
-                      <span className="opacity-0 group-hover:opacity-100 absolute -top-8 bg-slate-900 text-white text-[10px] font-bold px-2 py-1 rounded-md transition duration-200 whitespace-nowrap shadow-md">
-                        {data.amount} triệu
+            ) : (
+              <div className="space-y-3">
+                {dashboardData.upcomingShows.map((show) => (
+                  <div key={show._id} className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <h4 className="font-bold text-sm text-slate-900">{show.title}</h4>
+                      <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-slate-500 font-medium">
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3.5 h-3.5 text-indigo-600" />
+                          {new Date(show.date).toLocaleDateString("vi-VN")} - {show.time}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <MapPin className="w-3.5 h-3.5 text-rose-500" />
+                          {show.location}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <span className="font-extrabold text-xs text-emerald-700 font-mono">
+                        {formatVND(show.price)}
                       </span>
-                      
-                      {/* Cột dữ liệu */}
-                      <div 
-                        style={{ height: `calc(${barHeight} - 16px)` }} 
-                        className="w-full bg-gradient-to-t from-indigo-600 to-indigo-400 rounded-t-xl group-hover:from-fuchsia-600 group-hover:to-fuchsia-400 transition-all duration-350 shadow-md shadow-indigo-500/10"
-                      ></div>
-                      
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{data.month}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
- 
-          </div>
- 
-          {/* CỘT PHẢI: Hệ thống Huy hiệu & Xếp hạng (4 cột) */}
-          <div className="lg:col-span-4 space-y-8">
-            
-            {/* Lịch tập ráp tiếp theo */}
-            <div className="bg-white p-6 md:p-8 rounded-[32px] border border-slate-150 shadow-sm space-y-6">
-              <div className="border-b border-slate-100 pb-4">
-                <h3 className="text-lg font-black text-slate-850 flex items-center gap-2">
-                  <Calendar size={20} className="text-indigo-605" /> Lịch Tập Ráp Kế Tiếp
-                </h3>
-              </div>
-              {dashboardData.nextRehearsal ? (
-                <div className="p-5 rounded-2xl bg-indigo-50/50 border border-indigo-100/40 text-slate-800 space-y-4">
-                  <div>
-                    <h4 className="font-black text-xs uppercase text-indigo-650 tracking-wider">Nội dung tập ráp</h4>
-                    <p className="font-bold text-sm mt-1">{dashboardData.nextRehearsal.content || "Tập ráp band thường kỳ"}</p>
-                  </div>
-                  <div className="flex flex-col gap-2 text-xs font-semibold text-slate-650">
-                    <span className="flex items-center gap-2">
-                      <Clock size={14} className="text-orange-500"/>
-                      {new Date(dashboardData.nextRehearsal.date).toLocaleDateString('vi-VN')} lúc {dashboardData.nextRehearsal.time}
-                    </span>
-                    <span className="flex items-center gap-2">
-                      <MapPin size={14} className="text-blue-500"/>
-                      {dashboardData.nextRehearsal.location}
-                    </span>
-                  </div>
-                  <Link href="/checkin" className="block text-center w-full py-3 bg-indigo-605 hover:bg-indigo-650 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-sm transition">
-                    ĐIỂM DANH NGAY
-                  </Link>
-                </div>
-              ) : (
-                <div className="p-6 text-center bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
-                  <p className="text-xs text-slate-400 font-bold italic">Chưa lên lịch tập tiếp theo</p>
-                </div>
-              )}
-            </div>
- 
-            {/* Khối Huy hiệu Gamification */}
-            <div className="bg-white p-6 md:p-8 rounded-[32px] border border-slate-150 shadow-sm space-y-6">
-              <div className="border-b border-slate-100 pb-4">
-                <h3 className="text-lg font-black text-slate-850 flex items-center gap-2">
-                  <Award size={20} className="text-indigo-600" /> Hệ Thống Huy Hiệu Đạt Được
-                </h3>
-                <p className="text-[10px] text-slate-400 font-bold uppercase mt-0.5">Tích lũy điểm để mở khóa phần thưởng và show lớn</p>
-              </div>
- 
-              <div className="space-y-4">
-                {badges.map((badge, idx) => (
-                  <div key={idx} className={`flex items-start gap-4 p-4 border rounded-2xl ${badge.color} transition duration-200`}>
-                    <div className="p-2.5 bg-white rounded-xl shadow-sm shrink-0 border border-inherit">
-                      {badge.icon}
-                    </div>
-                    <div className="min-w-0">
-                      <h4 className="font-extrabold text-xs text-slate-800">{badge.name}</h4>
-                      <p className="text-[10px] text-slate-505 font-semibold mt-1 leading-normal">{badge.description}</p>
+                      <Link
+                        href={`/bookings/${show._id}`}
+                        className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-800 text-xs font-semibold transition-colors"
+                      >
+                        Chi tiết
+                      </Link>
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
- 
-            {/* Bảng Xếp hạng Chuyên cần Tóm tắt */}
-            <div className="bg-white p-6 md:p-8 rounded-[32px] border border-slate-150 shadow-sm space-y-6">
-              <div className="border-b border-slate-100 pb-4">
-                <h3 className="text-lg font-black text-slate-850 flex items-center gap-2">
-                  <Trophy size={20} className="text-indigo-605" /> Bảng Chuyên Cần Top 3
-                </h3>
-                <p className="text-[10px] text-slate-400 font-bold uppercase mt-0.5">Thành viên đi tập đúng giờ nhất</p>
-              </div>
- 
-              <div className="space-y-3">
-                {leaderboard.attendanceLeaderboard.length === 0 ? (
-                  <p className="text-xs text-slate-400 italic text-center py-4">Chưa có dữ liệu chuyên cần</p>
-                ) : (
-                  leaderboard.attendanceLeaderboard.slice(0, 3).map((item, idx) => (
-                    <div key={item.userId} className="flex justify-between items-center p-3.5 bg-slate-50/50 rounded-2xl border border-slate-100">
-                      <div className="flex items-center gap-3">
-                        <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black ${
-                          idx === 0 ? "bg-amber-100 text-amber-700" :
-                          idx === 1 ? "bg-slate-200 text-slate-700" : "bg-orange-100 text-orange-700"
-                        }`}>
-                          {idx + 1}
-                        </span>
-                        <div className="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100/30 flex items-center justify-center font-black text-xs uppercase">
-                          {item.fullName.charAt(0)}
-                        </div>
-                        <span className="font-extrabold text-xs text-slate-800">{item.fullName}</span>
-                      </div>
-                      <span className="text-xs font-black text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg">
-                        {item.attendanceRate}%
-                      </span>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
- 
+            )}
           </div>
- 
         </div>
- 
-      </div>
+
+        {/* Next Rehearsal Widget (1 Column) */}
+        <div className="ui-card p-6 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-200">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-amber-600" />
+                <h3 className="font-bold text-sm text-slate-900 uppercase tracking-wider">Lịch Tập Tiếp Theo</h3>
+              </div>
+              <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-700 text-[10px] font-bold border border-amber-200">
+                BẮT BUỘC
+              </span>
+            </div>
+
+            {dashboardData.nextRehearsal ? (
+              <div className="space-y-4">
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                  <div className="flex items-center gap-2 text-indigo-700 font-bold text-xs">
+                    <Calendar className="w-4 h-4 text-indigo-600" />
+                    <span>{new Date(dashboardData.nextRehearsal.date).toLocaleDateString("vi-VN")} - {dashboardData.nextRehearsal.time}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-slate-600 text-xs font-medium mt-1.5">
+                    <MapPin className="w-4 h-4 text-rose-500" />
+                    <span>{dashboardData.nextRehearsal.location}</span>
+                  </div>
+                  {dashboardData.nextRehearsal.content && (
+                    <div className="mt-3 p-2.5 rounded-lg bg-white text-xs text-slate-700 border border-slate-200 font-medium">
+                      <strong>Nội dung:</strong> {dashboardData.nextRehearsal.content}
+                    </div>
+                  )}
+                </div>
+
+                <Link
+                  href="/checkin"
+                  className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors shadow-sm"
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  <span>Điểm Danh QR / GPS</span>
+                </Link>
+              </div>
+            ) : (
+              <div className="text-center py-10 text-slate-500 text-xs font-medium">
+                Chưa có lịch tập mới nào được công bố.
+              </div>
+            )}
+          </div>
+        </div>
+
+      </section>
+
+      {/* Band Leaderboard & Fine Wall of Fame */}
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        {/* Attendance Leaderboard */}
+        <div className="ui-card p-6">
+          <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-200">
+            <Trophy className="w-4 h-4 text-amber-500" />
+            <h3 className="font-bold text-sm text-slate-900 uppercase tracking-wider">Bảng Xếp Hạng Chuyên Cần</h3>
+          </div>
+
+          <div className="space-y-2">
+            {leaderboard.attendanceLeaderboard.slice(0, 5).map((member, index) => (
+              <div key={member.userId} className="p-3 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className={`w-7 h-7 rounded-lg font-extrabold text-xs flex items-center justify-center shrink-0 shadow-2xs ${
+                    index === 0 ? "badge-rank-1" :
+                    index === 1 ? "badge-rank-2" :
+                    index === 2 ? "badge-rank-3" :
+                    "bg-slate-100 text-slate-600 border border-slate-200"
+                  }`}>
+                    {index === 0 ? <Crown className="w-3.5 h-3.5 text-amber-800" /> :
+                     index === 1 ? <Medal className="w-3.5 h-3.5 text-slate-700" /> :
+                     index === 2 ? <Award className="w-3.5 h-3.5 text-orange-800" /> :
+                     `#${index + 1}`}
+                  </span>
+                  <div>
+                    <h4 className="font-bold text-xs text-slate-900">{member.fullName}</h4>
+                    <span className="text-[10px] text-slate-500">
+                      Đúng giờ: {member.presentCount} | Muộn: {member.lateCount} | Vắng: {member.absentCount}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <span className="font-bold text-xs text-emerald-700 font-mono">
+                    {member.attendanceRate}%
+                  </span>
+                  <span className="text-[10px] text-slate-500 block">Có mặt</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Fine Wall of Fame */}
+        <div className="ui-card p-6">
+          <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-200">
+            <ShieldAlert className="w-4 h-4 text-rose-500" />
+            <h3 className="font-bold text-sm text-slate-900 uppercase tracking-wider">Bảng Vàng Tiền Phạt</h3>
+          </div>
+
+          <div className="space-y-2">
+            {leaderboard.fineLeaderboard.slice(0, 5).map((member, index) => (
+              <div key={member.userId} className="p-3 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="w-6 h-6 rounded-md bg-rose-50 text-rose-600 font-bold text-xs flex items-center justify-center border border-rose-200">
+                    #{index + 1}
+                  </span>
+                  <h4 className="font-bold text-xs text-slate-900">{member.fullName}</h4>
+                </div>
+
+                <div className="text-right">
+                  <span className="font-bold text-xs text-rose-600 font-mono">
+                    {formatVND(member.totalFines)}
+                  </span>
+                  <span className="text-[10px] text-slate-500 block">Tiền phạt</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+      </section>
+
     </div>
   );
 }

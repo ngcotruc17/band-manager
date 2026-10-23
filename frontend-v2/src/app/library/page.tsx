@@ -7,7 +7,7 @@ import { AudioContext } from "../../context/AudioContext";
 import { 
   Music, UploadCloud, Trash2, Search, FileText, PlayCircle, Plus, X, Headphones, Loader,
   BookOpen, Printer, Layers, Disc, HelpCircle, ClipboardCheck, ArrowUp, ArrowDown, Copy, Save, ChevronRight,
-  Calendar, Check
+  Calendar, Check, ChevronDown
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -38,12 +38,12 @@ interface Show {
   }[];
 }
 
-export default function SongLibraryAndRepertoire() {
+export default function SongLibraryAndRepertoire({ defaultSubTab = "library" }: { defaultSubTab?: "library" | "repertoire" } = {}) {
   const { user } = useContext(AuthContext);
   const { playTrack, currentTrack, isPlaying } = useContext(AudioContext);
   
   // Tab điều khiển chính: "library" (Kho beat/sheet) | "repertoire" (Danh mục & Planner)
-  const [subTab, setSubTab] = useState<"library" | "repertoire">("library");
+  const [subTab, setSubTab] = useState<"library" | "repertoire">(defaultSubTab);
 
   // ==========================================
   // STATES & FUNCTIONS CHO KHO BEAT & SHEET
@@ -84,7 +84,7 @@ export default function SongLibraryAndRepertoire() {
 
     try {
       await api.post("/library", postData, { headers: { "Content-Type": "multipart/form-data" } });
-      toast.success("Đã thêm bài hát vào kho! 🎵");
+      toast.success("Đã thêm bài hát vào kho thành công!");
       setUploadFormData({ title: "", note: "" });
       setUploadFiles({ sheet: null, beat: null });
       setShowUploadModal(false);
@@ -222,7 +222,7 @@ export default function SongLibraryAndRepertoire() {
         })),
         notes: showNotes
       });
-      toast.success("Đã lưu Setlist vào hệ thống thành công! 💾");
+      toast.success("Đã lưu Setlist vào hệ thống thành công!");
       if (selectedShow) {
         setSelectedShow({
           ...selectedShow,
@@ -244,11 +244,11 @@ export default function SongLibraryAndRepertoire() {
     }
 
     const showDate = new Date(selectedShow.date).toLocaleDateString('vi-VN');
-    let text = `🎸 SETLIST BIỂU DIỄN: ${selectedShow.title.toUpperCase()}\n`;
-    text += `📅 Ngày diễn: ${showDate} - Giờ: ${selectedShow.time}\n`;
-    text += `📍 Địa điểm: ${selectedShow.location}\n`;
+    let text = `[SETLIST] ${selectedShow.title.toUpperCase()}\n`;
+    text += `Ngày diễn: ${showDate} - Giờ: ${selectedShow.time}\n`;
+    text += `Địa điểm: ${selectedShow.location}\n`;
     if (showNotes.trim()) {
-      text += `📝 Ghi chú chung: ${showNotes.trim()}\n`;
+      text += `Ghi chú chung: ${showNotes.trim()}\n`;
     }
     text += `----------------------------------------\n`;
     
@@ -257,10 +257,10 @@ export default function SongLibraryAndRepertoire() {
     });
     
     text += `----------------------------------------\n`;
-    text += `👉 SẮC BAND - Chúc anh em diễn tốt!`;
+    text += `SẮC BAND - Chúc anh em biểu diễn tốt!`;
 
     navigator.clipboard.writeText(text);
-    toast.success("Đã sao chép setlist định dạng Zalo! 📋");
+    toast.success("Đã sao chép setlist gửi Zalo!");
   };
 
   // Nạp dữ liệu ban đầu
@@ -337,8 +337,8 @@ export default function SongLibraryAndRepertoire() {
         {/* HEADER HỆ THỐNG */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 border-b border-slate-200/60 pb-6 print:hidden">
           <div>
-            <h1 className="text-3xl font-black text-slate-850 flex items-center gap-3">
-              <span className="bg-gradient-to-tr from-blue-650 to-indigo-650 text-white p-2.5 rounded-2xl shadow-lg shadow-indigo-500/10">
+            <h1 className="text-3xl font-black text-slate-800 flex items-center gap-3">
+              <span className="bg-gradient-to-tr from-blue-600 to-indigo-600 text-white p-2.5 rounded-2xl shadow-lg shadow-indigo-500/10">
                 <Music size={26} />
               </span>
               THƯ VIỆN & DANH MỤC BÀI HÁT
@@ -353,7 +353,7 @@ export default function SongLibraryAndRepertoire() {
             <button
               onClick={() => setSubTab("library")}
               className={`flex-1 md:flex-none px-6 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition ${
-                subTab === "library" ? "bg-white text-indigo-650 shadow-sm" : "text-slate-500 hover:text-slate-800"
+                subTab === "library" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-800"
               }`}
             >
               Kho Beat & Sheet
@@ -361,7 +361,7 @@ export default function SongLibraryAndRepertoire() {
             <button
               onClick={() => setSubTab("repertoire")}
               className={`flex-1 md:flex-none px-6 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition ${
-                subTab === "repertoire" ? "bg-white text-indigo-650 shadow-sm" : "text-slate-500 hover:text-slate-800"
+                subTab === "repertoire" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-800"
               }`}
             >
               Danh Mục Repertoire
@@ -375,8 +375,10 @@ export default function SongLibraryAndRepertoire() {
               <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Tài nguyên beat & sheet phục vụ tập luyện</span>
               
               <div className="flex items-center gap-3 w-full md:w-auto">
-                <div className="relative flex-1 md:w-80">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                <div className="relative flex-1 md:w-80 flex items-center">
+                  <div className="absolute left-4 flex items-center pointer-events-none text-slate-400">
+                    <Search size={18} />
+                  </div>
                   <input
                     className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 bg-white shadow-sm focus:ring-2 ring-indigo-500 outline-none text-slate-800 font-semibold transition text-sm"
                     placeholder="Tìm bài hát, tone, điệu..."
@@ -397,9 +399,9 @@ export default function SongLibraryAndRepertoire() {
             ) : filteredSongs.length === 0 ? (
               <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200">
                 <div className="bg-slate-100/50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-200">
-                  <Music size={36} className="text-slate-350" />
+                  <Music size={36} className="text-slate-400" />
                 </div>
-                <h3 className="text-slate-450 font-bold text-sm">Không tìm thấy bài hát nào trong kho</h3>
+                <h3 className="text-slate-500 font-bold text-sm">Không tìm thấy bài hát nào trong kho</h3>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -411,12 +413,12 @@ export default function SongLibraryAndRepertoire() {
                           <Headphones size={22} />
                         </div>
                         {user?.role === "admin" && (
-                          <button onClick={() => handleDeleteSong(song._id)} className="text-slate-350 hover:text-rose-500 transition p-2 rounded-full hover:bg-rose-50 border border-transparent">
+                          <button onClick={() => handleDeleteSong(song._id)} className="text-slate-400 hover:text-rose-500 transition p-2 rounded-full hover:bg-rose-50 border border-transparent">
                             <Trash2 size={16} />
                           </button>
                         )}
                       </div>
-                      <h3 className="font-extrabold text-slate-800 text-base line-clamp-2 leading-snug mb-1.5 hover:text-indigo-650 transition">
+                      <h3 className="font-extrabold text-slate-800 text-base line-clamp-2 leading-snug mb-1.5 hover:text-indigo-600 transition">
                         {song.title || song.name}
                       </h3>
                       <p className="text-xs text-slate-400 font-bold italic line-clamp-1">
@@ -424,13 +426,13 @@ export default function SongLibraryAndRepertoire() {
                       </p>
                     </div>
 
-                    <div className="bg-slate-50/50 p-5 border-t border-slate-150 flex flex-col gap-3">
+                    <div className="bg-slate-50/50 p-5 border-t border-slate-200 flex flex-col gap-3">
                       {song.sheetUrl ? (
                         <a
                           href={getFileUrl(song.sheetUrl)}
                           target="_blank"
                           rel="noreferrer"
-                          className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 font-bold text-xs hover:border-indigo-550 hover:text-indigo-600 transition shadow-sm"
+                          className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 font-bold text-xs hover:border-indigo-500 hover:text-indigo-600 transition shadow-sm"
                         >
                           <FileText size={15} className="text-rose-500" /> Xem Sheet Nhạc
                         </a>
@@ -474,7 +476,7 @@ export default function SongLibraryAndRepertoire() {
                 <button
                   onClick={() => setRepertoireTab("catalog")}
                   className={`flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wide transition ${
-                    repertoireTab === "catalog" ? "bg-white text-indigo-650 shadow-sm" : "text-slate-500 hover:text-slate-800"
+                    repertoireTab === "catalog" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-800"
                   }`}
                 >
                   <Layers size={14} /> Tra cứu mục lục
@@ -483,7 +485,7 @@ export default function SongLibraryAndRepertoire() {
                   <button
                     onClick={() => setRepertoireTab("planner")}
                     className={`flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wide transition ${
-                      repertoireTab === "planner" ? "bg-white text-indigo-650 shadow-sm" : "text-slate-500 hover:text-slate-800"
+                      repertoireTab === "planner" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-800"
                     }`}
                   >
                     <ClipboardCheck size={14} /> Soạn Setlist Show
@@ -508,32 +510,32 @@ export default function SongLibraryAndRepertoire() {
                 {/* Thống kê nhanh */}
                 <div className="grid grid-cols-3 gap-6 print:hidden">
                   <div className="bg-white p-5 rounded-3xl border border-slate-200/50 shadow-sm flex items-center gap-4 hover:shadow-md transition">
-                    <div className="bg-indigo-50 text-indigo-650 p-3 rounded-2xl"><Music size={18} /></div>
+                    <div className="bg-indigo-50 text-indigo-600 p-3 rounded-2xl"><Music size={18} /></div>
                     <div>
                       <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Mục lục bài</p>
-                      <p className="text-lg font-black text-slate-850">{totalSongs}</p>
+                      <p className="text-lg font-black text-slate-800">{totalSongs}</p>
                     </div>
                   </div>
 
                   <div className="bg-white p-5 rounded-3xl border border-slate-200/50 shadow-sm flex items-center gap-4 hover:shadow-md transition">
-                    <div className="bg-rose-50 text-rose-505 p-3 rounded-2xl"><FileText size={18} /></div>
+                    <div className="bg-rose-50 text-rose-500 p-3 rounded-2xl"><FileText size={18} /></div>
                     <div>
                       <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Có Sheet nhạc</p>
-                      <p className="text-lg font-black text-slate-850">{songsWithSheet}</p>
+                      <p className="text-lg font-black text-slate-800">{songsWithSheet}</p>
                     </div>
                   </div>
 
                   <div className="bg-white p-5 rounded-3xl border border-slate-200/50 shadow-sm flex items-center gap-4 hover:shadow-md transition">
-                    <div className="bg-amber-50 text-amber-505 p-3 rounded-2xl"><HelpCircle size={18} /></div>
+                    <div className="bg-amber-50 text-amber-500 p-3 rounded-2xl"><HelpCircle size={18} /></div>
                     <div>
                       <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Tone chủ đạo</p>
-                      <p className="text-xs font-black text-slate-850 truncate max-w-[140px]">{getMostPopularTone()}</p>
+                      <p className="text-xs font-black text-slate-800 truncate max-w-[140px]">{getMostPopularTone()}</p>
                     </div>
                   </div>
                 </div>
 
                 {/* Bản in Repertoire */}
-                <div className="bg-white rounded-[32px] shadow-sm border border-slate-200 p-8 md:p-12 print:shadow-none print:border-none print:p-0">
+                <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 md:p-12 print:shadow-none print:border-none print:p-0">
                   <div className="text-center mb-8 border-b-2 border-slate-200 pb-6">
                     <Music size={36} className="mx-auto text-indigo-600 mb-2"/>
                     <h2 className="text-3xl font-black text-slate-900 uppercase tracking-widest print:text-black">SẮC BAND</h2>
@@ -541,7 +543,7 @@ export default function SongLibraryAndRepertoire() {
                   </div>
 
                   {fetchLoading ? (
-                    <div className="text-center py-20"><Loader className="animate-spin mx-auto text-indigo-650" size={32}/></div>
+                    <div className="text-center py-20"><Loader className="animate-spin mx-auto text-indigo-600" size={32}/></div>
                   ) : Object.keys(groupedSongs).length === 0 ? (
                     <div className="text-center py-10 text-slate-400 italic">Không có bài hát trong danh mục.</div>
                   ) : (
@@ -560,7 +562,7 @@ export default function SongLibraryAndRepertoire() {
                                   {song.beatUrl ? (
                                     <button 
                                       onClick={() => playTrack(song.beatUrl || "", song.title || song.name)}
-                                      className="text-slate-400 hover:text-indigo-650 p-1 rounded-lg hover:bg-slate-100 transition print:hidden animate-fade-in"
+                                      className="text-slate-400 hover:text-indigo-600 p-1 rounded-lg hover:bg-slate-100 transition print:hidden animate-fade-in"
                                     >
                                       <PlayCircle size={15} className={currentTrack?.url?.includes(song.beatUrl || "") && isPlaying ? "text-indigo-600 animate-pulse" : ""} />
                                     </button>
@@ -568,17 +570,17 @@ export default function SongLibraryAndRepertoire() {
                                     <div className="w-5 h-5 print:hidden"></div>
                                   )}
                                   
-                                  <span className="font-bold text-slate-805 print:text-black">
+                                  <span className="font-bold text-slate-800 print:text-black">
                                     {song.title || song.name}
                                   </span>
 
                                   {song.sheetUrl && (
-                                    <a href={getFileUrl(song.sheetUrl)} target="_blank" rel="noreferrer" className="text-slate-400 hover:text-rose-505 p-0.5 print:hidden transition">
+                                    <a href={getFileUrl(song.sheetUrl)} target="_blank" rel="noreferrer" className="text-slate-400 hover:text-rose-500 p-0.5 print:hidden transition">
                                       <FileText size={12} />
                                     </a>
                                   )}
                                 </div>
-                                {song.note && <span className="text-xs text-slate-450 italic font-bold">{song.note}</span>}
+                                {song.note && <span className="text-xs text-slate-500 italic font-bold">{song.note}</span>}
                               </div>
                             ))}
                           </div>
@@ -598,10 +600,12 @@ export default function SongLibraryAndRepertoire() {
                 <div className="bg-white p-6 rounded-3xl border border-slate-200/50 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4 print:hidden animate-fade-in">
                   <div className="flex-1 w-full">
                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Chọn show diễn cần lên Setlist</label>
-                    <div className="relative">
-                      <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-450" size={18} />
+                    <div className="relative flex items-center">
+                      <div className="absolute left-3.5 flex items-center pointer-events-none text-slate-500">
+                        <Calendar size={18} />
+                      </div>
                       <select
-                        className="w-full pl-10 pr-4 py-3.5 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-slate-800 text-xs focus:bg-white focus:ring-2 ring-indigo-500 outline-none transition appearance-none cursor-pointer"
+                        className="w-full pl-12 pr-10 py-3.5 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-slate-800 text-xs focus:bg-white focus:ring-2 ring-indigo-500 outline-none transition appearance-none cursor-pointer"
                         value={selectedShowId}
                         onChange={e => handleSelectShow(e.target.value)}
                         disabled={loadingShows}
@@ -614,7 +618,7 @@ export default function SongLibraryAndRepertoire() {
                         ))}
                       </select>
                       <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
-                        <ChevronRight size={16} className="rotate-90" />
+                        <ChevronDown size={16} />
                       </div>
                     </div>
                   </div>
@@ -633,11 +637,11 @@ export default function SongLibraryAndRepertoire() {
 
                 {!selectedShowId && (
                   <div className="text-center py-20 bg-white rounded-3xl border border-slate-200/50 shadow-sm print:hidden">
-                    <div className="bg-indigo-50 text-indigo-650 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-indigo-100/30">
+                    <div className="bg-indigo-50 text-indigo-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-indigo-100/30">
                       <ClipboardCheck size={32} />
                     </div>
                     <h3 className="text-slate-800 font-black text-lg">Chưa chọn Show diễn</h3>
-                    <p className="text-slate-450 text-xs mt-1 max-w-sm mx-auto">Vui lòng chọn một Show diễn ở mục trên để bắt đầu lập Setlist bài hát.</p>
+                    <p className="text-slate-500 text-xs mt-1 max-w-sm mx-auto">Vui lòng chọn một Show diễn ở mục trên để bắt đầu lập Setlist bài hát.</p>
                   </div>
                 )}
 
@@ -647,15 +651,17 @@ export default function SongLibraryAndRepertoire() {
                     {/* Cột trái chọn bài */}
                     <div className="lg:col-span-5 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4 print:hidden">
                       <div className="border-b border-slate-100 pb-3">
-                        <h3 className="font-black text-slate-850 flex items-center gap-2">
+                        <h3 className="font-black text-slate-800 flex items-center gap-2">
                           <Layers size={18} className="text-indigo-600" /> Chọn từ Kho Nhạc
                         </h3>
                       </div>
 
-                      <div className="relative">
-                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-405" size={16} />
+                      <div className="relative flex items-center">
+                        <div className="absolute left-3.5 flex items-center pointer-events-none text-slate-400">
+                          <Search size={16} />
+                        </div>
                         <input
-                          className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none text-slate-800 text-xs font-semibold transition"
+                          className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none text-slate-800 text-xs font-semibold transition"
                           placeholder="Tìm bài hát..."
                           value={plannerSearchTerm}
                           onChange={e => setPlannerSearchTerm(e.target.value)}
@@ -671,7 +677,7 @@ export default function SongLibraryAndRepertoire() {
                                 <p className="font-bold text-xs truncate">{song.title}</p>
                                 {song.note && <p className="text-[10px] text-slate-400 truncate italic">{song.note}</p>}
                               </div>
-                              <button onClick={() => addSongToPlanner(song)} disabled={inSetlist} className={`p-1.5 rounded-lg transition ${inSetlist ? 'text-indigo-500 bg-indigo-50' : 'text-slate-500 hover:text-white bg-white hover:bg-indigo-650 border border-slate-200 shadow-sm'}`}>
+                              <button onClick={() => addSongToPlanner(song)} disabled={inSetlist} className={`p-1.5 rounded-lg transition ${inSetlist ? 'text-indigo-500 bg-indigo-50' : 'text-slate-500 hover:text-white bg-white hover:bg-indigo-600 border border-slate-200 shadow-sm'}`}>
                                 {inSetlist ? <Check size={14} /> : <Plus size={14} />}
                               </button>
                             </div>
@@ -685,14 +691,14 @@ export default function SongLibraryAndRepertoire() {
                       <div className="border-b border-slate-200 pb-4">
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
                           <div>
-                            <span className="bg-indigo-50 text-indigo-650 border border-indigo-100/50 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider print:hidden">Setlist của show</span>
+                            <span className="bg-indigo-50 text-indigo-600 border border-indigo-100/50 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider print:hidden">Setlist của show</span>
                             <h2 className="text-xl font-black text-slate-900 uppercase tracking-wide mt-1">{selectedShow.title}</h2>
                           </div>
                         </div>
                       </div>
 
                       {loadingShowDetail ? (
-                        <div className="text-center py-10"><Loader className="animate-spin mx-auto text-indigo-650" size={32}/></div>
+                        <div className="text-center py-10"><Loader className="animate-spin mx-auto text-indigo-600" size={32}/></div>
                       ) : (
                         <>
                           {plannerSetlist.length === 0 ? (
@@ -703,13 +709,13 @@ export default function SongLibraryAndRepertoire() {
                                 <div key={item._id} className="flex flex-col md:flex-row md:items-center gap-3 p-3 bg-slate-50/50 border border-slate-100 rounded-2xl print:bg-white print:border-b print:rounded-none">
                                   <div className="flex items-center justify-between flex-1 min-w-0">
                                     <div className="flex items-center gap-2.5">
-                                      <span className="w-6 h-6 rounded-lg bg-indigo-50 text-indigo-650 border border-indigo-100/30 flex items-center justify-center font-black text-xs print:bg-black print:text-white">{index + 1}</span>
+                                      <span className="w-6 h-6 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100/30 flex items-center justify-center font-black text-xs print:bg-black print:text-white">{index + 1}</span>
                                       <span className="font-extrabold text-sm text-slate-800 print:text-black">{item.title}</span>
                                     </div>
                                     <div className="flex items-center gap-1 print:hidden">
                                       <button onClick={() => moveUp(index)} disabled={index === 0} className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-30"><ArrowUp size={14} /></button>
                                       <button onClick={() => moveDown(index)} disabled={index === plannerSetlist.length - 1} className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-30"><ArrowDown size={14} /></button>
-                                      <button onClick={() => removeSongFromPlanner(item._id)} className="p-1 text-slate-400 hover:text-rose-505 ml-1"><Trash2 size={14} /></button>
+                                      <button onClick={() => removeSongFromPlanner(item._id)} className="p-1 text-slate-400 hover:text-rose-500 ml-1"><Trash2 size={14} /></button>
                                     </div>
                                   </div>
                                   <div className="w-full md:w-48 shrink-0">
@@ -729,14 +735,14 @@ export default function SongLibraryAndRepertoire() {
                             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Ghi chú chung của show diễn (trang phục, lưu ý...)</label>
                             <textarea
                               rows={2}
-                              className="w-full p-4 border border-slate-200 rounded-2xl focus:ring-2 ring-indigo-500/20 outline-none font-semibold text-slate-750 text-xs transition bg-slate-50 focus:bg-white"
+                              className="w-full p-4 border border-slate-200 rounded-2xl focus:ring-2 ring-indigo-500/20 outline-none font-semibold text-slate-700 text-xs transition bg-slate-50 focus:bg-white"
                               value={showNotes}
                               onChange={e => setShowNotes(e.target.value)}
                             />
                           </div>
 
                           <div className="pt-4 flex justify-end print:hidden">
-                            <button onClick={handleSaveSetlist} disabled={savingSetlist} className="w-full md:w-auto bg-indigo-650 hover:bg-indigo-700 text-white px-6 py-3 rounded-2xl font-black flex items-center justify-center gap-2 shadow-lg transition active:scale-95 text-xs uppercase tracking-wider">
+                            <button onClick={handleSaveSetlist} disabled={savingSetlist} className="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-2xl font-black flex items-center justify-center gap-2 shadow-lg transition active:scale-95 text-xs uppercase tracking-wider">
                               {savingSetlist ? <Loader className="animate-spin" size={16} /> : <><Save size={16} /> Lưu Setlist</>}
                             </button>
                           </div>
@@ -754,19 +760,19 @@ export default function SongLibraryAndRepertoire() {
       {/* MODAL UPLOAD SONGS */}
       {showUploadModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-[32px] w-full max-w-md shadow-2xl overflow-hidden border border-slate-200">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden border border-slate-200">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <h3 className="font-black text-lg text-slate-850 flex items-center gap-2">
-                <UploadCloud className="text-indigo-650" size={24} /> Tải lên Kho Nhạc
+              <h3 className="font-black text-lg text-slate-800 flex items-center gap-2">
+                <UploadCloud className="text-indigo-600" size={24} /> Tải lên Kho Nhạc
               </h3>
-              <button onClick={() => setShowUploadModal(false)} className="text-slate-400 hover:text-rose-505 bg-white p-2 rounded-full transition shadow-sm border border-slate-100">
+              <button onClick={() => setShowUploadModal(false)} className="text-slate-400 hover:text-rose-500 bg-white p-2 rounded-full transition shadow-sm border border-slate-100">
                 <X size={18} />
               </button>
             </div>
 
             <form onSubmit={handleUpload} className="p-6 space-y-4">
               <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold text-slate-405 uppercase tracking-widest">Tên bài hát *</label>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tên bài hát *</label>
                 <input
                   required
                   className="w-full p-3.5 border border-slate-200 rounded-xl focus:ring-1 ring-indigo-500 outline-none bg-slate-50 font-bold text-slate-800 text-xs transition focus:bg-white"
@@ -776,7 +782,7 @@ export default function SongLibraryAndRepertoire() {
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold text-slate-405 uppercase tracking-widest">Ghi chú (Tone / Điệu)</label>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Ghi chú (Tone / Điệu)</label>
                 <input
                   className="w-full p-3.5 border border-slate-200 rounded-xl focus:ring-1 ring-indigo-500 outline-none bg-slate-50 font-medium text-slate-700 text-xs transition focus:bg-white"
                   placeholder="VD: Tone Am - Disco"
@@ -787,7 +793,7 @@ export default function SongLibraryAndRepertoire() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="relative group cursor-pointer">
-                  <div className={`p-4 border-2 border-dashed rounded-2xl transition text-center ${uploadFiles.sheet ? 'bg-rose-50 border-rose-250 text-rose-600' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
+                  <div className={`p-4 border-2 border-dashed rounded-2xl transition text-center ${uploadFiles.sheet ? 'bg-rose-50 border-rose-200 text-rose-600' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
                     <FileText className={`mx-auto mb-1.5 ${uploadFiles.sheet ? 'text-rose-500' : 'text-slate-400'}`} size={24} />
                     <span className="text-[9px] font-black uppercase tracking-tighter block truncate">
                       {uploadFiles.sheet ? uploadFiles.sheet.name : "Chọn file PDF"}
@@ -797,7 +803,7 @@ export default function SongLibraryAndRepertoire() {
                 </div>
 
                 <div className="relative group cursor-pointer">
-                  <div className={`p-4 border-2 border-dashed rounded-2xl transition text-center ${uploadFiles.beat ? 'bg-indigo-50 border-indigo-250 text-indigo-650' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
+                  <div className={`p-4 border-2 border-dashed rounded-2xl transition text-center ${uploadFiles.beat ? 'bg-indigo-50 border-indigo-200 text-indigo-600' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
                     <Music className={`mx-auto mb-1.5 ${uploadFiles.beat ? 'text-indigo-500' : 'text-slate-400'}`} size={24} />
                     <span className="text-[9px] font-black uppercase tracking-tighter block truncate">
                       {uploadFiles.beat ? uploadFiles.beat.name : "Chọn file MP3"}

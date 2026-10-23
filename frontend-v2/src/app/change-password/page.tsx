@@ -56,7 +56,7 @@ export default function ChangePassword() {
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-indigo-200/30 rounded-full mix-blend-multiply filter blur-[100px] opacity-70 pointer-events-none"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-fuchsia-200/20 rounded-full mix-blend-multiply filter blur-[100px] opacity-60 pointer-events-none"></div>
 
-      <div className="relative w-full max-w-md bg-white/70 backdrop-blur-xl border border-white/50 rounded-[32px] p-8 sm:p-10 z-10 shadow-[0_30px_60px_rgba(15,23,42,0.08)] text-center">
+      <div className="relative w-full max-w-md bg-white/70 backdrop-blur-xl border border-white/50 rounded-3xl p-8 sm:p-10 z-10 shadow-[0_30px_60px_rgba(15,23,42,0.08)] text-center">
         <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-inner border border-indigo-100/50">
           <Key size={26} />
         </div>
@@ -71,8 +71,10 @@ export default function ChangePassword() {
         <form onSubmit={handleSubmit} className="space-y-5 text-left">
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block ml-1">Mật khẩu mới</label>
-            <div className="relative group">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition" size={18} />
+            <div className="relative group flex items-center">
+              <div className="absolute left-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-indigo-600 transition">
+                <Lock size={18} />
+              </div>
               <input 
                 type={showPassword ? "text" : "password"}
                 className="w-full pl-12 pr-10 py-3.5 bg-white/90 border border-slate-200/80 rounded-xl text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 focus:bg-white transition-all font-semibold text-sm shadow-sm focus:shadow-md"
@@ -93,8 +95,10 @@ export default function ChangePassword() {
           
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block ml-1">Xác nhận mật khẩu mới</label>
-            <div className="relative group">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition" size={18} />
+            <div className="relative group flex items-center">
+              <div className="absolute left-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-indigo-600 transition">
+                <Lock size={18} />
+              </div>
               <input 
                 type={showPassword ? "text" : "password"}
                 className="w-full pl-12 pr-4 py-3.5 bg-white/90 border border-slate-200/80 rounded-xl text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 focus:bg-white transition-all font-semibold text-sm shadow-sm focus:shadow-md"
@@ -115,7 +119,7 @@ export default function ChangePassword() {
               <span className="flex items-center gap-2">
                 <Loader className="animate-spin" size={16} /> Đang cập nhật...
               </span>
-            ) : "Cập Nhật Mật Khẩu 🚀"}
+            ) : "Cập Nhật Mật Khẩu"}
           </button>
         </form>
       </div>

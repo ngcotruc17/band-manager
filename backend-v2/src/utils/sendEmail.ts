@@ -21,7 +21,8 @@ export const sendNewShowEmail = async (show: any): Promise<void> => {
     if (emails.length === 0) return;
 
     // Link web
-    const webUrl = `http://localhost:3000/bookings/${show._id}`;
+    const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const webUrl = `${baseUrl.replace(/\/$/, '')}/bookings/${show._id}`;
 
     const mailOptions: any = {
       from: `"Sắc Band Manager" <${process.env.EMAIL_USER}>`,

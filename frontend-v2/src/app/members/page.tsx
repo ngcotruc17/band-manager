@@ -5,7 +5,8 @@ import api from '../../services/api';
 import { AuthContext } from "../../context/AuthContext";
 import { 
   Users, Search, Key, Trash2, Shield, User, Mail, AlertTriangle, Loader, Phone,
-  Bell, Send, FileText, Info, HelpCircle, Bold, Italic, Underline, List, ListOrdered
+  Bell, Send, FileText, Info, HelpCircle, Bold, Italic, Underline, List, ListOrdered,
+  Check, Clock
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -54,7 +55,7 @@ export default function MemberAndNotificationManager() {
   const handleApprove = async (id: string, name: string) => {
     try {
       await api.put(`/auth/users/${id}/approve`);
-      toast.success(`Đã duyệt ${name} 🎉`);
+      toast.success(`Đã duyệt ${name} thành công!`);
       fetchMembers();
     } catch (err) { 
       toast.error("Lỗi duyệt"); 
@@ -73,7 +74,7 @@ export default function MemberAndNotificationManager() {
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (!window.confirm(`⚠️ Bạn có chắc muốn XÓA VĨNH VIỄN thành viên "${name}"?`)) return;
+    if (!window.confirm(`Bạn có chắc muốn xóa vĩnh viễn thành viên "${name}"?`)) return;
     try {
       await api.delete(`/auth/users/${id}`);
       toast.success(`Đã xóa ${name}`);
@@ -105,7 +106,7 @@ export default function MemberAndNotificationManager() {
         content: content.trim(),
         recipientType
       });
-      toast.success(res.data.message || "Đã gửi thông báo thành công! 🎉");
+      toast.success(res.data.message || "Đã gửi thông báo thành công!");
       setTitle("");
       setContent("");
       if (editorRef.current) {
@@ -134,8 +135,8 @@ export default function MemberAndNotificationManager() {
         {/* HEADER HỆ THỐNG */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 border-b border-slate-200/60 pb-6">
           <div>
-            <h1 className="text-3xl font-black text-slate-850 flex items-center gap-3">
-              <span className="bg-gradient-to-tr from-indigo-650 to-blue-600 text-white p-2.5 rounded-2xl shadow-lg shadow-indigo-500/10">
+            <h1 className="text-3xl font-black text-slate-800 flex items-center gap-3">
+              <span className="bg-gradient-to-tr from-indigo-600 to-blue-600 text-white p-2.5 rounded-2xl shadow-lg shadow-indigo-500/10">
                 <Users size={26} />
               </span>
               TRUNG TÂM NHÂN SỰ & THÔNG BÁO
@@ -151,7 +152,7 @@ export default function MemberAndNotificationManager() {
               <button
                 onClick={() => setAdminTab("list")}
                 className={`flex-1 md:flex-none px-6 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition ${
-                  adminTab === "list" ? "bg-white text-indigo-650 shadow-sm" : "text-slate-500 hover:text-slate-800"
+                  adminTab === "list" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-800"
                 }`}
               >
                 Danh Sách Thành Viên ({members.length})
@@ -159,7 +160,7 @@ export default function MemberAndNotificationManager() {
               <button
                 onClick={() => setAdminTab("notify")}
                 className={`flex-1 md:flex-none px-6 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition ${
-                  adminTab === "notify" ? "bg-white text-indigo-650 shadow-sm" : "text-slate-500 hover:text-slate-800"
+                  adminTab === "notify" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-800"
                 }`}
               >
                 Gửi Thông Báo Tùy Chọn
@@ -173,8 +174,10 @@ export default function MemberAndNotificationManager() {
             {/* Thanh tìm kiếm */}
             <div className="flex justify-between items-center gap-4">
               <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Danh sách nhân sự chính thức của ban nhạc</span>
-              <div className="relative w-full md:w-96">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+              <div className="relative w-full md:w-96 flex items-center">
+                <div className="absolute left-4 flex items-center pointer-events-none text-slate-400">
+                  <Search size={18} />
+                </div>
                 <input
                   className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 bg-white shadow-sm focus:ring-2 ring-indigo-500 font-semibold outline-none text-slate-800 transition text-sm"
                   placeholder="Tìm tên, email thành viên..."
@@ -185,7 +188,7 @@ export default function MemberAndNotificationManager() {
             </div>
 
             {loading ? (
-              <div className="text-center py-20"><Loader className="animate-spin mx-auto text-indigo-650" size={32}/></div>
+              <div className="text-center py-20"><Loader className="animate-spin mx-auto text-indigo-600" size={32}/></div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredMembers.map((m) => (
@@ -206,14 +209,14 @@ export default function MemberAndNotificationManager() {
                         )}
                       </div>
 
-                      <h3 className="text-xl font-black text-slate-850 leading-tight mb-1">{m.fullName}</h3>
+                      <h3 className="text-xl font-black text-slate-800 leading-tight mb-1">{m.fullName}</h3>
                       <p className="text-xs font-bold text-slate-400 mb-4">{m.instrument || "Chưa phân vai"}</p>
                       
                       <div className="space-y-2.5 mb-6">
-                        <div className="flex items-center gap-2 text-xs font-semibold text-slate-650">
+                        <div className="flex items-center gap-2 text-xs font-semibold text-slate-600">
                             <Mail size={14} className="text-slate-355"/> {m.email || "---"}
                         </div>
-                        <div className="flex items-center gap-2 text-xs font-semibold text-slate-650">
+                        <div className="flex items-center gap-2 text-xs font-semibold text-slate-600">
                             <Phone size={14} className="text-slate-355"/> {m.phone || "---"}
                         </div>
                       </div>
@@ -225,12 +228,12 @@ export default function MemberAndNotificationManager() {
                             <AlertTriangle size={12} /> Đang chờ duyệt
                           </div>
                         ) : m.mustChangePassword ? (
-                          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 text-slate-500 border border-slate-200 text-[10px] font-black uppercase tracking-widest">
-                            ⚠️ Chưa đổi Pass
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-black uppercase tracking-widest">
+                            <Clock size={12} /> Chưa đổi Pass
                           </div>
                         ) : (
-                          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-650 border border-emerald-250 text-[10px] font-black uppercase tracking-widest">
-                            ✅ Hoạt động
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-black uppercase tracking-widest">
+                            <Check size={12} /> Hoạt động
                           </div>
                         )}
                       </div>
@@ -238,7 +241,7 @@ export default function MemberAndNotificationManager() {
 
                     {/* Actions (Admin Only) */}
                     {user?.role === 'admin' && user._id !== m._id && (
-                      <div className="pt-6 border-t border-slate-150 flex gap-2">
+                      <div className="pt-6 border-t border-slate-200 flex gap-2">
                         {!m.isApproved && (
                           <button onClick={() => handleApprove(m._id, m.fullName)} className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-lg shadow-emerald-500/10 transition">
                             Duyệt Thành Viên
@@ -263,8 +266,8 @@ export default function MemberAndNotificationManager() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fade-in">
             {/* Editor Soạn Thảo */}
             <div className="lg:col-span-2 bg-white rounded-3xl p-6 md:p-8 border border-slate-200/60 shadow-sm space-y-6">
-              <h3 className="font-extrabold text-slate-850 text-sm flex items-center gap-2 pb-4 border-b border-slate-100">
-                <FileText className="text-indigo-650" size={18}/> Soạn Thảo Nội Dung Thông Báo
+              <h3 className="font-extrabold text-slate-800 text-sm flex items-center gap-2 pb-4 border-b border-slate-100">
+                <FileText className="text-indigo-600" size={18}/> Soạn Thảo Nội Dung Thông Báo
               </h3>
 
               <form onSubmit={handleSendNotification} className="space-y-5 text-xs">
@@ -279,16 +282,16 @@ export default function MemberAndNotificationManager() {
                       onChange={(e) => setRecipientType(e.target.value)}
                       className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 ring-indigo-500 outline-none text-slate-800 font-extrabold transition appearance-none pr-10 cursor-pointer"
                     >
-                      <option value="all">📢 Gửi tất cả thành viên (Broadcast)</option>
+                      <option value="all">Gửi tất cả thành viên (Broadcast)</option>
                       <optgroup label="Cá nhân cụ thể">
                         {approvedMembers.map((m) => (
                           <option key={m._id} value={m._id}>
-                            👤 {m.fullName} ({m.instrument || "Không có nhạc cụ"})
+                            {m.fullName} ({m.instrument || "Không có nhạc cụ"})
                           </option>
                         ))}
                       </optgroup>
                     </select>
-                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-405 font-bold">
+                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 font-bold">
                       ▼
                     </div>
                   </div>
@@ -296,7 +299,7 @@ export default function MemberAndNotificationManager() {
 
                 {/* Tiêu Đề */}
                 <div>
-                  <label className="text-[10px] font-bold text-slate-405 uppercase tracking-widest mb-2 block">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">
                     Tiêu đề thông báo *
                   </label>
                   <input
@@ -311,25 +314,25 @@ export default function MemberAndNotificationManager() {
 
                 {/* Rich Text Editor */}
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-slate-405 uppercase tracking-widest block">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">
                     Nội dung thông báo (Chi tiết) *
                   </label>
                   
                   <div className="border border-slate-200 rounded-2xl overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500/25 bg-slate-50">
-                    <div className="flex items-center gap-1.5 p-2 border-b border-slate-200 bg-slate-105">
-                      <button type="button" onClick={() => handleCommand("bold")} className="p-1.5 rounded-lg text-slate-650 hover:bg-slate-200 hover:text-slate-900 transition" title="Chữ đậm"><Bold size={13} /></button>
-                      <button type="button" onClick={() => handleCommand("italic")} className="p-1.5 rounded-lg text-slate-650 hover:bg-slate-200 hover:text-slate-900 transition" title="Chữ nghiêng"><Italic size={13} /></button>
-                      <button type="button" onClick={() => handleCommand("underline")} className="p-1.5 rounded-lg text-slate-650 hover:bg-slate-200 hover:text-slate-900 transition" title="Gạch chân"><Underline size={13} /></button>
+                    <div className="flex items-center gap-1.5 p-2 border-b border-slate-200 bg-slate-100">
+                      <button type="button" onClick={() => handleCommand("bold")} className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition" title="Chữ đậm"><Bold size={13} /></button>
+                      <button type="button" onClick={() => handleCommand("italic")} className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition" title="Chữ nghiêng"><Italic size={13} /></button>
+                      <button type="button" onClick={() => handleCommand("underline")} className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition" title="Gạch chân"><Underline size={13} /></button>
                       <div className="w-[1px] h-4 bg-slate-200 mx-1"></div>
-                      <button type="button" onClick={() => handleCommand("insertUnorderedList")} className="p-1.5 rounded-lg text-slate-650 hover:bg-slate-200 hover:text-slate-900 transition" title="Dấu tròn"><List size={13} /></button>
-                      <button type="button" onClick={() => handleCommand("insertOrderedList")} className="p-1.5 rounded-lg text-slate-650 hover:bg-slate-200 hover:text-slate-900 transition" title="Dấu số"><ListOrdered size={13} /></button>
+                      <button type="button" onClick={() => handleCommand("insertUnorderedList")} className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition" title="Dấu tròn"><List size={13} /></button>
+                      <button type="button" onClick={() => handleCommand("insertOrderedList")} className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition" title="Dấu số"><ListOrdered size={13} /></button>
                     </div>
 
                     <div
                       ref={editorRef}
                       contentEditable
                       onInput={(e) => setContent(e.currentTarget.innerHTML)}
-                      className="w-full min-h-[220px] p-4 bg-white outline-none font-medium text-slate-805 text-xs leading-relaxed overflow-y-auto rich-editor"
+                      className="w-full min-h-[220px] p-4 bg-white outline-none font-medium text-slate-800 text-xs leading-relaxed overflow-y-auto rich-editor"
                       data-placeholder="Nhập chi tiết nội dung thông báo..."
                     />
                   </div>
@@ -347,7 +350,7 @@ export default function MemberAndNotificationManager() {
                     </>
                   ) : (
                     <>
-                      <Send size={16} /> Gửi Thông Báo Ngay 🚀
+                      <Send size={16} /> Gửi Thông Báo Ngay
                     </>
                   )}
                 </button>
@@ -357,16 +360,16 @@ export default function MemberAndNotificationManager() {
             {/* Side Card Thông tin */}
             <div className="space-y-6">
               <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
-                <h3 className="font-extrabold text-slate-850 text-sm flex items-center gap-2 pb-4 border-b border-slate-100">
+                <h3 className="font-extrabold text-slate-800 text-sm flex items-center gap-2 pb-4 border-b border-slate-100">
                   <HelpCircle className="text-indigo-500" size={18}/> Hướng Dẫn & Lưu Ý
                 </h3>
                 <div className="space-y-4 text-xs text-slate-600 leading-relaxed mt-4">
                   <div className="flex gap-2.5 items-start">
-                    <div className="p-1 bg-indigo-50 text-indigo-650 rounded-lg font-black shrink-0 mt-0.5">1</div>
+                    <div className="p-1 bg-indigo-50 text-indigo-600 rounded-lg font-black shrink-0 mt-0.5">1</div>
                     <p><strong>Kênh gửi kép:</strong> Thông báo sẽ được lưu vào Navbar và đồng thời gửi email HTML cho các thành viên.</p>
                   </div>
                   <div className="flex gap-2.5 items-start">
-                    <div className="p-1 bg-indigo-50 text-indigo-650 rounded-lg font-black shrink-0 mt-0.5">2</div>
+                    <div className="p-1 bg-indigo-50 text-indigo-600 rounded-lg font-black shrink-0 mt-0.5">2</div>
                     <p><strong>Độ rộng Broadcast:</strong> Nếu chọn gửi tất cả, danh sách người nhận sẽ được gửi dưới dạng ẩn danh (BCC) để bảo mật thông tin.</p>
                   </div>
                 </div>
@@ -375,9 +378,9 @@ export default function MemberAndNotificationManager() {
               <div className="bg-white border border-slate-200/60 rounded-3xl p-5 flex items-center justify-between shadow-sm">
                 <div>
                   <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Nhân sự nhận thông báo</p>
-                  <h3 className="text-xl font-black text-indigo-655 mt-1">{approvedMembers.length} người</h3>
+                  <h3 className="text-xl font-black text-indigo-600 mt-1">{approvedMembers.length} người</h3>
                 </div>
-                <div className="w-12 h-12 bg-indigo-50 text-indigo-655 rounded-2xl flex items-center justify-center shadow-sm">
+                <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shadow-sm">
                   <Users size={22}/>
                 </div>
               </div>

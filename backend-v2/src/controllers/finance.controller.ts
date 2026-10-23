@@ -19,10 +19,14 @@ export const handleBankWebhook = async (req: Request, res: Response): Promise<vo
 
     // 1. Kiểm tra xác thực/Signature của API Key (Cấu hình SePay/Cassso trong .env)
     const apiKey = req.headers['x-api-key'] || req.headers['authorization'];
-    if (process.env.WEBHOOK_SECRET && apiKey !== process.env.WEBHOOK_SECRET) {
-       res.status(401).json({ message: "Không có quyền truy cập Webhook" });
+    const expectedSecret = process.env.WEBHOOK_SECRET;
+    
+    // Bắt buộc cấu hình và trùng khớp WEBHOOK_SECRET
+    if (!expectedSecret || (apiKey !== expectedSecret && apiKey !== `Bearer ${expectedSecret}`)) {
+       res.status(401).json({ message: "Không có quyền truy cập Webhook - Invalid Secret Key" });
        return;
     }
+
 
     if (!transactionId || !amount || !content) {
        res.status(400).json({ message: "Thiếu thông tin giao dịch bắt buộc" });
@@ -51,10 +55,10 @@ export const handleBankWebhook = async (req: Request, res: Response): Promise<vo
     // 3. Phân tích nội dung chuyển khoản để nhận dạng mã
     const cleanContent = content.toUpperCase().replace(/[-_]/g, ' ');
     
-    // Tìm mã SHOW: Cú pháp "SHOW [SHOW_ID]"
-    const showMatch = cleanContent.match(/SHOW\s+([A-F0-9]{24})/i);
-    // Tìm mã PHAT: Cú pháp "PHAT [USER_ID]"
-    const fineMatch = cleanContent.match(/PHAT\s+([A-F0-9]{24})/i);
+    // Tìm mã SHOW: Cú pháp "SHOW [SHOW_ID]" hoặc "SHOW[SHOW_ID]"
+    const showMatch = cleanContent.match(/SHOW\s*([A-F0-9]{24})/i);
+    // Tìm mã PHAT: Cú pháp "PHAT [USER_ID]" hoặc "PHAT[USER_ID]"
+    const fineMatch = cleanContent.match(/PHAT\s*([A-F0-9]{24})/i);
 
     if (showMatch) {
       const showId = showMatch[1].toLowerCase();

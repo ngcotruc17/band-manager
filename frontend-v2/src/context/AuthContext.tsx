@@ -74,7 +74,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const res = await api.post("/auth/login", formData);
       localStorage.setItem("token", res.data.token);
       setUser(res.data);
-      toast.success("Đăng nhập thành công! 🎸");
+      toast.success("Đăng nhập thành công!");
       return res.data;
     } catch (err: any) {
       const errMsg = err.response?.data?.message || "Sai tên đăng nhập hoặc mật khẩu";

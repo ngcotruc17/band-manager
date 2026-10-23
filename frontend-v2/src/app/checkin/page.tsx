@@ -5,7 +5,7 @@ import { useParams, useSearchParams, useRouter } from "next/navigation";
 import api from "../../services/api";
 import {
   Camera, CheckCircle, XCircle, Loader, RefreshCw,
-  QrCode, Music, KeyRound, SwitchCamera, Flashlight
+  QrCode, Music, KeyRound, SwitchCamera, Flashlight, Clock
 } from "lucide-react";
 import toast from "react-hot-toast";
 import jsQR from "jsqr";
@@ -25,7 +25,7 @@ export default function CheckIn() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const urlRehearsalId = params?.rehearsalId as string | undefined;
+  const urlRehearsalId = (params?.rehearsalId as string) || searchParams?.get("rehearsalId") || undefined;
   const tokenFromUrl = searchParams?.get("token") || "";
 
   // Nếu URL đã có token sẵn (từ QR link), auto-submit luôn
@@ -164,14 +164,14 @@ export default function CheckIn() {
   const handleQRDetected = (data: string) => {
     setScanning(false);
     stopCamera();
-    toast.success("Đã quét được mã QR! 📸");
+    toast.success("Đã quét được mã QR!");
 
     // Trích xuất token từ URL trong QR
     let token = data;
     try {
       const url = new URL(data);
       const t = url.searchParams.get("token");
-      const rId = url.pathname.split("/checkin/")[1];
+      const rId = url.searchParams.get("rehearsalId") || url.pathname.split("/checkin/")[1];
       if (t) token = t;
       if (rId && !selectedRehearsal) setSelectedRehearsal(rId);
     } catch {
@@ -203,7 +203,7 @@ export default function CheckIn() {
         status: res.data.status,
         fine: res.data.fine
       });
-      toast.success("Điểm danh thành công! 🎉");
+      toast.success("Điểm danh thành công!");
     } catch (err: any) {
       const errMsg = err.response?.data?.message || "Mã QR hết hạn hoặc không hợp lệ. Vui lòng thử lại!";
       setResult({ success: false, message: errMsg });
@@ -285,12 +285,16 @@ export default function CheckIn() {
               <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-left space-y-2.5 text-xs font-bold">
                 <div className="flex justify-between items-center">
                   <span className="text-slate-400 uppercase text-[9px] tracking-wider">Trạng thái</span>
-                  <span className={`uppercase font-black px-2.5 py-1 rounded-lg text-[10px] ${
+                  <span className={`uppercase font-black px-2.5 py-1 rounded-lg text-[10px] inline-flex items-center gap-1.5 ${
                     result.status === "present"
-                      ? "bg-emerald-50 text-emerald-600 border border-emerald-200"
-                      : "bg-amber-50 text-amber-600 border border-amber-200"
+                      ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                      : "bg-amber-50 text-amber-700 border border-amber-200"
                   }`}>
-                    {result.status === "present" ? "✅ Đúng giờ" : "⏰ Đi muộn"}
+                    {result.status === "present" ? (
+                      <><CheckCircle size={12} className="text-emerald-600"/> Đúng giờ</>
+                    ) : (
+                      <><Clock size={12} className="text-amber-600"/> Đi muộn</>
+                    )}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
@@ -348,7 +352,7 @@ export default function CheckIn() {
                 onClick={() => setMode("camera")}
                 className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wide transition ${
                   mode === "camera"
-                    ? "bg-white text-indigo-650 shadow-sm"
+                    ? "bg-white text-indigo-600 shadow-sm"
                     : "text-slate-500 hover:text-slate-800"
                 }`}
               >
@@ -358,7 +362,7 @@ export default function CheckIn() {
                 onClick={() => setMode("manual")}
                 className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wide transition ${
                   mode === "manual"
-                    ? "bg-white text-indigo-650 shadow-sm"
+                    ? "bg-white text-indigo-600 shadow-sm"
                     : "text-slate-500 hover:text-slate-800"
                 }`}
               >
@@ -445,8 +449,10 @@ export default function CheckIn() {
                   <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                     Mã Token điểm danh *
                   </label>
-                  <div className="relative">
-                    <QrCode className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <div className="relative flex items-center">
+                    <div className="absolute left-4 flex items-center pointer-events-none text-slate-400">
+                      <QrCode size={18} />
+                    </div>
                     <input
                       type="text"
                       required

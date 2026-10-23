@@ -11,6 +11,7 @@ const router = Router();
 
 router.get('/', protect, getMyNotifications);
 router.put('/read-all', protect, markAllRead);
+router.put('/mark-all-read', protect, markAllRead);
 router.put('/:id/read', protect, markAsRead);
 router.post('/custom', protect, admin, sendCustomNotification);
 

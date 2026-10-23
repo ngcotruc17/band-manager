@@ -6,7 +6,8 @@ import {
   deleteRehearsal, 
   generateQRToken, 
   checkin, 
-  getLeaderboard
+  getLeaderboard,
+  requestGPSBypass
 } from '../controllers/rehearsal.controller';
 import { protect, admin } from '../middleware/auth';
 
@@ -21,5 +22,6 @@ router.put('/:id/attendance', protect, admin, updateAttendance);
 router.delete('/:id', protect, admin, deleteRehearsal);
 router.get('/:id/qr-token', protect, generateQRToken);
 router.post('/:id/checkin', protect, checkin);
+router.post('/:id/gps-bypass', protect, requestGPSBypass);
 
 export default router;
