@@ -361,7 +361,7 @@ export default function DigitalMusicStand() {
       cueTimeoutRef.current = setTimeout(() => setLiveCue(""), 3000);
     }
   };
- 
+
   // Bộ lọc âm thanh Pitch/Tempo
   useEffect(() => {
     if (audioRef.current) {
@@ -371,7 +371,7 @@ export default function DigitalMusicStand() {
       }
     }
   }, [tempo, preservePitch]);
- 
+
   const togglePlay = () => {
     if (audioRef.current) {
       if (isPlaying) {
@@ -382,10 +382,10 @@ export default function DigitalMusicStand() {
       setIsPlaying(!isPlaying);
     }
   };
- 
+
   if (loading && shows.length === 0) {
     return (
-      <div className="min-h-screen bg-[#f8fafc] flex flex-col items-center justify-center gap-3">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-3">
         <Loader className="animate-spin text-indigo-600" size={32} />
         <span className="text-xs font-black uppercase tracking-wider text-slate-400">Đang chuẩn bị Sân khấu số...</span>
       </div>
@@ -394,9 +394,9 @@ export default function DigitalMusicStand() {
 
   const chordsText = currentSong ? getChordsForSong(currentSong.title, currentSong.note) : "";
   const transposedChords = transposeText(chordsText, transpose);
- 
+
   return (
-    <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${stageDarkMode ? "bg-[#090d16] text-slate-100" : "bg-[#f8fafc] text-slate-800"}`}>
+    <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${stageDarkMode ? "bg-[#090d16] text-slate-100" : "bg-transparent text-slate-800"}`}>
       {/* 1. VISUAL METRONOME LED HEADER BAR */}
       {metronomeEnabled && (
         <div className={`h-2 w-full flex transition-colors duration-100 ${stageDarkMode ? "bg-slate-900" : "bg-slate-200/50"}`}>
@@ -409,7 +409,7 @@ export default function DigitalMusicStand() {
 
       {/* 2. LIVE CUE OVERLAY BANNER */}
       {liveCue && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-xs pointer-events-none animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md pointer-events-none animate-fade-in">
           <div className="bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black px-10 py-7 rounded-3xl border-4 border-white shadow-2xl text-center text-3xl md:text-5xl animate-pulse tracking-wider max-w-lg leading-tight uppercase font-mono">
             {liveCue}
           </div>
@@ -417,9 +417,11 @@ export default function DigitalMusicStand() {
       )}
 
       {/* Header Live Stand */}
-      <header className={`px-6 py-4 border-b flex flex-col md:flex-row gap-4 justify-between items-center transition-colors shadow-xs ${stageDarkMode ? "bg-[#0f172a] border-slate-800 text-white" : "bg-white border-slate-200"}`}>
+      <header className={`px-6 py-4 border-b flex flex-col md:flex-row gap-4 justify-between items-center transition-colors shadow-xs backdrop-blur-2xl ${
+        stageDarkMode ? "bg-[#0f172a]/80 border-slate-800/80 text-white" : "bg-white/70 border-white/40 text-slate-800 shadow-[0_4px_24px_rgba(0,0,0,0.03)]"
+      }`}>
         <div className="flex items-center gap-3">
-          <span className="p-2.5 bg-gradient-to-tr from-indigo-600 to-violet-600 text-white rounded-xl shadow-md">
+          <span className="p-2.5 bg-gradient-to-tr from-indigo-600 to-violet-600 text-white rounded-2xl shadow-md shadow-indigo-500/20">
             <Radio size={20} className="animate-pulse" />
           </span>
           <div>
@@ -428,7 +430,9 @@ export default function DigitalMusicStand() {
               <select
                 value={selectedShowId}
                 onChange={e => handleSelectShow(e.target.value)}
-                className={`p-1.5 border rounded-lg text-[10px] font-black uppercase focus:outline-none ${stageDarkMode ? "bg-slate-900 border-slate-700 text-amber-300" : "bg-slate-50 border-slate-200 text-indigo-600"}`}
+                className={`p-1.5 border rounded-xl text-[10px] font-black uppercase focus:outline-none transition-all ${
+                  stageDarkMode ? "bg-slate-900 border-slate-700 text-amber-300" : "bg-white/80 border-slate-200 text-indigo-600 shadow-2xs"
+                }`}
               >
                 {shows.map(s => (
                   <option key={s._id} value={s._id}>{s.title}</option>
@@ -438,7 +442,7 @@ export default function DigitalMusicStand() {
             </div>
           </div>
         </div>
- 
+
         <div className="flex flex-wrap items-center gap-2.5 text-xs font-semibold">
           {/* Stage Dark Mode Toggle */}
           <button
@@ -446,7 +450,7 @@ export default function DigitalMusicStand() {
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
               stageDarkMode
                 ? "bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-xs"
-                : "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200"
+                : "bg-white/80 hover:bg-white text-slate-700 border-slate-200/80 shadow-2xs"
             }`}
             title="Chuyển chế độ Sân Khấu Tối"
           >
@@ -463,29 +467,29 @@ export default function DigitalMusicStand() {
                 document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
               }
             }}
-            className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 cursor-pointer"
+            className="p-1.5 rounded-xl bg-white/80 hover:bg-white text-slate-700 border border-slate-200/80 shadow-2xs cursor-pointer transition-all"
             title="Toàn màn hình iPad / Sân khấu"
           >
             {isFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
           </button>
 
           <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
-            connected ? "bg-emerald-50 text-emerald-600 border border-emerald-200" : "bg-rose-50 text-rose-500 border border-rose-200"
+            connected ? "bg-emerald-500/15 text-emerald-600 border border-emerald-500/30" : "bg-rose-500/15 text-rose-500 border border-rose-500/30"
           }`}>
             <Activity size={10} className={connected ? "animate-pulse" : ""} />
             {connected ? "LIVE SYNC" : "OFFLINE"}
           </span>
- 
-          <div className="bg-slate-100 p-1 rounded-xl border border-slate-200 flex">
+
+          <div className="ios-segmented-container p-0.5">
             <button 
               onClick={() => setRole("member")}
-              className={`px-3 py-1 rounded-lg font-bold transition text-[10px] uppercase cursor-pointer ${role === "member" ? "bg-white text-indigo-600 shadow-xs" : "text-slate-500"}`}
+              className={`ios-segmented-item px-3 py-1 text-[10px] uppercase font-bold cursor-pointer ${role === "member" ? "active" : ""}`}
             >
               Nhạc Công
             </button>
             <button 
               onClick={() => setRole("admin")}
-              className={`px-3 py-1 rounded-lg font-bold transition text-[10px] uppercase cursor-pointer ${role === "admin" ? "bg-white text-indigo-600 shadow-xs" : "text-slate-500"}`}
+              className={`ios-segmented-item px-3 py-1 text-[10px] uppercase font-bold cursor-pointer ${role === "admin" ? "active" : ""}`}
             >
               Conductor
             </button>

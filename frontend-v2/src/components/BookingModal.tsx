@@ -14,10 +14,10 @@ interface InputGroupProps {
 
 const InputGroup = ({ label, icon: Icon, name, value, type = "text", placeholder, required, onChange }: InputGroupProps) => (
   <div className="space-y-1.5 text-left">
-    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1">{label}</label>
+    <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider ml-1">{label}</label>
     <div className="relative flex items-center">
-      <div className="absolute left-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-indigo-600 transition">
-        <Icon size={18}/>
+      <div className="absolute left-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-indigo-600 transition">
+        <Icon size={16}/>
       </div>
       <input
         name={name}
@@ -25,7 +25,7 @@ const InputGroup = ({ label, icon: Icon, name, value, type = "text", placeholder
         onChange={onChange}
         type={type}
         required={required}
-        className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 ring-indigo-500 outline-none font-bold text-slate-800 transition text-sm focus:bg-white"
+        className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200/80 rounded-2xl focus:bg-white focus:border-indigo-500 outline-none font-bold text-slate-800 transition text-xs shadow-2xs"
         placeholder={placeholder}
       />
     </div>
@@ -56,55 +56,60 @@ export default function BookingModal({ isOpen, onClose, onSave, formData, handle
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4 animate-fade-in">
-      <div className="bg-white rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden border border-slate-200">
+    <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-[70] flex items-center justify-center p-4 animate-fade-in">
+      {/* 🍏 iOS Fluid Frosted Glass Modal */}
+      <div className="bg-white/95 backdrop-blur-3xl rounded-[2rem] w-full max-w-2xl shadow-[0_25px_60px_-15px_rgba(15,23,42,0.25)] overflow-hidden border border-white/80 animate-slide-up">
+        
         {/* Header */}
-        <div className="p-7 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
           <div className="text-left">
-            <h3 className="text-2xl font-black text-slate-800 flex items-center gap-3 leading-none">
+            <h3 className="text-xl font-black text-slate-900 flex items-center gap-2.5 tracking-tight">
               {editingId
-                ? <><Edit className="text-indigo-600" size={24}/> Cập nhật Show</>
-                : <><Plus className="text-indigo-600" size={24}/> Tạo Booking Mới</>}
+                ? <><Edit className="text-indigo-600" size={20}/> Cập nhật Show Diễn</>
+                : <><Plus className="text-indigo-600" size={20}/> Tạo Booking Show Mới</>}
             </h3>
-            <p className="text-xs text-slate-400 font-medium mt-1.5">Điền thông tin chi tiết để lên lịch diễn</p>
+            <p className="text-xs text-slate-500 font-medium mt-1">Lên lịch trình, thông tin khách hàng & phân bổ cát-xê</p>
           </div>
-          <button onClick={onClose} className="p-2.5 bg-white border border-slate-100 rounded-full text-slate-400 hover:text-rose-500 hover:border-rose-100 transition shadow-sm cursor-pointer">
-            <X size={20}/>
+          <button 
+            onClick={onClose} 
+            className="p-2 bg-white border border-slate-200/80 rounded-full text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all shadow-2xs cursor-pointer"
+          >
+            <X size={18}/>
           </button>
         </div>
 
-        <div className="p-7 space-y-5 max-h-[72vh] overflow-y-auto">
+        <div className="p-6 space-y-4 max-h-[72vh] overflow-y-auto">
 
           {/* Tên show & Khách hàng */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
             <InputGroup label="Tên Show diễn *" icon={Music} name="title" value={formData.title} onChange={handleChange} placeholder="VD: Đám cưới khách sạn A..." required/>
             <InputGroup label="Tên khách hàng" icon={User} name="customerName" value={formData.customerName} onChange={handleChange} placeholder="Người liên hệ chính"/>
           </div>
 
           {/* Loại sự kiện */}
           <div className="space-y-1.5 text-left">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1">Loại Sự Kiện</label>
+            <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider ml-1">Loại Sự Kiện</label>
             <div className="relative flex items-center">
-              <div className="absolute left-4 flex items-center pointer-events-none text-slate-400 z-10">
-                <Tag size={18}/>
+              <div className="absolute left-3.5 flex items-center pointer-events-none text-slate-400 z-10">
+                <Tag size={16}/>
               </div>
               <select
                 name="eventType"
                 value={formData.eventType}
                 onChange={handleChange}
-                className="w-full pl-12 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 ring-indigo-500 outline-none font-bold text-slate-800 transition text-sm focus:bg-white appearance-none cursor-pointer"
+                className="w-full pl-11 pr-10 py-2.5 bg-slate-50 border border-slate-200/80 rounded-2xl focus:bg-white focus:border-indigo-500 outline-none font-bold text-slate-800 transition text-xs shadow-2xs appearance-none cursor-pointer"
               >
                 <option value="">-- Chọn loại sự kiện --</option>
                 {EVENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
               <div className="absolute right-4 pointer-events-none text-slate-400">
-                <ChevronDown size={16} />
+                <ChevronDown size={14} />
               </div>
             </div>
           </div>
 
           {/* SĐT, Ngày, Giờ */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
             <InputGroup label="SĐT Khách" icon={Phone} name="phone" value={formData.phone} onChange={handleChange} placeholder="090..."/>
             <InputGroup label="Ngày diễn *" icon={Calendar} name="date" value={formData.date} onChange={handleChange} type="date" required/>
             <InputGroup label="Giờ diễn" icon={Clock} name="time" value={formData.time} onChange={handleChange} type="time"/>
@@ -114,13 +119,13 @@ export default function BookingModal({ isOpen, onClose, onSave, formData, handle
           <InputGroup label="Địa điểm chính xác" icon={MapPin} name="location" value={formData.location} onChange={handleChange} placeholder="Số nhà, tên sảnh, quận/huyện..."/>
 
           {/* Số thành viên & Dress code */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
             <InputGroup label="Số thành viên tham diễn" icon={Users} name="memberCount" value={formData.memberCount} onChange={handleChange} type="number" placeholder="VD: 6"/>
             <InputGroup label="Dress code / Trang phục" icon={Shirt} name="dresscode" value={formData.dresscode} onChange={handleChange} placeholder="VD: Vest đen, áo dài trắng..."/>
           </div>
 
           {/* Tài chính */}
-          <div className="grid grid-cols-3 gap-4 p-5 bg-emerald-50 rounded-2xl border border-emerald-100">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 bg-emerald-50/70 rounded-2xl border border-emerald-200/80">
             <InputGroup label="Cát-xê / người" icon={DollarSign} name="price" value={formData.price} onChange={handleChange} type="number" placeholder="0"/>
             <InputGroup label="Tiền đã cọc" icon={DollarSign} name="deposit" value={formData.deposit} onChange={handleChange} type="number" placeholder="0"/>
             <InputGroup label="Phụ phí khác" icon={DollarSign} name="extraFee" value={formData.extraFee} onChange={handleChange} type="number" placeholder="0"/>
@@ -128,7 +133,7 @@ export default function BookingModal({ isOpen, onClose, onSave, formData, handle
 
           {/* Ghi chú */}
           <div className="space-y-1.5 text-left">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+            <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider ml-1 flex items-center gap-1.5">
               <FileText size={14}/> Ghi chú yêu cầu
             </label>
             <textarea
@@ -136,16 +141,24 @@ export default function BookingModal({ isOpen, onClose, onSave, formData, handle
               value={formData.notes}
               onChange={handleChange}
               rows={3}
-              className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 ring-indigo-500 outline-none font-medium text-slate-700 transition text-sm focus:bg-white resize-none"
+              className="w-full p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl focus:bg-white focus:border-indigo-500 outline-none font-medium text-slate-700 transition text-xs shadow-2xs resize-none"
               placeholder="Yêu cầu riêng của khách, setlist concept, bố cục sân khấu..."
             />
           </div>
         </div>
 
         {/* Footer */}
-        <div className="px-7 py-5 bg-slate-50/50 border-t border-slate-100 flex justify-end gap-3">
-          <button onClick={onClose} className="px-8 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest text-slate-500 hover:bg-slate-200 transition">Hủy bỏ</button>
-          <button onClick={onSave} className="px-10 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest bg-slate-900 text-white hover:bg-black shadow-xl shadow-slate-200 transition transform active:scale-95">
+        <div className="px-6 py-4 bg-slate-50/60 border-t border-slate-100 flex justify-end gap-2.5">
+          <button 
+            onClick={onClose} 
+            className="px-6 py-2.5 rounded-xl font-bold text-xs text-slate-500 hover:bg-slate-200/60 transition cursor-pointer"
+          >
+            Hủy bỏ
+          </button>
+          <button 
+            onClick={onSave} 
+            className="px-8 py-2.5 rounded-xl font-extrabold text-xs bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/25 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+          >
             {editingId ? "Lưu thay đổi" : "Xác nhận tạo"}
           </button>
         </div>

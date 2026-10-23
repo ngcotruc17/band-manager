@@ -129,41 +129,43 @@ export default function MemberAndNotificationManager() {
   const approvedMembers = members.filter(m => m.isApproved);
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] p-6 md:p-10">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen p-4 sm:p-8">
+      <div className="max-w-7xl mx-auto space-y-6">
         
         {/* HEADER HỆ THỐNG */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-6 border-b border-slate-200/60 pb-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200/80 pb-4">
           <div>
-            <h1 className="text-3xl font-black text-slate-800 flex items-center gap-3">
-              <span className="bg-gradient-to-tr from-indigo-600 to-blue-600 text-white p-2.5 rounded-2xl shadow-lg shadow-indigo-500/10">
-                <Users size={26} />
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 flex items-center gap-3 tracking-tight">
+              <span className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white flex items-center justify-center shadow-md shadow-indigo-600/25 border border-white/20">
+                <Users size={20} />
               </span>
-              TRUNG TÂM NHÂN SỰ & THÔNG BÁO
+              TRUNG TÂM NHÂN SỰ & THÀNH VIÊN
             </h1>
-            <p className="text-xs text-slate-400 font-bold mt-1 uppercase tracking-wider">
-              Quản lý thành viên, phê duyệt tài khoản và thông tin ban nhạc
+            <p className="text-xs text-slate-500 font-medium mt-1">
+              Quản lý nghệ sĩ ban nhạc, phân quyền vai trò & điều phối kênh thông báo nội bộ
             </p>
           </div>
 
-          {/* Tab chọn cho Admin */}
+          {/* 🍏 iOS Segmented Control cho Admin */}
           {user?.role === "admin" && (
-            <div className="bg-slate-100 p-1.5 rounded-2xl border border-slate-200 flex shadow-sm w-full md:w-auto shrink-0">
+            <div className="ios-segmented-container w-full md:w-auto self-start md:self-auto shrink-0">
               <button
                 onClick={() => setAdminTab("list")}
-                className={`flex-1 md:flex-none px-6 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition ${
-                  adminTab === "list" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-800"
+                className={`ios-segmented-item flex-1 md:flex-none justify-center ${
+                  adminTab === "list" ? "active" : ""
                 }`}
               >
-                Danh Sách Thành Viên ({members.length})
+                <Users className="w-3.5 h-3.5" />
+                <span>Danh Sách ({members.length})</span>
               </button>
               <button
                 onClick={() => setAdminTab("notify")}
-                className={`flex-1 md:flex-none px-6 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition ${
-                  adminTab === "notify" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-800"
+                className={`ios-segmented-item flex-1 md:flex-none justify-center ${
+                  adminTab === "notify" ? "active" : ""
                 }`}
               >
-                Gửi Thông Báo Tùy Chọn
+                <Bell className="w-3.5 h-3.5" />
+                <span>Gửi Thông Báo</span>
               </button>
             </div>
           )}
@@ -192,7 +194,7 @@ export default function MemberAndNotificationManager() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredMembers.map((m) => (
-                  <div key={m._id} className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between hover:shadow-md transition">
+                  <div key={m._id} className="ui-card p-6 ui-card-hover flex flex-col justify-between">
                     <div>
                       <div className="flex justify-between items-start mb-6">
                         <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-slate-50 to-slate-100 flex items-center justify-center font-black text-2xl text-slate-400 border border-slate-200 shadow-inner">
@@ -265,7 +267,7 @@ export default function MemberAndNotificationManager() {
         {adminTab === "notify" && user?.role === "admin" && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fade-in">
             {/* Editor Soạn Thảo */}
-            <div className="lg:col-span-2 bg-white rounded-3xl p-6 md:p-8 border border-slate-200/60 shadow-sm space-y-6">
+            <div className="lg:col-span-2 ui-card p-6 md:p-8 space-y-6">
               <h3 className="font-extrabold text-slate-800 text-sm flex items-center gap-2 pb-4 border-b border-slate-100">
                 <FileText className="text-indigo-600" size={18}/> Soạn Thảo Nội Dung Thông Báo
               </h3>

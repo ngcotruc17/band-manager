@@ -92,7 +92,8 @@ export default function Register() {
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-gradient-to-tr from-indigo-500/10 to-violet-500/10 rounded-full blur-[130px] pointer-events-none" />
       <div className="absolute bottom-1/4 left-1/3 -translate-x-1/2 w-[400px] h-[400px] bg-gradient-to-tr from-amber-500/5 to-rose-500/5 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className="w-full max-w-lg ui-card p-6 sm:p-8 space-y-4 relative z-10 shadow-xl border border-slate-200 my-auto">
+      {/* 🍏 iOS Fluid Frosted Glass Register Sheet */}
+      <div className="w-full max-w-lg ui-card p-6 sm:p-8 space-y-4 relative z-10 shadow-[0_25px_60px_-15px_rgba(15,23,42,0.15)] rounded-[2rem] my-auto">
         
         {/* Header */}
         <div className="text-center space-y-2">
@@ -231,8 +232,8 @@ export default function Register() {
 
         {/* Modal điều khoản */}
         {showTerms && (
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-            <div className="ui-card max-w-xl w-full max-h-[85vh] overflow-hidden flex flex-col shadow-2xl bg-white">
+          <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div className="bg-white/95 backdrop-blur-3xl max-w-xl w-full max-h-[85vh] overflow-hidden flex flex-col shadow-[0_25px_60px_-15px_rgba(15,23,42,0.25)] rounded-[2rem] border border-white/80 animate-slide-up">
               
               <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                 <div className="flex items-center gap-2">

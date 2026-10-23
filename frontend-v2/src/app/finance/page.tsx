@@ -251,7 +251,7 @@ export default function FinanceV2() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           {/* CỘT TRÁI: DANH SÁCH GIAO DỊCH (7 cột) */}
-          <div className="lg:col-span-7 bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+          <div className="lg:col-span-7 ui-card p-6 md:p-8 space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-4">
               <div>
                 <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
@@ -325,7 +325,7 @@ export default function FinanceV2() {
           </div>
  
           {/* CỘT PHẢI: WEBHOOK BANK LOGS (5 cột dành cho Admin) hoặc CƠ CHẾ NỘP TIỀN QUỸ (cho Member) */}
-          <div className="lg:col-span-5 bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+          <div className="lg:col-span-5 ui-card p-6 md:p-8 space-y-6">
             {user?.role === "admin" ? (
               <>
                 <div>

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import api from "../services/api";
-import { X, User, Mail, Phone, Music, Save, Loader, ShieldCheck } from "lucide-react";
+import { X, User, Mail, Phone, Music, Save, Loader, ShieldCheck, Sparkles } from "lucide-react";
 import toast from "react-hot-toast";
 
 interface ProfileModalProps {
@@ -42,21 +42,23 @@ export default function ProfileModal({ user, onClose, onUpdateSuccess }: Profile
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
-      <div className="glass-card w-full max-w-md overflow-hidden animate-slide-up border border-indigo-500/30 neon-glow-indigo">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-md animate-fade-in">
+      {/* 🍏 iOS Liquid Frosted Glass Sheet */}
+      <div className="w-full max-w-md bg-white/90 backdrop-blur-3xl border border-white/80 shadow-[0_25px_60px_-15px_rgba(15,23,42,0.25)] rounded-[2rem] overflow-hidden animate-slide-up transition-all">
         
         {/* Modal Header */}
-        <div className="relative h-28 bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 p-4">
+        <div className="relative h-28 bg-gradient-to-tr from-indigo-600 via-indigo-500 to-violet-600 p-4">
           <button 
             onClick={onClose} 
-            className="absolute top-4 right-4 p-2 bg-black/20 hover:bg-black/40 rounded-xl text-white transition-colors"
+            className="absolute top-4 right-4 p-2 bg-black/20 hover:bg-black/30 rounded-full text-white transition-all cursor-pointer backdrop-blur-md"
+            aria-label="Đóng"
           >
             <X size={18}/>
           </button>
           
           <div className="absolute -bottom-10 left-6">
-            <div className="w-20 h-20 rounded-2xl bg-slate-900 p-1 border border-white/20 shadow-2xl">
-              <div className="w-full h-full rounded-xl bg-gradient-to-tr from-indigo-500 to-violet-600 flex items-center justify-center text-2xl font-black text-white">
+            <div className="w-20 h-20 rounded-3xl bg-white p-1 shadow-xl border border-white/60">
+              <div className="w-full h-full rounded-[1.25rem] bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center text-2xl font-black text-white shadow-inner">
                 {user?.fullName?.charAt(0).toUpperCase()}
               </div>
             </div>
@@ -64,13 +66,13 @@ export default function ProfileModal({ user, onClose, onUpdateSuccess }: Profile
         </div>
 
         {/* Modal Form */}
-        <form onSubmit={handleSubmit} className="p-6 pt-14 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 pt-12 space-y-4">
           <div>
-            <h3 className="text-lg font-black text-white">Cài đặt Hồ sơ Cá nhân</h3>
-            <p className="text-xs text-slate-400 font-semibold mt-0.5">Cập nhật thông tin chi tiết để ban nhạc liên hệ</p>
+            <h3 className="text-lg font-black text-slate-900 tracking-tight">Cài đặt Hồ sơ Cá nhân</h3>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">Thông tin liên hệ & vai trò biểu diễn trong ban nhạc</p>
           </div>
 
-          <div className="space-y-3 pt-2">
+          <div className="space-y-3.5 pt-1">
             <div>
               <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1">Họ và tên</label>
               <div className="relative flex items-center">
@@ -80,7 +82,7 @@ export default function ProfileModal({ user, onClose, onUpdateSuccess }: Profile
                 <input 
                   value={formData.fullName} 
                   onChange={e => setFormData({...formData, fullName: e.target.value})} 
-                  className="w-full pl-11 pr-4 py-2.5 bg-slate-900/80 border border-white/10 rounded-xl text-xs font-bold text-white focus:border-indigo-500 outline-none transition-colors" 
+                  className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200/80 rounded-2xl text-xs font-bold text-slate-900 focus:bg-white focus:border-indigo-500 outline-none transition-all shadow-2xs" 
                   placeholder="Họ và tên..."
                   required
                 />
@@ -97,7 +99,7 @@ export default function ProfileModal({ user, onClose, onUpdateSuccess }: Profile
                   type="email"
                   value={formData.email} 
                   onChange={e => setFormData({...formData, email: e.target.value})} 
-                  className="w-full pl-11 pr-4 py-2.5 bg-slate-900/80 border border-white/10 rounded-xl text-xs font-bold text-white focus:border-indigo-500 outline-none transition-colors" 
+                  className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200/80 rounded-2xl text-xs font-bold text-slate-900 focus:bg-white focus:border-indigo-500 outline-none transition-all shadow-2xs" 
                   placeholder="Email..."
                   required
                 />
@@ -114,7 +116,7 @@ export default function ProfileModal({ user, onClose, onUpdateSuccess }: Profile
                   <input 
                     value={formData.phone} 
                     onChange={e => setFormData({...formData, phone: e.target.value})} 
-                    className="w-full pl-11 pr-3 py-2.5 bg-slate-900/80 border border-white/10 rounded-xl text-xs font-bold text-white focus:border-indigo-500 outline-none transition-colors" 
+                    className="w-full pl-11 pr-3 py-2.5 bg-slate-50 border border-slate-200/80 rounded-2xl text-xs font-bold text-slate-900 focus:bg-white focus:border-indigo-500 outline-none transition-all shadow-2xs" 
                     placeholder="SĐT..."
                     required
                   />
@@ -130,8 +132,8 @@ export default function ProfileModal({ user, onClose, onUpdateSuccess }: Profile
                   <input 
                     value={formData.instrument} 
                     onChange={e => setFormData({...formData, instrument: e.target.value})} 
-                    className="w-full pl-11 pr-3 py-2.5 bg-slate-900/80 border border-white/10 rounded-xl text-xs font-bold text-white focus:border-indigo-500 outline-none transition-colors" 
-                    placeholder="Guitar, Vocal..."
+                    className="w-full pl-11 pr-3 py-2.5 bg-slate-50 border border-slate-200/80 rounded-2xl text-xs font-bold text-slate-900 focus:bg-white focus:border-indigo-500 outline-none transition-all shadow-2xs" 
+                    placeholder="Guitar, Vocal, Drum..."
                   />
                 </div>
               </div>
@@ -140,9 +142,9 @@ export default function ProfileModal({ user, onClose, onUpdateSuccess }: Profile
 
           <button 
             disabled={loading} 
-            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-indigo-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-4"
+            className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-indigo-600/30 hover:scale-[1.01] active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-5 cursor-pointer"
           >
-            {loading ? <Loader className="animate-spin" size={16}/> : <><Save size={16}/> Lưu thay đổi</>}
+            {loading ? <Loader className="animate-spin" size={16}/> : <><Save size={16}/> Lưu thay đổi hồ sơ</>}
           </button>
         </form>
 

@@ -331,40 +331,42 @@ export default function SongLibraryAndRepertoire({ defaultSubTab = "library" }: 
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] p-6 md:p-10 print:bg-white print:p-0">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen p-4 sm:p-8 print:bg-white print:p-0">
+      <div className="max-w-7xl mx-auto space-y-6">
         
         {/* HEADER HỆ THỐNG */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-6 border-b border-slate-200/60 pb-6 print:hidden">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200/80 pb-4 print:hidden">
           <div>
-            <h1 className="text-3xl font-black text-slate-800 flex items-center gap-3">
-              <span className="bg-gradient-to-tr from-blue-600 to-indigo-600 text-white p-2.5 rounded-2xl shadow-lg shadow-indigo-500/10">
-                <Music size={26} />
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 flex items-center gap-3 tracking-tight">
+              <span className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white flex items-center justify-center shadow-md shadow-indigo-600/25 border border-white/20">
+                <Music size={20} />
               </span>
               THƯ VIỆN & DANH MỤC BÀI HÁT
             </h1>
-            <p className="text-xs text-slate-400 font-bold mt-1 uppercase tracking-wider">
-              Tài nguyên beat/sheet biểu diễn và danh mục bài hát chính thức
+            <p className="text-xs text-slate-500 font-medium mt-1">
+              Kho beat, sheet nhạc, hợp âm biểu diễn và danh mục bài hát chính thức Sắc Band
             </p>
           </div>
 
-          {/* SubTab Chọn Phân Hệ */}
-          <div className="bg-slate-100 p-1.5 rounded-2xl border border-slate-200/40 flex shadow-sm w-full md:w-auto shrink-0">
+          {/* 🍏 iOS Segmented Control Chọn Phân Hệ */}
+          <div className="ios-segmented-container w-full md:w-auto self-start md:self-auto shrink-0">
             <button
               onClick={() => setSubTab("library")}
-              className={`flex-1 md:flex-none px-6 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition ${
-                subTab === "library" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-800"
+              className={`ios-segmented-item flex-1 md:flex-none justify-center ${
+                subTab === "library" ? "active" : ""
               }`}
             >
-              Kho Beat & Sheet
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>Kho Beat & Sheet ({songs.length})</span>
             </button>
             <button
               onClick={() => setSubTab("repertoire")}
-              className={`flex-1 md:flex-none px-6 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition ${
-                subTab === "repertoire" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-800"
+              className={`ios-segmented-item flex-1 md:flex-none justify-center ${
+                subTab === "repertoire" ? "active" : ""
               }`}
             >
-              Danh Mục Repertoire
+              <Layers className="w-3.5 h-3.5" />
+              <span>Danh Mục Repertoire</span>
             </button>
           </div>
         </div>

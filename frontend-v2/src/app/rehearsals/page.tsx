@@ -384,14 +384,14 @@ export default function RehearsalManagerPage() {
                               )}
                             </div>
 
-                            <div className="grid grid-cols-4 gap-1 text-[11px] font-bold">
+                            <div className="ios-segmented-container p-0.5 grid grid-cols-4 gap-0.5 text-[11px] font-bold">
                               <button
                                 type="button"
                                 onClick={() => changeStatus(memberId, "present")}
-                                className={`py-1 rounded-lg transition-colors cursor-pointer ${
+                                className={`ios-segmented-item py-1 text-center font-bold cursor-pointer transition-all ${
                                   m.status === "present"
-                                    ? "bg-emerald-600 text-white font-black"
-                                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                    ? "bg-emerald-600 text-white shadow-xs font-black"
+                                    : "text-slate-600 hover:text-slate-900"
                                 }`}
                               >
                                 Đúng giờ
@@ -399,10 +399,10 @@ export default function RehearsalManagerPage() {
                               <button
                                 type="button"
                                 onClick={() => changeStatus(memberId, "late")}
-                                className={`py-1 rounded-lg transition-colors cursor-pointer ${
+                                className={`ios-segmented-item py-1 text-center font-bold cursor-pointer transition-all ${
                                   m.status === "late"
-                                    ? "bg-amber-500 text-white font-black"
-                                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                    ? "bg-amber-500 text-white shadow-xs font-black"
+                                    : "text-slate-600 hover:text-slate-900"
                                 }`}
                               >
                                 Đi muộn
@@ -410,10 +410,10 @@ export default function RehearsalManagerPage() {
                               <button
                                 type="button"
                                 onClick={() => changeStatus(memberId, "absent")}
-                                className={`py-1 rounded-lg transition-colors cursor-pointer ${
+                                className={`ios-segmented-item py-1 text-center font-bold cursor-pointer transition-all ${
                                   m.status === "absent"
-                                    ? "bg-rose-600 text-white font-black"
-                                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                    ? "bg-rose-600 text-white shadow-xs font-black"
+                                    : "text-slate-600 hover:text-slate-900"
                                 }`}
                               >
                                 Vắng
@@ -421,10 +421,10 @@ export default function RehearsalManagerPage() {
                               <button
                                 type="button"
                                 onClick={() => changeStatus(memberId, "pending")}
-                                className={`py-1 rounded-lg transition-colors cursor-pointer ${
+                                className={`ios-segmented-item py-1 text-center font-bold cursor-pointer transition-all ${
                                   m.status === "pending"
-                                    ? "bg-slate-700 text-white font-black"
-                                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                    ? "bg-slate-700 text-white shadow-xs font-black"
+                                    : "text-slate-600 hover:text-slate-900"
                                 }`}
                               >
                                 Chờ
@@ -451,8 +451,8 @@ export default function RehearsalManagerPage() {
 
       {/* CREATE REHEARSAL MODAL */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="ui-card w-full max-w-md p-6 space-y-5 bg-white shadow-2xl">
+        <div className="fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="ui-card w-full max-w-md p-6 sm:p-7 space-y-5 rounded-[2rem] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] animate-scale-in">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-indigo-600" />
@@ -535,8 +535,8 @@ export default function RehearsalManagerPage() {
 
       {/* QR MODAL FOR ADMIN */}
       {showQRModal && qrRehearsal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="ui-card w-full max-w-sm p-6 text-center space-y-4 bg-white shadow-2xl">
+        <div className="fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="ui-card w-full max-w-sm p-6 text-center space-y-4 rounded-[2rem] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] animate-scale-in">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100">
               <div className="flex items-center gap-1.5">
                 <QrCode className="w-5 h-5 text-indigo-600" />

@@ -95,38 +95,113 @@ html, body {
   box-shadow: 0 2px 4px rgba(251, 146, 60, 0.2);
 }
 
-/* Sac Band Card Design System */
-.ui-card {
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 1.125rem;
-  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+/* 🍏 iOS Fluid Frosted Glass Design System */
+.ui-card, .ios-card {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-top-color: rgba(255, 255, 255, 0.95);
+  border-radius: 1.5rem;
+  box-shadow: 
+    0 1px 3px 0 rgba(15, 23, 42, 0.03),
+    0 12px 32px -10px rgba(15, 23, 42, 0.06),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.95);
+  transition: all 0.3s cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 .ui-card-hover {
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.3s cubic-bezier(0.32, 0.72, 0, 1);
 }
 .ui-card-hover:hover {
-  border-color: #c7d2fe;
-  box-shadow: 0 12px 28px -6px rgba(79, 70, 229, 0.12), 0 6px 12px -4px rgba(79, 70, 229, 0.06);
+  background: rgba(255, 255, 255, 0.88);
+  border-color: rgba(99, 102, 241, 0.35);
+  box-shadow: 
+    0 20px 45px -12px rgba(99, 102, 241, 0.12),
+    0 2px 6px 0 rgba(15, 23, 42, 0.03),
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 1);
   transform: translateY(-2px);
 }
 
 /* Glassmorphism for High-End Floating Elements */
-.ui-glass {
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(226, 232, 240, 0.85);
+.ui-glass, .ios-glass {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 
+    0 10px 30px -8px rgba(15, 23, 42, 0.06),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.95);
 }
 
-.ui-glass-dark {
-  background: rgba(15, 23, 42, 0.88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+.ui-glass-dark, .ios-glass-dark {
+  background: rgba(15, 23, 42, 0.76);
+  backdrop-filter: blur(32px) saturate(190%);
+  -webkit-backdrop-filter: blur(32px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-top-color: rgba(255, 255, 255, 0.22);
+  box-shadow: 
+    0 20px 45px -15px rgba(0, 0, 0, 0.5),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
   color: #f8fafc;
+}
+
+/* iOS Segmented Control (Capsule Switcher) */
+.ios-segmented-container {
+  display: inline-flex;
+  background: rgba(15, 23, 42, 0.06);
+  backdrop-filter: blur(12px);
+  padding: 0.25rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  gap: 0.25rem;
+}
+
+.ios-segmented-item {
+  padding: 0.375rem 0.875rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  transition: all 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+  color: #64748b;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.ios-segmented-item.active {
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 2px 8px -1px rgba(15, 23, 42, 0.12), inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+/* iOS Inset Grouped Cell */
+.ios-cell {
+  padding: 0.75rem 1rem;
+  transition: background-color 0.2s cubic-bezier(0.32, 0.72, 0, 1);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.ios-cell:hover {
+  background: rgba(99, 102, 241, 0.04);
+}
+.ios-cell:active {
+  background: rgba(99, 102, 241, 0.08);
+}
+
+/* iOS App Squircle Icons */
+.ios-app-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px -2px rgba(15, 23, 42, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
 /* Form Elements & Inputs */

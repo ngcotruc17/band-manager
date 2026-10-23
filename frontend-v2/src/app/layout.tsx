@@ -33,7 +33,14 @@ export default function RootLayout({
       lang="vi"
       className={`${jakartaSans.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#f8fafc] text-slate-900 selection:bg-indigo-500 selection:text-white">
+      <body className="min-h-full flex flex-col bg-[#f6f8fc] text-slate-900 selection:bg-indigo-500 selection:text-white relative">
+        {/* 🍏 Fluid iOS Ambient Gradient Mesh Glow (Behind all frosted glass layers) */}
+        <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
+          <div className="absolute -top-32 -left-32 w-96 h-96 bg-gradient-to-tr from-indigo-500/15 via-violet-400/15 to-transparent rounded-full blur-[110px]" />
+          <div className="absolute top-1/4 -right-32 w-[34rem] h-[34rem] bg-gradient-to-bl from-blue-400/15 via-sky-300/10 to-transparent rounded-full blur-[130px]" />
+          <div className="absolute -bottom-32 left-1/3 w-[36rem] h-[36rem] bg-gradient-to-tr from-purple-400/10 via-pink-400/10 to-transparent rounded-full blur-[130px]" />
+        </div>
+
         <AuthProvider>
           <AudioProvider>
             <ProtectedRoute>
@@ -41,13 +48,14 @@ export default function RootLayout({
                 position="bottom-right" 
                 toastOptions={{
                   style: {
-                    background: '#ffffff',
+                    background: 'rgba(255, 255, 255, 0.85)',
+                    backdropFilter: 'blur(20px)',
                     color: '#0f172a',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '0.75rem',
-                    fontWeight: 600,
+                    border: '1px solid rgba(255, 255, 255, 0.8)',
+                    borderRadius: '1rem',
+                    fontWeight: 700,
                     fontSize: '0.8125rem',
-                    boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)'
+                    boxShadow: '0 12px 30px -5px rgba(15, 23, 42, 0.12)'
                   }
                 }}
               />

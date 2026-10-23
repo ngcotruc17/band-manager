@@ -51,7 +51,8 @@ export default function Login() {
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-gradient-to-tr from-indigo-500/10 to-violet-500/10 rounded-full blur-[130px] pointer-events-none" />
       <div className="absolute bottom-1/4 left-1/3 -translate-x-1/2 w-[400px] h-[400px] bg-gradient-to-tr from-amber-500/5 to-rose-500/5 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 space-y-5 shadow-xl border border-slate-200/80 relative z-10 my-auto">
+      {/* 🍏 iOS Fluid Frosted Glass Login Sheet */}
+      <div className="w-full max-w-md ui-card p-6 sm:p-8 space-y-5 relative z-10 my-auto shadow-[0_25px_60px_-15px_rgba(15,23,42,0.15)] rounded-[2rem]">
         
         {/* Brand Header */}
         <div className="text-center space-y-2.5">

@@ -235,7 +235,7 @@ export default function BookingDetail() {
 
   if (loading || !show) {
     return (
-      <div className="min-h-screen bg-[#f8fafc] flex flex-col items-center justify-center space-y-4">
+      <div className="min-h-screen bg-transparent flex flex-col items-center justify-center space-y-4">
         <Loader className="animate-spin text-indigo-600" size={40} />
         <p className="text-indigo-600 font-bold animate-pulse text-xs uppercase tracking-widest">Đang tải chi tiết Lịch diễn...</p>
       </div>
@@ -254,15 +254,15 @@ export default function BookingDetail() {
   );
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] p-6 md:p-10">
+    <div className="min-h-screen p-4 sm:p-8">
       
       {/* HEADER: Back Button & Title */}
       <div className="max-w-6xl mx-auto space-y-6">
-        <button onClick={() => router.back()} className="flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-slate-800 bg-white px-4 py-2.5 rounded-2xl border border-slate-200 shadow-sm transition">
+        <button onClick={() => router.back()} className="flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-indigo-600 ui-card px-4 py-2.5 rounded-2xl shadow-sm transition hover:scale-105 active:scale-95 cursor-pointer">
           <ArrowLeft size={16}/> Quay lại
         </button>
 
-        <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200/50 shadow-sm">
+        <div className="ui-card p-6 md:p-8">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div>
               <div className="flex flex-wrap gap-2 mb-3">
@@ -531,13 +531,13 @@ export default function BookingDetail() {
 
       {/* MODAL THÊM NHẠC THỦ CÔNG */}
       {showAddMusicModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl p-6 border border-slate-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-md animate-fade-in">
+          <div className="bg-white/95 backdrop-blur-3xl rounded-[2rem] w-full max-w-md shadow-[0_25px_60px_-15px_rgba(15,23,42,0.25)] p-6 border border-white/80 animate-slide-up">
             <div className="flex justify-between items-center border-b border-slate-100 pb-4 mb-4">
               <h3 className="font-black text-lg text-slate-800 flex items-center gap-2">
-                <Music className="text-indigo-600" size={22}/> Thêm nhạc vào Setlist
+                <Music className="text-indigo-600" size={20}/> Thêm nhạc vào Setlist
               </h3>
-              <button onClick={() => setShowAddMusicModal(false)} className="text-slate-400 hover:text-rose-500 font-bold text-sm">Đóng</button>
+              <button onClick={() => setShowAddMusicModal(false)} className="text-slate-400 hover:text-rose-500 font-bold text-sm cursor-pointer">Đóng</button>
             </div>
             
             <div className="space-y-4">
@@ -583,13 +583,13 @@ export default function BookingDetail() {
 
       {/* MODAL CHỌN NHẠC TỪ KHO */}
       {showLibraryModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden border border-slate-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-md animate-fade-in">
+          <div className="bg-white/95 backdrop-blur-3xl rounded-[2rem] w-full max-w-lg shadow-[0_25px_60px_-15px_rgba(15,23,42,0.25)] overflow-hidden border border-white/80 animate-slide-up">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
               <h3 className="font-black text-lg text-slate-800 flex items-center gap-2">
-                <Music className="text-indigo-600" size={22}/> Chọn từ Kho Beat & Sheet
+                <Music className="text-indigo-600" size={20}/> Chọn từ Kho Beat & Sheet
               </h3>
-              <button onClick={() => setShowLibraryModal(false)} className="text-slate-400 hover:text-rose-500 font-bold text-sm">Đóng</button>
+              <button onClick={() => setShowLibraryModal(false)} className="text-slate-400 hover:text-rose-500 font-bold text-sm cursor-pointer">Đóng</button>
             </div>
 
             <div className="p-6 space-y-4">

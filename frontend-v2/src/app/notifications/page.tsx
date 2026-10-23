@@ -138,13 +138,11 @@ export default function NotificationsHubPage() {
         </div>
 
         {/* Tab switchers */}
-        <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200 gap-1 shrink-0">
+        <div className="ios-segmented-container p-1 shrink-0">
           <button
             onClick={() => setActiveTab("inbox")}
-            className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
-              activeTab === "inbox"
-                ? "bg-white text-indigo-600 shadow-xs"
-                : "text-slate-600 hover:text-slate-900"
+            className={`ios-segmented-item px-4 py-1.5 text-xs font-bold cursor-pointer ${
+              activeTab === "inbox" ? "active" : ""
             }`}
           >
             Hộp Thư ({notifications.filter(n => !n.isRead).length})
@@ -153,10 +151,8 @@ export default function NotificationsHubPage() {
           {user?.role === "admin" && (
             <button
               onClick={() => setActiveTab("broadcast")}
-              className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
-                activeTab === "broadcast"
-                  ? "bg-white text-indigo-600 shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
+              className={`ios-segmented-item px-4 py-1.5 text-xs font-bold cursor-pointer ${
+                activeTab === "broadcast" ? "active" : ""
               }`}
             >
               Gửi Thông Báo
@@ -204,8 +200,8 @@ export default function NotificationsHubPage() {
                   key={noti._id}
                   className={`ui-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border transition-all ${
                     noti.isRead
-                      ? "bg-white/80 border-slate-200"
-                      : "bg-indigo-50/60 border-indigo-200 shadow-xs"
+                      ? "opacity-85 hover:opacity-100"
+                      : "border-indigo-500/30 shadow-sm ring-1 ring-indigo-500/20"
                   }`}
                 >
                   <div className="space-y-1">
@@ -245,7 +241,7 @@ export default function NotificationsHubPage() {
 
       {/* TAB 2: BROADCAST FOR ADMIN */}
       {activeTab === "broadcast" && user?.role === "admin" && (
-        <div className="ui-card p-6 sm:p-8 space-y-5 bg-white shadow-lg">
+        <div className="ui-card p-6 sm:p-8 space-y-5">
           <div className="border-b border-slate-100 pb-3">
             <h3 className="font-extrabold text-base text-slate-900">Phát Thanh Thông Báo Toàn Ban Nhạc</h3>
             <p className="text-xs text-slate-500 mt-0.5">

@@ -229,13 +229,14 @@ export default function CheckIn() {
 
   // ─── RENDER ────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-transparent flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-50" />
       <div className="absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 bg-indigo-200/30 rounded-full filter blur-[100px]" />
       <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-fuchsia-200/20 rounded-full filter blur-[100px]" />
 
-      <div className="w-full max-w-md bg-white/90 backdrop-blur-md rounded-[36px] border border-slate-200 shadow-2xl shadow-slate-200/25 relative z-10 overflow-hidden">
+      {/* 🍏 iOS Fluid Frosted Glass Checkin Card */}
+      <div className="w-full max-w-md ui-card rounded-[2.5rem] shadow-[0_25px_60px_-15px_rgba(15,23,42,0.18)] relative z-10 overflow-hidden">
 
         {/* Header */}
         <div className="px-7 pt-7 pb-5 text-center space-y-2 border-b border-slate-100">
@@ -346,27 +347,23 @@ export default function CheckIn() {
               </div>
             )}
 
-            {/* Mode Tabs */}
-            <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200 gap-1">
+            {/* 🍏 iOS Segmented Mode Tabs */}
+            <div className="ios-segmented-container w-full">
               <button
                 onClick={() => setMode("camera")}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wide transition ${
-                  mode === "camera"
-                    ? "bg-white text-indigo-600 shadow-sm"
-                    : "text-slate-500 hover:text-slate-800"
+                className={`ios-segmented-item flex-1 justify-center ${
+                  mode === "camera" ? "active" : ""
                 }`}
               >
-                <Camera size={14} /> Quét QR
+                <Camera size={14} /> <span>Quét QR</span>
               </button>
               <button
                 onClick={() => setMode("manual")}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wide transition ${
-                  mode === "manual"
-                    ? "bg-white text-indigo-600 shadow-sm"
-                    : "text-slate-500 hover:text-slate-800"
+                className={`ios-segmented-item flex-1 justify-center ${
+                  mode === "manual" ? "active" : ""
                 }`}
               >
-                <KeyRound size={14} /> Nhập Mã
+                <KeyRound size={14} /> <span>Nhập Mã</span>
               </button>
             </div>
 

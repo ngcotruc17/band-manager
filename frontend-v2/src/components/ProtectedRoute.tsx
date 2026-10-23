@@ -24,7 +24,7 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f8fafc] text-slate-800 flex flex-col items-center justify-center gap-3">
+      <div className="min-h-screen bg-transparent text-slate-800 flex flex-col items-center justify-center gap-3">
         <Loader className="animate-spin text-indigo-600" size={32} />
         <span className="text-xs font-black uppercase tracking-wider text-slate-400">Đang kiểm tra bảo mật...</span>
       </div>

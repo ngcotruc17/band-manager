@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 import { 
   Calendar, MapPin, User, Phone, DollarSign, Plus, Search, 
   CheckCircle, XCircle, Clock, Music, FileText, Loader, Lock, Unlock, PlayCircle, Check, Edit, Trash2,
-  Users, ChevronDown, ChevronUp, Save, Camera, X, RefreshCw
+  Users, ChevronDown, ChevronUp, Save, Camera, X, RefreshCw, Layers
 } from "lucide-react";
 import BookingModal from "../../components/BookingModal"; 
 
@@ -328,36 +328,38 @@ export default function BookingAndRehearsalManager() {
     <div className="max-w-7xl mx-auto px-4 sm:px-8 py-6 space-y-6">
       
       {/* HEADER HỆ THỐNG */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-4 border-b border-slate-200">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-4 border-b border-slate-200/80">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 flex items-center gap-3">
-            <span className="bg-indigo-600 text-white p-2 rounded-xl shadow-md">
-              <Calendar size={22} />
+          <h1 className="text-2xl font-black text-slate-900 flex items-center gap-3 tracking-tight">
+            <span className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white flex items-center justify-center shadow-md shadow-indigo-600/25 border border-white/20">
+              <Calendar size={20} />
             </span>
             QUẢN LÝ LỊCH TRÌNH BAN NHẠC
           </h1>
           <p className="text-xs text-slate-500 font-medium mt-1">
-            Hợp diễn, biểu diễn, tập ráp và điểm danh chuyên cần Sắc Band
+            Hợp diễn, biểu diễn sân khấu, lịch tập ráp và chấm công chuyên cần Sắc Band
           </p>
         </div>
 
-        {/* SubTab Chọn Phân Hệ */}
-        <div className="bg-slate-100 p-1.5 rounded-xl border border-slate-200 flex shadow-sm w-full md:w-auto">
+        {/* 🍏 iOS Segmented Control Chọn Phân Hệ */}
+        <div className="ios-segmented-container w-full md:w-auto self-start md:self-auto">
           <button
             onClick={() => setSubTab("shows")}
-            className={`flex-1 md:flex-none px-5 py-2.5 rounded-lg font-extrabold text-xs tracking-wider transition ${
-              subTab === "shows" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-600 hover:text-slate-900"
+            className={`ios-segmented-item flex-1 md:flex-none justify-center ${
+              subTab === "shows" ? "active" : ""
             }`}
           >
-            Lịch Biểu Diễn ({bookings.length})
+            <Calendar className="w-3.5 h-3.5" />
+            <span>Lịch Biểu Diễn ({bookings.length})</span>
           </button>
           <button
             onClick={() => setSubTab("rehearsals")}
-            className={`flex-1 md:flex-none px-5 py-2.5 rounded-lg font-extrabold text-xs tracking-wider transition ${
-              subTab === "rehearsals" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-600 hover:text-slate-900"
+            className={`ios-segmented-item flex-1 md:flex-none justify-center ${
+              subTab === "rehearsals" ? "active" : ""
             }`}
           >
-            Lịch Tập Ráp ({rehearsals.length})
+            <Layers className="w-3.5 h-3.5" />
+            <span>Lịch Tập Ráp ({rehearsals.length})</span>
           </button>
         </div>
       </div>
@@ -405,7 +407,7 @@ export default function BookingAndRehearsalManager() {
             </div>
 
             <div className="flex items-center justify-between gap-3 shrink-0">
-              <div className="flex overflow-x-auto gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 max-w-full">
+              <div className="ios-segmented-container overflow-x-auto max-w-full">
                 {[
                   { id: "all", name: "Tất cả" },
                   { id: "pending", name: "Chờ duyệt" },
@@ -415,10 +417,8 @@ export default function BookingAndRehearsalManager() {
                   <button
                     key={tab.id}
                     onClick={() => setBookingActiveTab(tab.id)}
-                    className={`px-3.5 py-2 rounded-lg text-xs font-bold transition whitespace-nowrap ${
-                      bookingActiveTab === tab.id
-                        ? "bg-indigo-600 text-white shadow-sm"
-                        : "text-slate-600 hover:text-slate-900"
+                    className={`ios-segmented-item whitespace-nowrap ${
+                      bookingActiveTab === tab.id ? "active" : ""
                     }`}
                   >
                     {tab.name}
