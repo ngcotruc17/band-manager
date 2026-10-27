@@ -48,24 +48,24 @@ export default function Login() {
     <div className="w-full flex-1 flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
       
       {/* Ambient concert stage lighting background */}
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-gradient-to-tr from-indigo-500/10 to-violet-500/10 rounded-full blur-[130px] pointer-events-none" />
-      <div className="absolute bottom-1/4 left-1/3 -translate-x-1/2 w-[400px] h-[400px] bg-gradient-to-tr from-amber-500/5 to-rose-500/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-gradient-to-tr from-orange-500/12 to-amber-500/10 rounded-full blur-[130px] pointer-events-none" />
+      <div className="absolute bottom-1/4 left-1/3 -translate-x-1/2 w-[400px] h-[400px] bg-gradient-to-tr from-amber-500/8 to-rose-500/5 rounded-full blur-[100px] pointer-events-none" />
 
-      {/* 🍏 iOS Fluid Frosted Glass Login Sheet */}
-      <div className="w-full max-w-md ui-card p-6 sm:p-8 space-y-5 relative z-10 my-auto shadow-[0_25px_60px_-15px_rgba(15,23,42,0.15)] rounded-[2rem]">
+      {/* 🍏 iOS / OneUI Fluid Frosted Glass Login Sheet */}
+      <div className="w-full max-w-md ui-card p-6 sm:p-8 space-y-5 relative z-10 my-auto shadow-[0_25px_60px_-15px_rgba(242,112,36,0.15)] rounded-[2rem]">
         
         {/* Brand Header */}
         <div className="text-center space-y-2.5">
-          <div className="w-13 h-13 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-700 to-violet-600 flex items-center justify-center text-white mx-auto shadow-lg shadow-indigo-600/25">
+          <div className="w-13 h-13 rounded-2xl bg-gradient-to-tr from-[#F27024] via-[#FA8C16] to-[#EA580C] flex items-center justify-center text-white mx-auto shadow-lg shadow-orange-500/25 border border-white/30">
             <Music size={24} />
           </div>
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200/80 text-[10px] font-extrabold uppercase tracking-widest mb-1.5">
-              <Sparkles className="w-3 h-3 text-indigo-600" />
-              <span>SẮC BAND ECOSYSTEM</span>
+            <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-orange-50 text-orange-700 border border-orange-200/80 text-[10px] font-extrabold uppercase tracking-widest mb-1.5">
+              <Sparkles className="w-3 h-3 text-[#F27024]" />
+              <span>FPTU BAND MANAGER</span>
             </div>
             <h1 className="text-2xl font-black tracking-tight text-slate-900 uppercase">Đăng Nhập Hệ Thống</h1>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">Cổng điều hành lịch diễn, tập ráp & sân khấu số</p>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">Cổng điều hành biểu diễn & nhân sự CLB Âm nhạc Đại học FPT</p>
           </div>
         </div>
 
@@ -133,7 +133,7 @@ export default function Login() {
               </>
             ) : (
               <>
-                Đăng Nhập Vào Ban Nhạc <ArrowRight size={16} />
+                Đăng Nhập FPTU Band <ArrowRight size={16} />
               </>
             )}
           </button>
@@ -146,16 +146,16 @@ export default function Login() {
             <button
               type="button"
               onClick={() => { setUsername("admin"); setPassword("admin123"); }}
-              className="flex-1 py-1 px-2 rounded-lg bg-white border border-slate-200 hover:border-indigo-300 text-[11px] font-bold text-slate-700 hover:text-indigo-600 transition text-center shadow-2xs"
+              className="flex-1 py-1.5 px-2 rounded-xl bg-white border border-slate-200 hover:border-orange-300 text-[11px] font-bold text-slate-700 hover:text-[#F27024] transition text-center shadow-2xs cursor-pointer"
             >
-              Trưởng Ban (admin)
+              Trưởng Ban FPTU (admin)
             </button>
             <button
               type="button"
               onClick={() => { setUsername("member"); setPassword("member123"); }}
-              className="flex-1 py-1 px-2 rounded-lg bg-white border border-slate-200 hover:border-indigo-300 text-[11px] font-bold text-slate-700 hover:text-indigo-600 transition text-center shadow-2xs"
+              className="flex-1 py-1.5 px-2 rounded-xl bg-white border border-slate-200 hover:border-orange-300 text-[11px] font-bold text-slate-700 hover:text-[#F27024] transition text-center shadow-2xs cursor-pointer"
             >
-              Nhạc Công (member)
+              Nghệ Sĩ FPTU (member)
             </button>
           </div>
         </div>
@@ -163,8 +163,8 @@ export default function Login() {
         {/* Register Link */}
         <div className="text-center text-xs font-medium text-slate-500 pt-3 border-t border-slate-100">
           Nhạc công / thành viên mới?{" "}
-          <Link href="/register" className="text-indigo-600 hover:text-indigo-700 font-bold underline ml-1">
-            Đăng ký gia nhập Sắc Band
+          <Link href="/register" className="text-[#F27024] hover:text-orange-700 font-bold underline ml-1">
+            Đăng ký gia nhập FPTU Band
           </Link>
         </div>
 

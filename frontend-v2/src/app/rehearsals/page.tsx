@@ -192,14 +192,14 @@ export default function RehearsalManagerPage() {
       <div className="ui-card p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <span className="px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
-              <Layers className="w-3.5 h-3.5 text-indigo-600" />
-              <span>LỊCH TRÌNH TẬP LUYỆN</span>
+            <span className="px-2.5 py-0.5 rounded-full bg-orange-50 text-orange-700 border border-orange-200 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+              <Layers className="w-3.5 h-3.5 text-[#F27024]" />
+              <span>LỊCH TRÌNH TẬP LUYỆN FPTU</span>
             </span>
           </div>
           <div className="flex items-center gap-2.5">
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              Quản Lý Lịch Tập Ráp
+              Quản Lý Lịch Tập Ráp FPTU
             </h1>
           </div>
           <p className="text-xs sm:text-sm font-medium text-slate-600 mt-1">
@@ -212,7 +212,7 @@ export default function RehearsalManagerPage() {
             href="/checkin"
             className="ui-button-secondary text-xs uppercase tracking-wider flex items-center gap-2"
           >
-            <Camera className="w-4 h-4 text-indigo-600" />
+            <Camera className="w-4 h-4 text-[#F27024]" />
             <span>Quét QR Điểm Danh</span>
           </Link>
 
@@ -495,7 +495,7 @@ export default function RehearsalManagerPage() {
                 <input
                   type="text"
                   required
-                  placeholder="Ví dụ: Studio Sắc Band - 123 Lê Lợi..."
+                  placeholder="Ví dụ: Phòng tập FPTU - Tòa Alpha, ĐH FPT..."
                   value={newForm.location}
                   onChange={(e) => setNewForm({ ...newForm, location: e.target.value })}
                   className="ui-input w-full text-xs"

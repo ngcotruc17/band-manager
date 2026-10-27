@@ -232,18 +232,18 @@ export default function CheckIn() {
     <div className="min-h-screen bg-transparent flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-50" />
-      <div className="absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 bg-indigo-200/30 rounded-full filter blur-[100px]" />
-      <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-fuchsia-200/20 rounded-full filter blur-[100px]" />
+      <div className="absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 bg-orange-200/30 rounded-full filter blur-[100px]" />
+      <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-amber-200/20 rounded-full filter blur-[100px]" />
 
-      {/* 🍏 iOS Fluid Frosted Glass Checkin Card */}
-      <div className="w-full max-w-md ui-card rounded-[2.5rem] shadow-[0_25px_60px_-15px_rgba(15,23,42,0.18)] relative z-10 overflow-hidden">
+      {/* 🍏 iOS / OneUI Fluid Frosted Glass Checkin Card */}
+      <div className="w-full max-w-md ui-card rounded-[2.5rem] shadow-[0_25px_60px_-15px_rgba(242,112,36,0.18)] relative z-10 overflow-hidden">
 
         {/* Header */}
         <div className="px-7 pt-7 pb-5 text-center space-y-2 border-b border-slate-100">
-          <div className="bg-gradient-to-tr from-indigo-600 to-fuchsia-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-indigo-500/20 mb-3">
+          <div className="bg-gradient-to-tr from-[#F27024] to-[#EA580C] text-white w-14 h-14 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-orange-500/20 mb-3 border border-white/30">
             <Camera size={26} />
           </div>
-          <h2 className="text-xl font-black uppercase tracking-tight text-slate-800">Điểm Danh Tập Ráp</h2>
+          <h2 className="text-xl font-black uppercase tracking-tight text-slate-800">Điểm Danh FPTU Band</h2>
           <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
             Quét mã QR hoặc nhập token từ Admin
           </p>
@@ -479,7 +479,7 @@ export default function CheckIn() {
 
         {/* Footer */}
         <div className="text-center text-[10px] text-slate-400 font-bold uppercase tracking-widest border-t border-slate-100 py-4">
-          Sắc Band — Hệ thống điểm danh nội bộ
+          FPTU Band — Hệ thống điểm danh nội bộ
         </div>
       </div>
 

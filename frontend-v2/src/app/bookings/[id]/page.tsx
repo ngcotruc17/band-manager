@@ -208,7 +208,7 @@ export default function BookingDetail() {
       "----------------------------------",
       ...show.setlist.map((s, idx) => `${idx + 1}. ${s.title}${s.note ? ` (${s.note})` : ""}`),
       "----------------------------------",
-      "SẮC BAND - Chúc anh em biểu diễn thành công!"
+      "FPTU BAND - Chúc anh em biểu diễn thành công!"
     ];
     navigator.clipboard.writeText(lines.join("\n"));
     toast.success("Đã sao chép Setlist gửi Zalo!");

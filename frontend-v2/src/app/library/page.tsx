@@ -257,7 +257,7 @@ export default function SongLibraryAndRepertoire({ defaultSubTab = "library" }: 
     });
     
     text += `----------------------------------------\n`;
-    text += `SẮC BAND - Chúc anh em biểu diễn tốt!`;
+    text += `FPTU BAND - Chúc anh em biểu diễn tốt!`;
 
     navigator.clipboard.writeText(text);
     toast.success("Đã sao chép setlist gửi Zalo!");
@@ -338,13 +338,13 @@ export default function SongLibraryAndRepertoire({ defaultSubTab = "library" }: 
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200/80 pb-4 print:hidden">
           <div>
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 flex items-center gap-3 tracking-tight">
-              <span className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white flex items-center justify-center shadow-md shadow-indigo-600/25 border border-white/20">
+              <span className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#F27024] to-[#EA580C] text-white flex items-center justify-center shadow-md shadow-orange-500/25 border border-white/20">
                 <Music size={20} />
               </span>
               THƯ VIỆN & DANH MỤC BÀI HÁT
             </h1>
             <p className="text-xs text-slate-500 font-medium mt-1">
-              Kho beat, sheet nhạc, hợp âm biểu diễn và danh mục bài hát chính thức Sắc Band
+              Kho beat, sheet nhạc, hợp âm biểu diễn và danh mục bài hát chính thức FPTU Band
             </p>
           </div>
 
@@ -539,9 +539,9 @@ export default function SongLibraryAndRepertoire({ defaultSubTab = "library" }: 
                 {/* Bản in Repertoire */}
                 <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 md:p-12 print:shadow-none print:border-none print:p-0">
                   <div className="text-center mb-8 border-b-2 border-slate-200 pb-6">
-                    <Music size={36} className="mx-auto text-indigo-600 mb-2"/>
-                    <h2 className="text-3xl font-black text-slate-900 uppercase tracking-widest print:text-black">SẮC BAND</h2>
-                    <p className="text-slate-500 font-bold tracking-widest mt-1 uppercase text-xs print:text-black">Official Repertoire</p>
+                    <Music size={36} className="mx-auto text-[#F27024] mb-2"/>
+                    <h2 className="text-3xl font-black text-slate-900 uppercase tracking-widest print:text-black">FPTU BAND</h2>
+                    <p className="text-slate-500 font-bold tracking-widest mt-1 uppercase text-xs print:text-black">CLB Âm Nhạc Đại Học FPT - Official Repertoire</p>
                   </div>
 
                   {fetchLoading ? (

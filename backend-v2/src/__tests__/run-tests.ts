@@ -5,7 +5,7 @@ import { runFinanceTests } from './finance.test';
 import { runAuthTests } from './auth.test';
 
 console.log("==================================================");
-console.log("🧪 Running Sắc Band Manager v2 Unit & Integration Tests");
+console.log("🧪 Running FPTU Band Manager v2 Unit & Integration Tests");
 console.log("==================================================\n");
 
 const financeResults = runFinanceTests();

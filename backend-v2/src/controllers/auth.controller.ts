@@ -182,7 +182,7 @@ export const approveUser = async (req: Request, res: Response): Promise<void> =>
     }
     // Gửi thông báo cho User được duyệt
     await NotificationService.notifyUser(user._id.toString(), { 
-      message: "🎉 Chúc mừng! Tài khoản của bạn đã được duyệt. Hãy bắt đầu hoạt động cùng Sắc Band!", 
+      message: "🎉 Chúc mừng! Tài khoản của bạn đã được duyệt. Hãy bắt đầu hoạt động cùng FPTU Band!", 
       type: 'success' 
     });
     res.json({ message: `Đã duyệt thành viên: ${user.fullName}` });

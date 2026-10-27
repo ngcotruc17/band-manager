@@ -1,7 +1,7 @@
 {
-  "name": "sac-band-manager",
+  "name": "fptu-band-manager",
   "version": "2.0.0",
-  "description": "Sắc Band Manager Ecosystem (v2.0 - TypeScript, Next.js 16, Express 5, WebSockets)",
+  "description": "FPTU Band Manager Ecosystem (v2.0 - TypeScript, Next.js 16, Express 5, WebSockets)",
   "private": true,
   "scripts": {
     "start": "node server.js",

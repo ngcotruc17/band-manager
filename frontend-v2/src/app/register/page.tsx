@@ -89,20 +89,20 @@ export default function Register() {
     <div className="w-full flex-1 flex items-center justify-center p-4 sm:p-6 relative overflow-hidden py-4 sm:py-6">
       
       {/* Ambient concert stage lighting background */}
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-gradient-to-tr from-indigo-500/10 to-violet-500/10 rounded-full blur-[130px] pointer-events-none" />
-      <div className="absolute bottom-1/4 left-1/3 -translate-x-1/2 w-[400px] h-[400px] bg-gradient-to-tr from-amber-500/5 to-rose-500/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-gradient-to-tr from-orange-500/12 to-amber-500/10 rounded-full blur-[130px] pointer-events-none" />
+      <div className="absolute bottom-1/4 left-1/3 -translate-x-1/2 w-[400px] h-[400px] bg-gradient-to-tr from-amber-500/8 to-rose-500/5 rounded-full blur-[100px] pointer-events-none" />
 
-      {/* 🍏 iOS Fluid Frosted Glass Register Sheet */}
-      <div className="w-full max-w-lg ui-card p-6 sm:p-8 space-y-4 relative z-10 shadow-[0_25px_60px_-15px_rgba(15,23,42,0.15)] rounded-[2rem] my-auto">
+      {/* 🍏 iOS / OneUI Fluid Frosted Glass Register Sheet */}
+      <div className="w-full max-w-lg ui-card p-6 sm:p-8 space-y-4 relative z-10 shadow-[0_25px_60px_-15px_rgba(242,112,36,0.15)] rounded-[2rem] my-auto">
         
         {/* Header */}
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center text-white mx-auto shadow-md shadow-indigo-600/25">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-[#F27024] via-[#FA8C16] to-[#EA580C] flex items-center justify-center text-white mx-auto shadow-md shadow-orange-500/25 border border-white/30">
             <UserPlus size={24} />
           </div>
           <div>
-            <h1 className="text-xl font-extrabold tracking-tight text-slate-900 uppercase">Đăng Ký Thành Viên Sắc Band</h1>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">Gia nhập hệ sinh thái biểu diễn & quản lý nội bộ</p>
+            <h1 className="text-xl font-extrabold tracking-tight text-slate-900 uppercase">Đăng Ký Thành Viên FPTU Band</h1>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">Gia nhập CLB Âm nhạc Đại học FPT & quản lý nội bộ</p>
           </div>
         </div>
 
@@ -225,7 +225,7 @@ export default function Register() {
 
         <div className="text-center text-xs font-medium text-slate-500 pt-3 border-t border-slate-200">
           Đã có tài khoản?{" "}
-          <Link href="/login" className="text-indigo-600 hover:text-indigo-700 font-bold underline">
+          <Link href="/login" className="text-[#F27024] hover:text-orange-700 font-bold underline">
             Đăng nhập ngay
           </Link>
         </div>
@@ -237,8 +237,8 @@ export default function Register() {
               
               <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                 <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-5 h-5 text-indigo-600" />
-                  <h3 className="font-extrabold text-sm text-slate-900">Quy Chế Hoạt Động & Kỷ Luật Nội Bộ</h3>
+                  <ShieldCheck className="w-5 h-5 text-[#F27024]" />
+                  <h3 className="font-extrabold text-sm text-slate-900">Quy Chế Hoạt Động CLB FPTU Band</h3>
                 </div>
                 <button 
                   onClick={() => setShowTerms(false)} 
@@ -255,22 +255,22 @@ export default function Register() {
               >
                 <div className="space-y-1 p-3 rounded-xl bg-slate-50 border border-slate-100">
                   <h4 className="font-extrabold text-slate-900 text-xs">Điều 1. Bảo mật tài nguyên & Lịch trình</h4>
-                  <p className="text-slate-600">Thành viên có trách nhiệm bảo mật thông tin tài khoản. Tuyệt đối không chia sẻ tài nguyên âm nhạc (beat, sheet) hoặc thông tin lịch trình nội bộ ra bên ngoài.</p>
+                  <p className="text-slate-600">Thành viên có trách nhiệm bảo mật thông tin tài khoản. Tuyệt đối không chia sẻ tài nguyên âm nhạc (beat, sheet) hoặc thông tin lịch trình nội bộ CLB FPTU Band ra bên ngoài.</p>
                 </div>
 
                 <div className="space-y-1 p-3 rounded-xl bg-slate-50 border border-slate-100">
                   <h4 className="font-extrabold text-slate-900 text-xs">Điều 2. Kỷ luật chuyên cần & Đúng giờ</h4>
-                  <p className="text-slate-600">Có mặt trước giờ tập 10 phút. Chậm trễ không lý do chính đáng sẽ áp dụng trừ quỹ tự động theo quy chế biểu diễn.</p>
+                  <p className="text-slate-600">Có mặt trước giờ tập 10 phút. Chậm trễ không lý do chính đáng sẽ áp dụng trừ quỹ tự động theo quy chế biểu diễn CLB.</p>
                 </div>
 
                 <div className="space-y-1 p-3 rounded-xl bg-slate-50 border border-slate-100">
                   <h4 className="font-extrabold text-slate-900 text-xs">Điều 3. Ý thức chuẩn bị bài trước khi ráp</h4>
-                  <p className="text-slate-600">Chủ động tự tập thuộc bài và hợp âm thông qua Kho Nhạc / Live Stand trước buổi ráp để đảm bảo tiến độ chung của toàn ban.</p>
+                  <p className="text-slate-600">Chủ động tự tập thuộc bài và hợp âm thông qua Kho Nhạc FPTU trước buổi ráp để đảm bảo tiến độ chung của toàn ban.</p>
                 </div>
 
                 <div className="space-y-1 p-3 rounded-xl bg-slate-50 border border-slate-100">
                   <h4 className="font-extrabold text-slate-900 text-xs">Điều 4. Cơ chế trích lập Quỹ Ban Nhạc</h4>
-                  <p className="text-slate-600">Doanh thu mỗi chương trình được phân bổ minh bạch: trích lập Quỹ chung vận hành và chi trả thù lao nhạc công theo phân bổ vai trò.</p>
+                  <p className="text-slate-600">Doanh thu mỗi chương trình được phân bổ minh bạch: trích lập Quỹ chung vận hành CLB và chi trả thù lao nhạc công theo phân bổ vai trò.</p>
                 </div>
 
                 {!canCheck && (
@@ -288,8 +288,8 @@ export default function Register() {
                     canCheck ? "hover:bg-slate-100 cursor-pointer text-slate-800" : "text-slate-400 cursor-not-allowed"
                   }`}
                 >
-                  <div className="mt-0.5">{agreed ? <CheckSquare className="text-indigo-600 shrink-0" /> : <Square className="shrink-0 text-slate-400" />}</div>
-                  <span className="font-bold">Tôi đã đọc kỹ và cam kết tuân thủ nghiêm túc toàn bộ điều lệ của Sắc Band.</span>
+                  <div className="mt-0.5">{agreed ? <CheckSquare className="text-[#F27024] shrink-0" /> : <Square className="shrink-0 text-slate-400" />}</div>
+                  <span className="font-bold">Tôi đã đọc kỹ và cam kết tuân thủ nghiêm túc toàn bộ điều lệ của FPTU Band.</span>
                 </button>
 
                 <button
@@ -301,7 +301,7 @@ export default function Register() {
                       : "bg-slate-200 text-slate-400 cursor-not-allowed"
                   }`}
                 >
-                  {loading ? "ĐANG XỬ LÝ..." : "XÁC NHẬN GIA NHẬP SẮC BAND"}
+                  {loading ? "ĐANG XỬ LÝ..." : "XÁC NHẬN GIA NHẬP FPTU BAND"}
                 </button>
               </div>
 

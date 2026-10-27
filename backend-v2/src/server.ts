@@ -104,7 +104,7 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Kiểm tra trạng thái máy chủ
 app.get('/api/ping', (req, res) => {
-  res.status(200).json({ message: "Sắc Band Backend v2.0 is fully operational! 🚀" });
+  res.status(200).json({ message: "FPTU Band Backend v2.0 is fully operational! 🚀" });
 });
 
 // Khai báo Routes
@@ -123,6 +123,6 @@ app.use('/api/notifications', notificationRoutes);
 // Khởi chạy máy chủ trên 0.0.0.0 để lắng nghe tất cả IP trong mạng LAN
 const PORT = Number(process.env.PORT) || 5000;
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Sắc Band Server v2.0 đang chạy tại cổng ${PORT} (0.0.0.0)`);
+  console.log(`🚀 FPTU Band Server v2.0 đang chạy tại cổng ${PORT} (0.0.0.0)`);
 });
 

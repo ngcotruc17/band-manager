@@ -136,13 +136,13 @@ export default function MemberAndNotificationManager() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200/80 pb-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 flex items-center gap-3 tracking-tight">
-              <span className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white flex items-center justify-center shadow-md shadow-indigo-600/25 border border-white/20">
+              <span className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#F27024] to-[#EA580C] text-white flex items-center justify-center shadow-md shadow-[#F27024]/25 border border-white/20">
                 <Users size={20} />
               </span>
-              TRUNG TÂM NHÂN SỰ & THÀNH VIÊN
+              TRUNG TÂM NHÂN SỰ & THÀNH VIÊN FPTU BAND
             </h1>
             <p className="text-xs text-slate-500 font-medium mt-1">
-              Quản lý nghệ sĩ ban nhạc, phân quyền vai trò & điều phối kênh thông báo nội bộ
+              Quản lý nhân sự CLB FPTU Band, phân quyền vai trò & điều phối kênh thông báo nội bộ
             </p>
           </div>
 
@@ -175,13 +175,13 @@ export default function MemberAndNotificationManager() {
           <div className="space-y-6 animate-fade-in">
             {/* Thanh tìm kiếm */}
             <div className="flex justify-between items-center gap-4">
-              <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Danh sách nhân sự chính thức của ban nhạc</span>
+              <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Danh sách nhân sự chính thức của FPTU Band</span>
               <div className="relative w-full md:w-96 flex items-center">
                 <div className="absolute left-4 flex items-center pointer-events-none text-slate-400">
                   <Search size={18} />
                 </div>
                 <input
-                  className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 bg-white shadow-sm focus:ring-2 ring-indigo-500 font-semibold outline-none text-slate-800 transition text-sm"
+                  className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 bg-white shadow-sm focus:ring-2 ring-[#F27024] font-semibold outline-none text-slate-800 transition text-sm"
                   placeholder="Tìm tên, email thành viên..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -190,7 +190,7 @@ export default function MemberAndNotificationManager() {
             </div>
 
             {loading ? (
-              <div className="text-center py-20"><Loader className="animate-spin mx-auto text-indigo-600" size={32}/></div>
+              <div className="text-center py-20"><Loader className="animate-spin mx-auto text-[#F27024]" size={32}/></div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredMembers.map((m) => (
@@ -269,7 +269,7 @@ export default function MemberAndNotificationManager() {
             {/* Editor Soạn Thảo */}
             <div className="lg:col-span-2 ui-card p-6 md:p-8 space-y-6">
               <h3 className="font-extrabold text-slate-800 text-sm flex items-center gap-2 pb-4 border-b border-slate-100">
-                <FileText className="text-indigo-600" size={18}/> Soạn Thảo Nội Dung Thông Báo
+                <FileText className="text-[#F27024]" size={18}/> Soạn Thảo Nội Dung Thông Báo
               </h3>
 
               <form onSubmit={handleSendNotification} className="space-y-5 text-xs">
@@ -282,9 +282,9 @@ export default function MemberAndNotificationManager() {
                     <select
                       value={recipientType}
                       onChange={(e) => setRecipientType(e.target.value)}
-                      className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 ring-indigo-500 outline-none text-slate-800 font-extrabold transition appearance-none pr-10 cursor-pointer"
+                      className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 ring-[#F27024] outline-none text-slate-800 font-extrabold transition appearance-none pr-10 cursor-pointer"
                     >
-                      <option value="all">Gửi tất cả thành viên (Broadcast)</option>
+                      <option value="all">Gửi tất cả thành viên FPTU Band (Broadcast)</option>
                       <optgroup label="Cá nhân cụ thể">
                         {approvedMembers.map((m) => (
                           <option key={m._id} value={m._id}>
@@ -306,10 +306,10 @@ export default function MemberAndNotificationManager() {
                   </label>
                   <input
                     type="text"
-                    placeholder="VD: Cập nhật lịch diễn cuối tuần này hoặc Nội quy tập ráp..."
+                    placeholder="VD: Cập nhật lịch diễn cuối tuần này hoặc Nội quy CLB FPTU Band..."
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 ring-indigo-500 outline-none font-bold text-slate-800 transition focus:bg-white"
+                    className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 ring-[#F27024] outline-none font-bold text-slate-800 transition focus:bg-white"
                     required
                   />
                 </div>
@@ -320,7 +320,7 @@ export default function MemberAndNotificationManager() {
                     Nội dung thông báo (Chi tiết) *
                   </label>
                   
-                  <div className="border border-slate-200 rounded-2xl overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500/25 bg-slate-50">
+                  <div className="border border-slate-200 rounded-2xl overflow-hidden focus-within:ring-2 focus-within:ring-[#F27024]/25 bg-slate-50">
                     <div className="flex items-center gap-1.5 p-2 border-b border-slate-200 bg-slate-100">
                       <button type="button" onClick={() => handleCommand("bold")} className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition" title="Chữ đậm"><Bold size={13} /></button>
                       <button type="button" onClick={() => handleCommand("italic")} className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition" title="Chữ nghiêng"><Italic size={13} /></button>
@@ -344,7 +344,7 @@ export default function MemberAndNotificationManager() {
                 <button
                   type="submit"
                   disabled={submittingNotification}
-                  className="w-full py-4 bg-slate-900 hover:bg-black text-white rounded-xl font-bold transition flex items-center justify-center gap-2 shadow-md disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wider text-xs"
+                  className="w-full py-4 bg-[#F27024] hover:bg-[#EA580C] text-white rounded-xl font-bold transition flex items-center justify-center gap-2 shadow-md shadow-[#F27024]/25 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wider text-xs"
                 >
                   {submittingNotification ? (
                     <>
@@ -352,7 +352,7 @@ export default function MemberAndNotificationManager() {
                     </>
                   ) : (
                     <>
-                      <Send size={16} /> Gửi Thông Báo Ngay
+                      <Send size={16} /> Gửi Thông Báo FPTU Band
                     </>
                   )}
                 </button>
@@ -363,15 +363,15 @@ export default function MemberAndNotificationManager() {
             <div className="space-y-6">
               <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
                 <h3 className="font-extrabold text-slate-800 text-sm flex items-center gap-2 pb-4 border-b border-slate-100">
-                  <HelpCircle className="text-indigo-500" size={18}/> Hướng Dẫn & Lưu Ý
+                  <HelpCircle className="text-[#F27024]" size={18}/> Hướng Dẫn & Lưu Ý
                 </h3>
                 <div className="space-y-4 text-xs text-slate-600 leading-relaxed mt-4">
                   <div className="flex gap-2.5 items-start">
-                    <div className="p-1 bg-indigo-50 text-indigo-600 rounded-lg font-black shrink-0 mt-0.5">1</div>
+                    <div className="p-1 bg-orange-50 text-[#F27024] rounded-lg font-black shrink-0 mt-0.5">1</div>
                     <p><strong>Kênh gửi kép:</strong> Thông báo sẽ được lưu vào Navbar và đồng thời gửi email HTML cho các thành viên.</p>
                   </div>
                   <div className="flex gap-2.5 items-start">
-                    <div className="p-1 bg-indigo-50 text-indigo-600 rounded-lg font-black shrink-0 mt-0.5">2</div>
+                    <div className="p-1 bg-orange-50 text-[#F27024] rounded-lg font-black shrink-0 mt-0.5">2</div>
                     <p><strong>Độ rộng Broadcast:</strong> Nếu chọn gửi tất cả, danh sách người nhận sẽ được gửi dưới dạng ẩn danh (BCC) để bảo mật thông tin.</p>
                   </div>
                 </div>
@@ -380,9 +380,9 @@ export default function MemberAndNotificationManager() {
               <div className="bg-white border border-slate-200/60 rounded-3xl p-5 flex items-center justify-between shadow-sm">
                 <div>
                   <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Nhân sự nhận thông báo</p>
-                  <h3 className="text-xl font-black text-indigo-600 mt-1">{approvedMembers.length} người</h3>
+                  <h3 className="text-xl font-black text-[#F27024] mt-1">{approvedMembers.length} người</h3>
                 </div>
-                <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shadow-sm">
+                <div className="w-12 h-12 bg-orange-50 text-[#F27024] rounded-2xl flex items-center justify-center shadow-sm">
                   <Users size={22}/>
                 </div>
               </div>

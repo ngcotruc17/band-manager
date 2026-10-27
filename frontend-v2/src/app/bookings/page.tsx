@@ -331,13 +331,13 @@ export default function BookingAndRehearsalManager() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-4 border-b border-slate-200/80">
         <div>
           <h1 className="text-2xl font-black text-slate-900 flex items-center gap-3 tracking-tight">
-            <span className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white flex items-center justify-center shadow-md shadow-indigo-600/25 border border-white/20">
+            <span className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#F27024] to-[#EA580C] text-white flex items-center justify-center shadow-md shadow-orange-500/25 border border-white/20">
               <Calendar size={20} />
             </span>
-            QUẢN LÝ LỊCH TRÌNH BAN NHẠC
+            QUẢN LÝ LỊCH TRÌNH FPTU BAND
           </h1>
           <p className="text-xs text-slate-500 font-medium mt-1">
-            Hợp diễn, biểu diễn sân khấu, lịch tập ráp và chấm công chuyên cần Sắc Band
+            Hợp diễn, biểu diễn sân khấu, lịch tập ráp và chấm công chuyên cần FPTU Band
           </p>
         </div>
 

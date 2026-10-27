@@ -13,10 +13,10 @@ interface InputGroupProps {
 }
 
 const InputGroup = ({ label, icon: Icon, name, value, type = "text", placeholder, required, onChange }: InputGroupProps) => (
-  <div className="space-y-1.5 text-left">
+  <div className="space-y-1.5 text-left group">
     <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider ml-1">{label}</label>
     <div className="relative flex items-center">
-      <div className="absolute left-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-indigo-600 transition">
+      <div className="absolute left-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#F27024] transition">
         <Icon size={16}/>
       </div>
       <input
@@ -25,7 +25,7 @@ const InputGroup = ({ label, icon: Icon, name, value, type = "text", placeholder
         onChange={onChange}
         type={type}
         required={required}
-        className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200/80 rounded-2xl focus:bg-white focus:border-indigo-500 outline-none font-bold text-slate-800 transition text-xs shadow-2xs"
+        className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200/80 rounded-2xl focus:bg-white focus:border-[#F27024] focus:ring-2 focus:ring-[#F27024]/10 outline-none font-bold text-slate-800 transition text-xs shadow-2xs"
         placeholder={placeholder}
       />
     </div>
@@ -44,10 +44,11 @@ interface BookingModalProps {
 const EVENT_TYPES = [
   "Đám cưới / Tiệc cưới",
   "Sinh nhật / Kỷ niệm",
+  "Sự kiện FPTU / Đại học",
   "Sự kiện doanh nghiệp",
   "Hội trường / Liên hoan",
   "Bar / Pub / Lounge",
-  "Ngoài trời / Picnic",
+  "Ngoài trời / Acoustic",
   "Tết / Lễ hội",
   "Khác"
 ];
@@ -57,7 +58,7 @@ export default function BookingModal({ isOpen, onClose, onSave, formData, handle
 
   return (
     <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-[70] flex items-center justify-center p-4 animate-fade-in">
-      {/* 🍏 iOS Fluid Frosted Glass Modal */}
+      {/* 🍏 iOS / OneUI Fluid Frosted Glass Modal */}
       <div className="bg-white/95 backdrop-blur-3xl rounded-[2rem] w-full max-w-2xl shadow-[0_25px_60px_-15px_rgba(15,23,42,0.25)] overflow-hidden border border-white/80 animate-slide-up">
         
         {/* Header */}
@@ -65,10 +66,10 @@ export default function BookingModal({ isOpen, onClose, onSave, formData, handle
           <div className="text-left">
             <h3 className="text-xl font-black text-slate-900 flex items-center gap-2.5 tracking-tight">
               {editingId
-                ? <><Edit className="text-indigo-600" size={20}/> Cập nhật Show Diễn</>
-                : <><Plus className="text-indigo-600" size={20}/> Tạo Booking Show Mới</>}
+                ? <><Edit className="text-[#F27024]" size={20}/> Cập nhật Show Diễn</>
+                : <><Plus className="text-[#F27024]" size={20}/> Tạo Booking Show Mới</>}
             </h3>
-            <p className="text-xs text-slate-500 font-medium mt-1">Lên lịch trình, thông tin khách hàng & phân bổ cát-xê</p>
+            <p className="text-xs text-slate-500 font-medium mt-1">Lên lịch trình FPTU Band, thông tin khách hàng & phân bổ cát-xê</p>
           </div>
           <button 
             onClick={onClose} 
@@ -82,8 +83,8 @@ export default function BookingModal({ isOpen, onClose, onSave, formData, handle
 
           {/* Tên show & Khách hàng */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-            <InputGroup label="Tên Show diễn *" icon={Music} name="title" value={formData.title} onChange={handleChange} placeholder="VD: Đám cưới khách sạn A..." required/>
-            <InputGroup label="Tên khách hàng" icon={User} name="customerName" value={formData.customerName} onChange={handleChange} placeholder="Người liên hệ chính"/>
+            <InputGroup label="Tên Show diễn *" icon={Music} name="title" value={formData.title} onChange={handleChange} placeholder="VD: Đêm nhạc FPTU Open Day..." required/>
+            <InputGroup label="Tên khách hàng / Đơn vị" icon={User} name="customerName" value={formData.customerName} onChange={handleChange} placeholder="Người liên hệ chính / Ban tổ chức"/>
           </div>
 
           {/* Loại sự kiện */}
@@ -97,7 +98,7 @@ export default function BookingModal({ isOpen, onClose, onSave, formData, handle
                 name="eventType"
                 value={formData.eventType}
                 onChange={handleChange}
-                className="w-full pl-11 pr-10 py-2.5 bg-slate-50 border border-slate-200/80 rounded-2xl focus:bg-white focus:border-indigo-500 outline-none font-bold text-slate-800 transition text-xs shadow-2xs appearance-none cursor-pointer"
+                className="w-full pl-11 pr-10 py-2.5 bg-slate-50 border border-slate-200/80 rounded-2xl focus:bg-white focus:border-[#F27024] focus:ring-2 focus:ring-[#F27024]/10 outline-none font-bold text-slate-800 transition text-xs shadow-2xs appearance-none cursor-pointer"
               >
                 <option value="">-- Chọn loại sự kiện --</option>
                 {EVENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
@@ -116,16 +117,16 @@ export default function BookingModal({ isOpen, onClose, onSave, formData, handle
           </div>
 
           {/* Địa điểm */}
-          <InputGroup label="Địa điểm chính xác" icon={MapPin} name="location" value={formData.location} onChange={handleChange} placeholder="Số nhà, tên sảnh, quận/huyện..."/>
+          <InputGroup label="Địa điểm chính xác" icon={MapPin} name="location" value={formData.location} onChange={handleChange} placeholder="Sảnh Alpha FPTU, Hội trường, Nhà hàng..."/>
 
           {/* Số thành viên & Dress code */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
             <InputGroup label="Số thành viên tham diễn" icon={Users} name="memberCount" value={formData.memberCount} onChange={handleChange} type="number" placeholder="VD: 6"/>
-            <InputGroup label="Dress code / Trang phục" icon={Shirt} name="dresscode" value={formData.dresscode} onChange={handleChange} placeholder="VD: Vest đen, áo dài trắng..."/>
+            <InputGroup label="Dress code / Trang phục" icon={Shirt} name="dresscode" value={formData.dresscode} onChange={handleChange} placeholder="VD: Áo FPTU cam, vest đen, năng động..."/>
           </div>
 
           {/* Tài chính */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 bg-emerald-50/70 rounded-2xl border border-emerald-200/80">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 bg-orange-50/50 rounded-2xl border border-orange-200/70">
             <InputGroup label="Cát-xê / người" icon={DollarSign} name="price" value={formData.price} onChange={handleChange} type="number" placeholder="0"/>
             <InputGroup label="Tiền đã cọc" icon={DollarSign} name="deposit" value={formData.deposit} onChange={handleChange} type="number" placeholder="0"/>
             <InputGroup label="Phụ phí khác" icon={DollarSign} name="extraFee" value={formData.extraFee} onChange={handleChange} type="number" placeholder="0"/>
@@ -141,8 +142,8 @@ export default function BookingModal({ isOpen, onClose, onSave, formData, handle
               value={formData.notes}
               onChange={handleChange}
               rows={3}
-              className="w-full p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl focus:bg-white focus:border-indigo-500 outline-none font-medium text-slate-700 transition text-xs shadow-2xs resize-none"
-              placeholder="Yêu cầu riêng của khách, setlist concept, bố cục sân khấu..."
+              className="w-full p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl focus:bg-white focus:border-[#F27024] focus:ring-2 focus:ring-[#F27024]/10 outline-none font-medium text-slate-700 transition text-xs shadow-2xs resize-none"
+              placeholder="Yêu cầu riêng của khách/BTC, setlist concept, bố cục âm thanh..."
             />
           </div>
         </div>
@@ -157,7 +158,7 @@ export default function BookingModal({ isOpen, onClose, onSave, formData, handle
           </button>
           <button 
             onClick={onSave} 
-            className="px-8 py-2.5 rounded-xl font-extrabold text-xs bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/25 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+            className="px-8 py-2.5 rounded-xl font-extrabold text-xs bg-[#F27024] hover:bg-[#EA580C] text-white shadow-md shadow-[#F27024]/25 transition-all hover:scale-105 active:scale-95 cursor-pointer"
           >
             {editingId ? "Lưu thay đổi" : "Xác nhận tạo"}
           </button>

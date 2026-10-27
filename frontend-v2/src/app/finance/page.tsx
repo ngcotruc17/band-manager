@@ -158,8 +158,8 @@ export default function FinanceV2() {
   if (loading && transactions.length === 0) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center py-24 gap-3">
-        <Loader className="animate-spin text-indigo-500" size={32} />
-        <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Đang đồng bộ sổ quỹ tài chính...</span>
+        <Loader className="animate-spin text-[#F27024]" size={32} />
+        <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Đang đồng bộ sổ quỹ FPTU Band...</span>
       </div>
     );
   }
@@ -171,9 +171,9 @@ export default function FinanceV2() {
       <div className="ui-card p-6 sm:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
-              <DollarSign className="w-3.5 h-3.5 text-emerald-600" />
-              <span>QUẢN TRỊ TÀI CHÍNH</span>
+            <span className="px-2.5 py-0.5 rounded-full bg-orange-50 text-[#F27024] border border-orange-200 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+              <DollarSign className="w-3.5 h-3.5 text-[#F27024]" />
+              <span>QUẢN TRỊ TÀI CHÍNH FPTU BAND</span>
             </span>
           </div>
           <div className="flex items-center gap-2.5">
@@ -182,7 +182,7 @@ export default function FinanceV2() {
             </h1>
           </div>
           <p className="text-xs sm:text-sm font-medium text-slate-600 mt-1">
-            Đối soát tự động qua Webhook ngân hàng (SePay/Cassso), quản lý ví cá nhân & sổ quỹ ban nhạc.
+            Đối soát tự động qua Webhook ngân hàng (SePay/Cassso), quản lý ví cá nhân & sổ quỹ CLB FPTU Band.
           </p>
         </div>
 
@@ -212,7 +212,7 @@ export default function FinanceV2() {
               <TrendingUp size={20} />
             </div>
             <div>
-              <p className="text-[10px] text-slate-500 font-extrabold uppercase tracking-wider">Quỹ chung ban nhạc</p>
+              <p className="text-[10px] text-slate-500 font-extrabold uppercase tracking-wider">Quỹ chung FPTU Band</p>
               <p className="text-2xl font-black text-emerald-600 tracking-tight">{formatCurrency(totalFund)}</p>
             </div>
           </div>

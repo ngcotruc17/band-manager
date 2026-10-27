@@ -1,7 +1,7 @@
 {
   "name": "backend-v2",
   "version": "2.0.0",
-  "description": "Sắc Band Manager Backend v2.0 with TypeScript & WebSockets",
+  "description": "FPTU Band Manager Backend v2.0 with TypeScript & WebSockets",
   "main": "dist/server.js",
   "scripts": {
     "build": "tsc",

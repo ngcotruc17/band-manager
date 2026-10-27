@@ -25,7 +25,7 @@ export const sendNewShowEmail = async (show: any): Promise<void> => {
     const webUrl = `${baseUrl.replace(/\/$/, '')}/bookings/${show._id}`;
 
     const mailOptions: any = {
-      from: `"Sắc Band Manager" <${process.env.EMAIL_USER}>`,
+      from: `"FPTU Band Manager" <${process.env.EMAIL_USER}>`,
       bcc: emails,
       subject: `🎸 SHOW MỚI ĐÃ LÊN LỊCH: ${show.title}`,
       html: `
@@ -37,9 +37,9 @@ export const sendNewShowEmail = async (show: any): Promise<void> => {
                   <tbody>
                     <!-- Header -->
                     <tr>
-                      <td align="center" style="background-color:#4F46E5; padding:40px 20px;">
-                        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#ffffff;font-size:26px;font-weight:900;letter-spacing:2px;text-shadow:0 2px 4px rgba(0,0,0,0.1);">SẮC BAND</div>
-                        <div style="font-family:sans-serif;color:#E0E7FF;font-size:12px;font-weight:700;margin-top:8px;text-transform:uppercase;letter-spacing:1px;">Booking Manager</div>
+                      <td align="center" style="background-color:#F27024; padding:40px 20px;">
+                        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#ffffff;font-size:26px;font-weight:900;letter-spacing:2px;text-shadow:0 2px 4px rgba(0,0,0,0.1);">FPTU BAND</div>
+                        <div style="font-family:sans-serif;color:#FFF7ED;font-size:12px;font-weight:700;margin-top:8px;text-transform:uppercase;letter-spacing:1px;">Booking Manager</div>
                       </td>
                     </tr>
                     <!-- Body -->
@@ -51,8 +51,8 @@ export const sendNewShowEmail = async (show: any): Promise<void> => {
                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#F8FAFC;border:1px solid #F1F5F9;border-radius:16px;padding:25px;">
                           <tbody>
                             <tr>
-                              <td style="padding-bottom:18px;border-bottom:2px dashed #E2E8F0;">
-                                <div style="font-family:sans-serif;font-size:17px;font-weight:900;color:#4F46E5;">${show.title}</div>
+                              <td style="padding-bottom:18px;border-bottom:2px dashed #FED7AA;">
+                                <div style="font-family:sans-serif;font-size:17px;font-weight:900;color:#F27024;">${show.title}</div>
                               </td>
                             </tr>
                             <tr>
@@ -83,7 +83,7 @@ export const sendNewShowEmail = async (show: any): Promise<void> => {
                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top:35px;">
                           <tr>
                             <td align="center">
-                              <a href="${webUrl}" style="background-color:#1E293B;color:#ffffff;display:inline-block;padding:16px 40px;border-radius:12px;text-decoration:none;font-family:sans-serif;font-size:14px;font-weight:800;letter-spacing:1px;box-shadow:0 4px 6px -1px rgba(30,41,59,0.2);text-transform:uppercase;transition:all 0.2s ease;">ĐĂNG KÝ THAM GIA 🚀</a>
+                              <a href="${webUrl}" style="background-color:#F27024;color:#ffffff;display:inline-block;padding:16px 40px;border-radius:12px;text-decoration:none;font-family:sans-serif;font-size:14px;font-weight:800;letter-spacing:1px;box-shadow:0 4px 6px -1px rgba(242,112,36,0.3);text-transform:uppercase;transition:all 0.2s ease;">ĐĂNG KÝ THAM GIA 🚀</a>
                             </td>
                           </tr>
                         </table>
@@ -92,7 +92,7 @@ export const sendNewShowEmail = async (show: any): Promise<void> => {
                     <!-- Footer -->
                     <tr>
                       <td style="padding:0 35px 40px 35px;text-align:center;border-top:1px solid #F1F5F9;padding-top:20px;">
-                        <div style="font-family:sans-serif;font-size:11px;color:#94A3B8;text-transform:uppercase;letter-spacing:1px;font-weight:600;">Email tự động gửi từ Sắc Band Manager</div>
+                        <div style="font-family:sans-serif;font-size:11px;color:#94A3B8;text-transform:uppercase;letter-spacing:1px;font-weight:600;">Email tự động gửi từ FPTU Band Manager</div>
                       </td>
                     </tr>
                   </tbody>
@@ -112,7 +112,7 @@ export const sendApproveEmail = async (userEmail: string, showTitle: string, use
   try {
     if (!userEmail || !userEmail.includes('@')) return;
     const mailOptions = {
-      from: `"Sắc Band Manager" <${process.env.EMAIL_USER}>`,
+      from: `"FPTU Band Manager" <${process.env.EMAIL_USER}>`,
       to: userEmail,
       subject: `✅ BẠN ĐÃ ĐƯỢC DUYỆT ĐI SHOW: ${showTitle}`,
       html: `
@@ -157,7 +157,7 @@ export const sendNewRehearsalEmail = async (rehearsal: any): Promise<void> => {
     if (emails.length === 0) return;
 
     const mailOptions = {
-      from: `"Sắc Band Manager" <${process.env.EMAIL_USER}>`,
+      from: `"FPTU Band Manager" <${process.env.EMAIL_USER}>`,
       bcc: emails,
       subject: `⚡ LỊCH TẬP RÁP MỚI: Ngày ${new Date(rehearsal.date).toLocaleDateString('vi-VN')}`,
       html: `
@@ -169,9 +169,9 @@ export const sendNewRehearsalEmail = async (rehearsal: any): Promise<void> => {
                   <tbody>
                     <!-- Header -->
                     <tr>
-                      <td align="center" style="background-color:#6366F1; padding:35px 20px;">
-                        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#ffffff;font-size:24px;font-weight:900;letter-spacing:1.5px;">SẮC BAND</div>
-                        <div style="font-family:sans-serif;color:#E0E7FF;font-size:11px;font-weight:700;margin-top:6px;text-transform:uppercase;letter-spacing:1px;">Lịch Tập Nhóm</div>
+                      <td align="center" style="background-color:#F27024; padding:35px 20px;">
+                        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#ffffff;font-size:24px;font-weight:900;letter-spacing:1.5px;">FPTU BAND</div>
+                        <div style="font-family:sans-serif;color:#FFF7ED;font-size:11px;font-weight:700;margin-top:6px;text-transform:uppercase;letter-spacing:1px;">Lịch Tập CLB FPTU</div>
                       </td>
                     </tr>
                     <!-- Body -->
@@ -238,7 +238,7 @@ export const sendSalarySplitEmail = async (show: any): Promise<void> => {
       const memberAmount = member.amount || 0;
       
       const mailOptions = {
-        from: `"Sắc Band Manager" <${process.env.EMAIL_USER}>`,
+        from: `"FPTU Band Manager" <${process.env.EMAIL_USER}>`,
         to: user.email,
         subject: `💸 CÁT-XÊ ĐÃ CHIA VỀ TÀI KHOẢN: Show "${show.title}"`,
         html: `
@@ -277,7 +277,7 @@ export const sendSalarySplitEmail = async (show: any): Promise<void> => {
                       </table>
                       
                       <div style="font-family:sans-serif;font-size:13px;color:#64748B;line-height:22px;background-color:#F8FAFC;padding:15px;border-radius:12px;border:1px solid #E2E8F0;">
-                        💸 Khoản tiền trên đã được cập nhật vào lịch sử tài chính của ban nhạc. Thủ quỹ sẽ thực hiện thanh toán trực tiếp cho bạn trong thời gian sớm nhất!
+                        💸 Khoản tiền trên đã được cập nhật vào lịch sử tài chính của FPTU Band. Thủ quỹ sẽ thực hiện thanh toán trực tiếp cho bạn trong thời gian sớm nhất!
                       </div>
                     </td>
                   </tr>
@@ -298,7 +298,7 @@ export const sendCustomAdminEmail = async (subject: string, contentHtml: string,
     if (!recipientEmails || recipientEmails.length === 0) return;
     
     const mailOptions: any = {
-      from: `"Sắc Band Manager" <${process.env.EMAIL_USER}>`,
+      from: `"FPTU Band Manager" <${process.env.EMAIL_USER}>`,
       subject: `[THÔNG BÁO] ${subject}`,
       html: `
         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;background-color:#F8FAFC;padding:40px 0;margin:0;">
@@ -309,9 +309,9 @@ export const sendCustomAdminEmail = async (subject: string, contentHtml: string,
                   <tbody>
                     <!-- Header -->
                     <tr>
-                      <td align="center" style="background: linear-gradient(135deg, #6366F1 0%, #EC4899 100%); background-color:#6366F1; padding:40px 20px;">
-                        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#ffffff;font-size:24px;font-weight:900;letter-spacing:1.5px;text-shadow:0 2px 4px rgba(0,0,0,0.1);">SẮC BAND</div>
-                        <div style="font-family:sans-serif;color:#E0E7FF;font-size:11px;font-weight:700;margin-top:6px;text-transform:uppercase;letter-spacing:1px;">Thông Báo Từ Admin</div>
+                      <td align="center" style="background: linear-gradient(135deg, #F27024 0%, #EA580C 100%); background-color:#F27024; padding:40px 20px;">
+                        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#ffffff;font-size:24px;font-weight:900;letter-spacing:1.5px;text-shadow:0 2px 4px rgba(0,0,0,0.1);">FPTU BAND</div>
+                        <div style="font-family:sans-serif;color:#FFF7ED;font-size:11px;font-weight:700;margin-top:6px;text-transform:uppercase;letter-spacing:1px;">Thông Báo Từ BCN FPTU Band</div>
                       </td>
                     </tr>
                     <!-- Body -->
@@ -324,7 +324,7 @@ export const sendCustomAdminEmail = async (subject: string, contentHtml: string,
                     <!-- Footer -->
                     <tr>
                       <td style="padding:0 35px 40px 35px;text-align:center;border-top:1px solid #F1F5F9;padding-top:20px;">
-                        <div style="font-family:sans-serif;font-size:11px;color:#94A3B8;text-transform:uppercase;letter-spacing:1px;font-weight:600;">Email tự động gửi từ hệ thống Sắc Band Manager</div>
+                        <div style="font-family:sans-serif;font-size:11px;color:#94A3B8;text-transform:uppercase;letter-spacing:1px;font-weight:600;">Email tự động gửi từ hệ thống FPTU Band Manager</div>
                       </td>
                     </tr>
                   </tbody>

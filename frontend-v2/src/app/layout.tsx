@@ -19,8 +19,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Sắc Band Manager v2.0",
-  description: "Hệ thống tự động hóa quản lý nội bộ & biểu diễn Sắc Band",
+  title: "FPTU Band Manager - CLB Âm Nhạc Đại Học FPT",
+  description: "Hệ thống quản lý ban nhạc sinh viên FPT University & biểu diễn thông minh",
 };
 
 export default function RootLayout({
@@ -33,12 +33,12 @@ export default function RootLayout({
       lang="vi"
       className={`${jakartaSans.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#f6f8fc] text-slate-900 selection:bg-indigo-500 selection:text-white relative">
-        {/* 🍏 Fluid iOS Ambient Gradient Mesh Glow (Behind all frosted glass layers) */}
+      <body className="min-h-full flex flex-col bg-[#f8fafc] text-slate-900 selection:bg-[#F27024] selection:text-white relative">
+        {/* 🍏 Fluid iOS Ambient Gradient Mesh Glow - Warm FPT Orange & Amber Mesh */}
         <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
-          <div className="absolute -top-32 -left-32 w-96 h-96 bg-gradient-to-tr from-indigo-500/15 via-violet-400/15 to-transparent rounded-full blur-[110px]" />
-          <div className="absolute top-1/4 -right-32 w-[34rem] h-[34rem] bg-gradient-to-bl from-blue-400/15 via-sky-300/10 to-transparent rounded-full blur-[130px]" />
-          <div className="absolute -bottom-32 left-1/3 w-[36rem] h-[36rem] bg-gradient-to-tr from-purple-400/10 via-pink-400/10 to-transparent rounded-full blur-[130px]" />
+          <div className="absolute -top-32 -left-32 w-96 h-96 bg-gradient-to-tr from-orange-500/15 via-amber-400/12 to-transparent rounded-full blur-[110px]" />
+          <div className="absolute top-1/4 -right-32 w-[34rem] h-[34rem] bg-gradient-to-bl from-orange-400/12 via-amber-300/10 to-transparent rounded-full blur-[130px]" />
+          <div className="absolute -bottom-32 left-1/3 w-[36rem] h-[36rem] bg-gradient-to-tr from-rose-400/10 via-orange-400/10 to-transparent rounded-full blur-[130px]" />
         </div>
 
         <AuthProvider>

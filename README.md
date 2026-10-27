@@ -1,21 +1,24 @@
-# 🎸 Sắc Band Manager Ecosystem (v2.0)
+# 🎸 FPTU Band Manager Ecosystem (v2.0)
 
-A modern full-stack application designed for managing band bookings, member schedules, automated rehearsal check-in (QR/GPS), live stage teleprompter & chord viewer, dynamic salary distribution, and automatic bank reconciliation via webhooks.
+Hệ thống quản lý toàn diện dành cho **CLB Âm Nhạc Đại Học FPT (FPTU Band)**: quản lý lịch trình biểu diễn (Bookings), lịch tập ráp (Rehearsals), điểm danh GPS/QR Code, kho bài hát & sheet nhạc, tài chính đối soát tự động qua Webhook ngân hàng, với giao diện hiện đại phong cách Apple iOS / Samsung OneUI và chủ đề FPT Orange đặc trưng.
 
 ## 🚀 Architecture Overview
 
-This repository has completed the migration from legacy v1 (JavaScript) to **v2 (TypeScript + Next.js 16 + Express 5 + WebSockets)**:
+This repository features **v2 (TypeScript + Next.js 16 + Express 5 + WebSockets)**:
 
-- **`backend-v2/`** *(Primary Backend Server)*:
-  - Express.js 5 + TypeScript + Mongoose (MongoDB).
-  - Socket.io server for real-time live-stage chord sync, scrolling, and notifications.
-  - Automated Bank Reconciliation Webhook service (SePay / Cassso syntax parser).
-  - Rate limiting (`express-rate-limit`), security headers (`helmet`), strict webhook validation.
 - **`frontend-v2/`** *(Primary Frontend Web App)*:
   - Next.js 16 (App Router) + React 19 + TypeScript + Tailwind CSS v4.
-  - Live Stage Chord Teleprompter & Transposer (`/live-stand`).
-  - Global Audio Player for backing tracks and sheet music PDF viewer.
-  - QR Code reader for rehearsal check-in.
+  - **FPT Orange Theme** (`#F27024`, `#EA580C`) với hiệu ứng Frosted Glass, Squircles và Inset Grouped Cards.
+  - **Thiết kế thích ứng đa nền tảng (PC & Mobile)**:
+    - Desktop: Navigation Header dạng Floating Island cao cấp.
+    - Mobile: Thumb-friendly Floating Bottom Dock phong cách OneUI/iOS + Bottom Sheet Drawer linh hoạt.
+  - Global Audio Player cho backing tracks và sheet PDF viewer.
+  - QR Code & Camera reader cho điểm danh tập nhạc nội bộ FPTU.
+- **`backend-v2/`** *(Primary Backend Server)*:
+  - Express.js 5 + TypeScript + Mongoose (MongoDB).
+  - Socket.io server cho thông báo thời gian thực.
+  - Automated Bank Reconciliation Webhook service (SePay / Cassso syntax parser).
+  - Rate limiting (`express-rate-limit`), security headers (`helmet`), strict webhook validation.
 - **`backend/` & `frontend/`** *(Legacy v1.0)*:
   - Preserved for backwards compatibility reference.
 

@@ -33,9 +33,9 @@ export default function GlobalAudioPlayer() {
   };
 
   return (
-    <div className="fixed bottom-4 left-0 right-0 z-50 px-3 sm:px-6 pointer-events-none">
+    <div className="fixed bottom-20 lg:bottom-4 left-0 right-0 z-40 px-3 sm:px-6 pointer-events-none">
       {/* 🍏 Apple Dynamic Island / iOS Liquid Glass Floating Player */}
-      <div className="max-w-2xl mx-auto bg-slate-950/85 backdrop-blur-3xl rounded-3xl p-3.5 sm:px-5 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.6)] border border-white/15 pointer-events-auto transition-all">
+      <div className="max-w-2xl mx-auto bg-slate-950/90 backdrop-blur-3xl rounded-3xl p-3 sm:px-5 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.6)] border border-white/15 pointer-events-auto transition-all">
         
         {/* Top Progress Scrub Bar */}
         <div className="w-full flex items-center gap-2.5 mb-2 px-1">
@@ -50,10 +50,10 @@ export default function GlobalAudioPlayer() {
               step={0.1}
               value={currentTime}
               onChange={handleSeekChange}
-              className="w-full h-1.5 bg-white/15 rounded-full appearance-none cursor-pointer accent-indigo-400 hover:h-2 transition-all"
+              className="w-full h-1.5 bg-white/15 rounded-full appearance-none cursor-pointer accent-[#F27024] hover:h-2 transition-all"
             />
             <div 
-              className="absolute left-0 top-1/2 -translate-y-1/2 h-1.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full pointer-events-none group-hover:h-2 transition-all"
+              className="absolute left-0 top-1/2 -translate-y-1/2 h-1.5 bg-gradient-to-r from-[#F27024] via-amber-500 to-[#EA580C] rounded-full pointer-events-none group-hover:h-2 transition-all"
               style={{ width: `${Math.min(100, progressPercent)}%` }}
             />
           </div>
@@ -67,8 +67,8 @@ export default function GlobalAudioPlayer() {
           
           {/* Track Info & Vinyl Art */}
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className={`w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-900 to-slate-900 flex items-center justify-center shrink-0 border border-white/20 shadow-md ${isPlaying ? "ring-2 ring-indigo-500/40" : ""}`}>
-              <div className={`w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center text-white ${isPlaying ? "animate-spin" : ""}`} style={{ animationDuration: "6s" }}>
+            <div className={`w-10 h-10 rounded-2xl bg-gradient-to-tr from-orange-950 to-slate-900 flex items-center justify-center shrink-0 border border-white/20 shadow-md ${isPlaying ? "ring-2 ring-orange-500/50" : ""}`}>
+              <div className={`w-5 h-5 rounded-full bg-[#F27024] flex items-center justify-center text-white ${isPlaying ? "animate-spin" : ""}`} style={{ animationDuration: "6s" }}>
                 <Music size={10} />
               </div>
             </div>
@@ -76,12 +76,12 @@ export default function GlobalAudioPlayer() {
             <div className="truncate">
               <div className="flex items-center gap-1.5">
                 <span className="flex items-end gap-0.5 h-2.5">
-                  <span className={`w-0.5 bg-indigo-400 rounded-full ${isPlaying ? "equalizer-bar-1" : "h-1"}`} />
-                  <span className={`w-0.5 bg-indigo-400 rounded-full ${isPlaying ? "equalizer-bar-2" : "h-2"}`} />
-                  <span className={`w-0.5 bg-indigo-400 rounded-full ${isPlaying ? "equalizer-bar-3" : "h-1.5"}`} />
+                  <span className={`w-0.5 bg-orange-400 rounded-full ${isPlaying ? "equalizer-bar-1" : "h-1"}`} />
+                  <span className={`w-0.5 bg-orange-400 rounded-full ${isPlaying ? "equalizer-bar-2" : "h-2"}`} />
+                  <span className={`w-0.5 bg-orange-400 rounded-full ${isPlaying ? "equalizer-bar-3" : "h-1.5"}`} />
                 </span>
-                <span className="text-[9px] font-black uppercase tracking-widest text-indigo-300">
-                  BEAT AUDIO
+                <span className="text-[9px] font-black uppercase tracking-widest text-orange-300">
+                  FPTU BEAT
                 </span>
                 {currentTrack.tone && (
                   <span className="px-1.5 py-0.2 text-[8px] font-mono font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30 rounded-full">
@@ -141,7 +141,7 @@ export default function GlobalAudioPlayer() {
                     step={0.05}
                     value={volume}
                     onChange={(e) => setVolume(Number(e.target.value))}
-                    className="w-20 accent-indigo-400 h-1.5 bg-slate-700 rounded-full cursor-pointer"
+                    className="w-20 accent-[#F27024] h-1.5 bg-slate-700 rounded-full cursor-pointer"
                   />
                   <span className="text-[10px] font-mono text-slate-300 w-6">
                     {Math.round(volume * 100)}%

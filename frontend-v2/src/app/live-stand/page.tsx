@@ -81,13 +81,13 @@ const getChordsForSong = (title: string, note: string) => {
   }
   
   return `[${root}]Đây là dòng lyric 1 của bài hát: ${title}
-[Dm]Hòa âm phối khí nhịp nhàng cùng [G]Sắc Band
+[Dm]Hòa âm phối khí nhịp nhàng cùng [G]FPTU Band
 [C]Chúng ta cùng nhau biểu diễn cực [F]sung
 [E7]Giữ vững nhịp độ âm nhạc thăng [${root}]hoa...
 
-[${root}]Sân khấu số đồng bộ thời gian thực v2.0
-[Dm]Âm nhạc kết nối tâm hồn nghệ sĩ
-[G]Hãy tự tin tỏa sáng cùng [C]Sắc Band
+[${root}]Sân khấu số FPTU đồng bộ thời gian thực v2.0
+[Dm]Âm nhạc kết nối tâm hồn sinh viên
+[G]Hãy tự tin tỏa sáng cùng [C]FPTU Band
 [E7]Chúc anh em có một đêm diễn thành [${root}]công rực rỡ!`;
 };
 
@@ -748,7 +748,7 @@ export default function DigitalMusicStand() {
                 <FileText size={12} className={stageDarkMode ? "text-amber-400" : "text-indigo-600"} /> 
                 BPM bài diễn: <span className={`font-black ${stageDarkMode ? "text-amber-400" : "text-indigo-600"}`}>{bpm}</span>
               </span>
-              <span className="font-black tracking-widest uppercase">SẮC BAND DIGITAL MUSIC STAND</span>
+              <span className="font-black tracking-widest uppercase">FPTU BAND DIGITAL MUSIC STAND</span>
               <span>Tone: {currentSong?.note || "Chưa rõ"}</span>
             </div>
  
