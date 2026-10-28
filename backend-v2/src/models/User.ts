@@ -14,7 +14,7 @@ export interface IUser extends Document {
   phone: string;
   username: string;
   password?: string;
-  role: 'admin' | 'member' | 'viewer';
+  role: 'admin' | 'manager' | 'staff' | 'lecturer' | 'student' | 'member' | 'system' | 'viewer';
   status: 'pending' | 'active' | 'banned';
   mustChangePassword: boolean;
   instrument: string;
@@ -51,7 +51,11 @@ const userSchema = new Schema<IUser>({
   phone: { type: String, default: "" },
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  role: { type: String, enum: ['admin', 'member', 'viewer'], default: 'member' },
+  role: { 
+    type: String, 
+    enum: ['admin', 'manager', 'staff', 'lecturer', 'student', 'member', 'system', 'viewer'], 
+    default: 'student' 
+  },
   status: { type: String, enum: ['pending', 'active', 'banned'], default: 'pending' },
   mustChangePassword: { type: Boolean, default: false },
   instrument: { type: String, default: 'Chưa phân công' },

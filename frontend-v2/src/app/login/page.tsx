@@ -65,7 +65,7 @@ export default function Login() {
               <span>FPTU BAND MANAGER</span>
             </div>
             <h1 className="text-2xl font-black tracking-tight text-slate-900 uppercase">Đăng Nhập Hệ Thống</h1>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">Cổng điều hành biểu diễn & nhân sự CLB Âm nhạc Đại học FPT</p>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">Cổng điều phối biểu diễn & nhân sự FPTU Band · Bộ môn & Phòng CTSV ĐH FPT TP.HCM</p>
           </div>
         </div>
 

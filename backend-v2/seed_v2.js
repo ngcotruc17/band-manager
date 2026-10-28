@@ -33,30 +33,36 @@ const run = async () => {
       let points = 110;
       let instrument = u.instrument || 'Guitar';
 
+      let role = u.role || 'student';
+
       if (u.username === 'nctdev') {
         walletBalance = 2500000;
         totalFinePaid = 0;
         attendanceRate = 100;
         points = 150;
         instrument = 'Keyboard';
+        role = 'admin';
       } else if (u.username === 'DylanCN') {
         walletBalance = 1800000;
         totalFinePaid = 50000;
         attendanceRate = 95;
         points = 120;
         instrument = 'Bass';
+        role = 'manager';
       } else if (u.username === 'anchan276') {
         walletBalance = 800000;
         totalFinePaid = 100000;
         attendanceRate = 80;
         points = 70;
         instrument = 'Drums';
+        role = 'lecturer';
       } else if (u.username === 'Phương nò') {
         walletBalance = 950000;
         totalFinePaid = 50000;
         attendanceRate = 90;
         points = 90;
         instrument = 'Vocal';
+        role = 'student';
       }
 
       await db.collection('users').updateOne(
@@ -65,6 +71,7 @@ const run = async () => {
           $set: { 
             status: 'active',
             isApproved: true,
+            role,
             walletBalance,
             totalFinePaid,
             attendanceRate,
@@ -95,46 +102,55 @@ const run = async () => {
 
     const showsData = [
       {
-        title: "Show Acoustic Rooftop Landmark 81",
-        customerName: "Anh Hoàng (Manager)",
-        phone: "0901234567",
+        title: "Show Lễ Khai Giảng K20 & Ngày Hội Chào Tân Sinh Viên",
+        customerName: "Phòng CTSV Trường ĐH FPT TP.HCM",
+        phone: "02873005588",
         date: show1Date,
-        time: "20:00",
-        location: "Rooftop Cafe Landmark 81, Bình Thạnh",
-        price: 1200000, // price per member
-        deposit: 2000000, // total deposit
+        time: "08:00",
+        location: "Hội trường Innovation Hall, Tòa nhà Gamma, ĐH FPT TP.HCM",
+        price: 1500000, // price per member
+        deposit: 3000000, // total deposit
         status: "completed",
-        notes: "Trang phục màu đen lịch lãm",
+        eventType: "Sự kiện Trường ĐH FPT / Khai Giảng - Tốt Nghiệp",
+        memberCount: 5,
+        dresscode: "Áo sơ mi trắng / Cam FPTU đồng điệu",
+        notes: "Duyệt bởi Cán bộ Phòng CTSV. Setlist 4 bài sôi động chào đón tân sinh viên.",
         isRegistrationClosed: true,
         createdAt: new Date(),
         updatedAt: new Date()
       },
       {
-        title: "Show Event Beer Club Quận 3",
-        customerName: "Chị Thảo (Event Organizer)",
-        phone: "0911223344",
+        title: "Show Gala Giao Lưu Văn Hoá Quốc Tế Global Exchange",
+        customerName: "Bộ Môn Nghệ Thuật & Kỹ Năng Mềm ĐH FPT",
+        phone: "0901234567",
         date: show2Date,
-        time: "21:30",
-        location: "District 3 Beer Club, Nguyễn Thị Minh Khai, Q3",
-        price: 1500000,
-        deposit: 1000000,
+        time: "18:30",
+        location: "Quảng trường Trống Đồng, Campus FPTU Quận 9",
+        price: 1800000,
+        deposit: 2000000,
         status: "confirmed",
-        notes: "Trang phục màu đỏ/trắng năng động",
+        eventType: "Sự kiện Bộ Môn / Hội Thảo / Workshop",
+        memberCount: 6,
+        dresscode: "Smart Casual / Tông màu pastel hiện đại",
+        notes: "Ban nhạc phối hợp cùng giảng viên thỉnh giảng và sinh viên quốc tế biểu diễn acoustic.",
         isRegistrationClosed: false,
         createdAt: new Date(),
         updatedAt: new Date()
       },
       {
-        title: "Show Gala Dinner Gem Center",
-        customerName: "Công ty Vinamilk",
+        title: "Show Đêm Nhạc Sinh Viên FPTU Sunset Acoustic",
+        customerName: "Sinh Viên / Ban Đại Diện Khoa CNTT",
         phone: "0988776655",
         date: show3Date,
         time: "19:00",
-        location: "Sảnh Castor, GEM Center, Đa Kao, Quận 1",
-        price: 2500000,
-        deposit: 5000000,
+        location: "Khu vực Hồ Sen & Sảnh Beta, Campus ĐH FPT TP.HCM",
+        price: 1200000,
+        deposit: 1500000,
         status: "pending",
-        notes: "Đội hình chính thức 5 người, trang phục vest sang trọng",
+        eventType: "Sự kiện CLB & Sinh viên",
+        memberCount: 4,
+        dresscode: "Trang phục tự do trẻ trung",
+        notes: "Show do sinh viên đặt ban nhạc qua cổng FPTU Band. Đang chờ cán bộ CTSV duyệt xếp lịch diễn.",
         isRegistrationClosed: false,
         createdAt: new Date(),
         updatedAt: new Date()

@@ -19,8 +19,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "FPTU Band Manager - CLB Âm Nhạc Đại Học FPT",
-  description: "Hệ thống quản lý ban nhạc sinh viên FPT University & biểu diễn thông minh",
+  title: "FPTU Band Manager - Ban Nhạc Trường ĐH FPT TP.HCM (Bộ Môn & Phòng CTSV)",
+  description: "Hệ thống quản lý & điều phối biểu diễn FPTU Band - Trực thuộc Bộ môn và Phòng Công tác Sinh viên (CTSV) Trường Đại học FPT Phân hiệu TP.HCM",
 };
 
 export default function RootLayout({
@@ -33,7 +33,7 @@ export default function RootLayout({
       lang="vi"
       className={`${jakartaSans.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#f8fafc] text-slate-900 selection:bg-[#F27024] selection:text-white relative">
+      <body className="min-h-full flex flex-col bg-[#f8fafc] text-slate-900 selection:bg-[#F27024] selection:text-white relative w-full max-w-full overflow-x-hidden">
         {/* 🍏 Fluid iOS Ambient Gradient Mesh Glow - Warm FPT Orange & Amber Mesh */}
         <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
           <div className="absolute -top-32 -left-32 w-96 h-96 bg-gradient-to-tr from-orange-500/15 via-amber-400/12 to-transparent rounded-full blur-[110px]" />

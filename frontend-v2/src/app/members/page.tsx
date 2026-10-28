@@ -16,13 +16,14 @@ interface Member {
   email?: string;
   phone?: string;
   instrument?: string;
-  role: 'admin' | 'member' | 'viewer';
+  role: 'admin' | 'manager' | 'staff' | 'lecturer' | 'student' | 'member' | 'system' | 'viewer';
   isApproved: boolean;
   mustChangePassword: boolean;
 }
 
 export default function MemberAndNotificationManager() {
   const { user } = useContext(AuthContext);
+  const canManage = user?.role === "admin" || user?.role === "manager";
   const [members, setMembers] = useState<Member[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
@@ -129,8 +130,8 @@ export default function MemberAndNotificationManager() {
   const approvedMembers = members.filter(m => m.isApproved);
 
   return (
-    <div className="min-h-screen p-4 sm:p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen p-3.5 sm:p-8 w-full max-w-full overflow-x-hidden">
+      <div className="max-w-7xl mx-auto space-y-6 w-full min-w-0">
         
         {/* HEADER HỆ THỐNG */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200/80 pb-4">
@@ -142,13 +143,13 @@ export default function MemberAndNotificationManager() {
               TRUNG TÂM NHÂN SỰ & THÀNH VIÊN FPTU BAND
             </h1>
             <p className="text-xs text-slate-500 font-medium mt-1">
-              Quản lý nhân sự CLB FPTU Band, phân quyền vai trò & điều phối kênh thông báo nội bộ
+              Quản lý nhân sự FPTU Band · Bộ môn & Phòng CTSV ĐH FPT TP.HCM, phân quyền vai trò & điều phối kênh thông báo nội bộ
             </p>
           </div>
 
-          {/* 🍏 iOS Segmented Control cho Admin */}
-          {user?.role === "admin" && (
-            <div className="ios-segmented-container w-full md:w-auto self-start md:self-auto shrink-0">
+          {/* 🍏 iOS Segmented Control cho Admin & Cán bộ */}
+          {canManage && (
+            <div className="ios-segmented-container w-full md:w-auto self-stretch md:self-auto shrink-0 no-scrollbar">
               <button
                 onClick={() => setAdminTab("list")}
                 className={`ios-segmented-item flex-1 md:flex-none justify-center ${
@@ -171,17 +172,17 @@ export default function MemberAndNotificationManager() {
           )}
         </div>
 
-        {(adminTab === "list" || user?.role !== "admin") && (
-          <div className="space-y-6 animate-fade-in">
+        {(adminTab === "list" || !canManage) && (
+          <div className="space-y-6 animate-fade-in w-full min-w-0">
             {/* Thanh tìm kiếm */}
-            <div className="flex justify-between items-center gap-4">
-              <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Danh sách nhân sự chính thức của FPTU Band</span>
-              <div className="relative w-full md:w-96 flex items-center">
+            <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
+              <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Danh sách nhân sự & thành viên FPTU Band</span>
+              <div className="relative w-full sm:w-80 md:w-96 flex items-center min-w-0">
                 <div className="absolute left-4 flex items-center pointer-events-none text-slate-400">
                   <Search size={18} />
                 </div>
                 <input
-                  className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 bg-white shadow-sm focus:ring-2 ring-[#F27024] font-semibold outline-none text-slate-800 transition text-sm"
+                  className="w-full pl-11 pr-4 py-3 rounded-2xl border border-slate-200 bg-white shadow-sm focus:ring-2 ring-[#F27024] font-semibold outline-none text-slate-800 transition text-xs sm:text-sm"
                   placeholder="Tìm tên, email thành viên..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -192,26 +193,34 @@ export default function MemberAndNotificationManager() {
             {loading ? (
               <div className="text-center py-20"><Loader className="animate-spin mx-auto text-[#F27024]" size={32}/></div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
                 {filteredMembers.map((m) => (
-                  <div key={m._id} className="ui-card p-6 ui-card-hover flex flex-col justify-between">
+                  <div key={m._id} className="ui-card p-5 sm:p-6 ui-card-hover flex flex-col justify-between min-w-0">
                     <div>
-                      <div className="flex justify-between items-start mb-6">
-                        <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-slate-50 to-slate-100 flex items-center justify-center font-black text-2xl text-slate-400 border border-slate-200 shadow-inner">
+                      <div className="flex justify-between items-start gap-2 mb-5">
+                        <div className="w-14 h-14 sm:w-16 sm:h-16 shrink-0 rounded-3xl bg-gradient-to-tr from-slate-50 to-slate-100 flex items-center justify-center font-black text-xl sm:text-2xl text-slate-500 border border-slate-200 shadow-inner">
                           {m.fullName?.charAt(0).toUpperCase()}
                         </div>
                         {m.role === "admin" ? (
-                          <span className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest bg-rose-50 text-rose-600 border border-rose-100 shadow-sm">
+                          <span className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider bg-rose-50 text-rose-600 border border-rose-200 shadow-sm shrink-0">
                             <Shield size={12} /> Admin
                           </span>
+                        ) : m.role === "manager" || m.role === "staff" ? (
+                          <span className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider bg-purple-50 text-purple-700 border border-purple-200 shadow-sm shrink-0">
+                            <Shield size={12} /> Cán bộ CTSV/Bộ môn
+                          </span>
+                        ) : m.role === "lecturer" ? (
+                          <span className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200 shadow-sm shrink-0">
+                            <User size={12} /> Giảng viên
+                          </span>
                         ) : (
-                          <span className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest bg-blue-50 text-blue-600 border border-blue-100 shadow-sm">
-                            <User size={12} /> Member
+                          <span className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider bg-blue-50 text-blue-600 border border-blue-200 shadow-sm shrink-0">
+                            <User size={12} /> Sinh viên
                           </span>
                         )}
                       </div>
 
-                      <h3 className="text-xl font-black text-slate-800 leading-tight mb-1">{m.fullName}</h3>
+                      <h3 className="text-lg sm:text-xl font-black text-slate-800 leading-tight mb-1 truncate">{m.fullName}</h3>
                       <p className="text-xs font-bold text-slate-400 mb-4">{m.instrument || "Chưa phân vai"}</p>
                       
                       <div className="space-y-2.5 mb-6">
@@ -241,20 +250,22 @@ export default function MemberAndNotificationManager() {
                       </div>
                     </div>
 
-                    {/* Actions (Admin Only) */}
-                    {user?.role === 'admin' && user._id !== m._id && (
-                      <div className="pt-6 border-t border-slate-200 flex gap-2">
+                    {/* Actions (Admin & Manager) */}
+                    {canManage && user?._id !== m._id && (
+                      <div className="pt-5 border-t border-slate-200 flex gap-2">
                         {!m.isApproved && (
-                          <button onClick={() => handleApprove(m._id, m.fullName)} className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-lg shadow-emerald-500/10 transition">
-                            Duyệt Thành Viên
+                          <button onClick={() => handleApprove(m._id, m.fullName)} className="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md transition">
+                            Duyệt
                           </button>
                         )}
-                        <button onClick={() => handleResetPassword(m._id, m.fullName)} className="p-2.5 rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-100 border border-amber-100 transition" title="Reset Mật khẩu">
-                          <Key size={18} />
+                        <button onClick={() => handleResetPassword(m._id, m.fullName)} className="p-2 rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-100 border border-amber-100 transition" title="Reset Mật khẩu">
+                          <Key size={16} />
                         </button>
-                        <button onClick={() => handleDelete(m._id, m.fullName)} className="p-2.5 rounded-xl bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white border border-rose-100 transition" title="Xóa thành viên">
-                          <Trash2 size={18} />
-                        </button>
+                        {user?.role === 'admin' && (
+                          <button onClick={() => handleDelete(m._id, m.fullName)} className="p-2 rounded-xl bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white border border-rose-100 transition" title="Xóa thành viên">
+                            <Trash2 size={16} />
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>
@@ -264,7 +275,7 @@ export default function MemberAndNotificationManager() {
           </div>
         )}
 
-        {adminTab === "notify" && user?.role === "admin" && (
+        {adminTab === "notify" && canManage && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fade-in">
             {/* Editor Soạn Thảo */}
             <div className="lg:col-span-2 ui-card p-6 md:p-8 space-y-6">

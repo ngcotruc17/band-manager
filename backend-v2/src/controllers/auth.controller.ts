@@ -10,7 +10,7 @@ const generateToken = (id: any): string => {
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { fullName, username, password, email, phone } = req.body;
+    const { fullName, username, password, email, phone, role } = req.body;
     if (!fullName || !username || !password) {
        res.status(400).json({ message: "Vui lòng nhập đủ: Họ tên, Username, Mật khẩu" });
        return;
@@ -24,18 +24,23 @@ export const register = async (req: Request, res: Response): Promise<void> => {
        return;
     }
 
+    // Cho phép người dùng đăng ký theo phân vai (Sinh viên, Giảng viên, Cán bộ phòng ban)
+    const validRoles = ['student', 'lecturer', 'manager', 'staff', 'member'];
+    const assignedRole = role && validRoles.includes(role) ? role : 'student';
+
     const user = await User.create({
       fullName,
       username,
       email: email || undefined,
       phone: phone || "",
-      password
+      password,
+      role: assignedRole
     });
     
     if (user) {
-      // Gửi thông báo cho Admin
+      // Gửi thông báo cho Admin & Cán bộ
       await NotificationService.notifyAdmins({ 
-        message: `👤 Thành viên mới đăng ký: ${fullName}. Đang chờ bạn duyệt!`, 
+        message: `👤 Thành viên mới đăng ký (${user.role}): ${fullName}. Đang chờ bạn duyệt!`, 
         link: '/members',
         type: 'warning'
       });
@@ -64,7 +69,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
        res.status(400).json({ message: "Sai thông tin tên đăng nhập hoặc email" });
        return;
     }
-    if (!user.isApproved && user.role !== 'admin') {
+    if (!user.isApproved && user.role !== 'admin' && user.role !== 'system') {
        res.status(403).json({ message: "Tài khoản của bạn chưa được duyệt hoạt động!" });
        return;
     }

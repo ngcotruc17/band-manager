@@ -541,7 +541,7 @@ export default function SongLibraryAndRepertoire({ defaultSubTab = "library" }: 
                   <div className="text-center mb-8 border-b-2 border-slate-200 pb-6">
                     <Music size={36} className="mx-auto text-[#F27024] mb-2"/>
                     <h2 className="text-3xl font-black text-slate-900 uppercase tracking-widest print:text-black">FPTU BAND</h2>
-                    <p className="text-slate-500 font-bold tracking-widest mt-1 uppercase text-xs print:text-black">CLB Âm Nhạc Đại Học FPT - Official Repertoire</p>
+                    <p className="text-slate-500 font-bold tracking-widest mt-1 uppercase text-xs print:text-black">Bộ Môn & Phòng CTSV Trường ĐH FPT TP.HCM - Official Repertoire</p>
                   </div>
 
                   {fetchLoading ? (

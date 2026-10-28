@@ -4,13 +4,15 @@ import React, { createContext, useState, useEffect, ReactNode } from "react";
 import api from "../services/api";
 import toast from "react-hot-toast";
 
+export type UserRole = "admin" | "manager" | "staff" | "lecturer" | "student" | "member" | "system" | "viewer";
+
 export interface UserProfile {
   _id: string;
   fullName: string;
   email?: string;
   phone?: string;
   username: string;
-  role: "admin" | "member" | "viewer";
+  role: UserRole;
   status: "pending" | "active" | "banned";
   instrument: string;
   isApproved: boolean;

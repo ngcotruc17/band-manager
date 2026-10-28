@@ -69,7 +69,7 @@ export default function ProfileModal({ user, onClose, onUpdateSuccess }: Profile
         <form onSubmit={handleSubmit} className="p-6 pt-12 space-y-4">
           <div>
             <h3 className="text-lg font-black text-slate-900 tracking-tight">Cài đặt Hồ sơ Cá nhân</h3>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">Thông tin liên hệ & vai trò biểu diễn trong CLB FPTU Band</p>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">Thông tin liên hệ & vai trò biểu diễn FPTU Band (Bộ môn & Phòng CTSV ĐH FPT TP.HCM)</p>
           </div>
 
           <div className="space-y-3.5 pt-1">

@@ -35,6 +35,7 @@ interface RehearsalItem {
 
 export default function RehearsalManagerPage() {
   const { user } = useContext(AuthContext);
+  const canManage = user?.role === "admin" || user?.role === "manager" || user?.role === "staff";
   const [rehearsals, setRehearsals] = useState<RehearsalItem[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -186,10 +187,10 @@ export default function RehearsalManagerPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-8 py-6 space-y-6">
+    <div className="max-w-7xl mx-auto px-3.5 sm:px-8 py-4 sm:py-6 space-y-6 w-full max-w-full overflow-x-hidden">
       
       {/* Header Banner */}
-      <div className="ui-card p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="ui-card p-5 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-2">
             <span className="px-2.5 py-0.5 rounded-full bg-orange-50 text-orange-700 border border-orange-200 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
@@ -207,19 +208,19 @@ export default function RehearsalManagerPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
           <Link
             href="/checkin"
-            className="ui-button-secondary text-xs uppercase tracking-wider flex items-center gap-2"
+            className="ui-button-secondary text-xs uppercase tracking-wider flex-1 sm:flex-initial justify-center flex items-center gap-2 py-2.5 px-4"
           >
             <Camera className="w-4 h-4 text-[#F27024]" />
             <span>Quét QR Điểm Danh</span>
           </Link>
 
-          {user?.role === "admin" && (
+          {canManage && (
             <button
               onClick={() => setShowCreateModal(true)}
-              className="ui-button-primary text-xs uppercase tracking-wider flex items-center gap-2"
+              className="ui-button-primary text-xs uppercase tracking-wider flex-1 sm:flex-initial justify-center flex items-center gap-2 py-2.5 px-4"
             >
               <Plus className="w-4 h-4" />
               <span>Lên Lịch Tập Mới</span>
@@ -295,8 +296,8 @@ export default function RehearsalManagerPage() {
                       )}
                     </div>
 
-                    {/* QR Code Action for Admin */}
-                    {user?.role === "admin" && (
+                    {/* QR Code Action for Admin & Manager */}
+                    {canManage && (
                       <button
                         onClick={() => handleOpenQRModal(item)}
                         className="px-3 py-2 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
@@ -316,8 +317,8 @@ export default function RehearsalManagerPage() {
                       <span>Điểm danh</span>
                     </Link>
 
-                    {/* Toggle Attendance Details (Admin) */}
-                    {user?.role === "admin" && (
+                    {/* Toggle Attendance Details (Admin & Manager) */}
+                    {canManage && (
                       <button
                         onClick={() => toggleExpand(item)}
                         className={`px-3 py-2 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer border ${
@@ -333,7 +334,7 @@ export default function RehearsalManagerPage() {
                     )}
 
                     {/* Delete Rehearsal */}
-                    {user?.role === "admin" && (
+                    {canManage && (
                       <button
                         onClick={() => handleDelete(item._id)}
                         className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors cursor-pointer"
@@ -346,8 +347,8 @@ export default function RehearsalManagerPage() {
                   </div>
                 </div>
 
-                {/* Expanded Attendance Matrix (Admin) */}
-                {isExpanded && user?.role === "admin" && (
+                {/* Expanded Attendance Matrix (Admin & Manager) */}
+                {isExpanded && canManage && (
                   <div className="border-t border-slate-200 bg-slate-50/60 p-5 sm:p-6 space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">

@@ -182,7 +182,7 @@ export default function FinanceV2() {
             </h1>
           </div>
           <p className="text-xs sm:text-sm font-medium text-slate-600 mt-1">
-            Đối soát tự động qua Webhook ngân hàng (SePay/Cassso), quản lý ví cá nhân & sổ quỹ CLB FPTU Band.
+            Đối soát tự động qua Webhook ngân hàng (SePay/Cassso), quản lý thù lao biểu diễn & sổ quỹ FPTU Band (Bộ môn & Phòng CTSV ĐH FPT TP.HCM).
           </p>
         </div>
 

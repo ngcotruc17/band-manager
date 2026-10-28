@@ -20,6 +20,7 @@ export default function Register() {
     username: "",
     email: "",
     phone: "",
+    role: "student",
     password: "",
     confirmPassword: ""
   });
@@ -36,7 +37,7 @@ export default function Register() {
     }
   }, [user, authLoading, router]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -72,9 +73,10 @@ export default function Register() {
         username: formData.username,
         email: formData.email,
         phone: formData.phone,
+        role: formData.role,
         password: formData.password,
       });
-      toast.success("Đăng ký thành công! Admin sẽ duyệt kích hoạt tài khoản của bạn.", { id: toastId });
+      toast.success("Đăng ký thành công! Ban quản lý (CTSV / Bộ môn) sẽ duyệt kích hoạt tài khoản của bạn.", { id: toastId });
       router.push("/login");
     } catch (err: any) {
       const errMsg = err.response?.data?.message || "Lỗi tạo tài khoản";
@@ -101,8 +103,8 @@ export default function Register() {
             <UserPlus size={24} />
           </div>
           <div>
-            <h1 className="text-xl font-extrabold tracking-tight text-slate-900 uppercase">Đăng Ký Thành Viên FPTU Band</h1>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">Gia nhập CLB Âm nhạc Đại học FPT & quản lý nội bộ</p>
+            <h1 className="text-xl font-extrabold tracking-tight text-slate-900 uppercase">Đăng Ký Tài Khoản FPTU Band</h1>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">Trực thuộc Bộ môn & Phòng CTSV Trường ĐH FPT Phân hiệu TP.HCM</p>
           </div>
         </div>
 
@@ -141,6 +143,23 @@ export default function Register() {
                   onChange={handleChange}
                 />
               </div>
+            </div>
+          </div>
+
+          {/* Phân vai / Chức danh tại FPTU */}
+          <div className="space-y-1.5">
+            <label className="block text-xs font-bold text-slate-700">Vai trò / Chức danh tại FPTU *</label>
+            <div className="relative flex items-center">
+              <select
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                className="ui-input w-full px-4 py-3 text-xs sm:text-sm font-bold text-slate-800 bg-white cursor-pointer"
+              >
+                <option value="student">🎓 Sinh viên FPTU (Nhạc công / Đặt ban nhạc)</option>
+                <option value="lecturer">👨‍🏫 Giảng viên FPTU (Biểu diễn / Đặt ban nhạc)</option>
+                <option value="manager">🏛️ Cán bộ Bộ môn / CTSV (Phụ trách xếp show & quản lý)</option>
+              </select>
             </div>
           </div>
 
@@ -238,7 +257,10 @@ export default function Register() {
               <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="w-5 h-5 text-[#F27024]" />
-                  <h3 className="font-extrabold text-sm text-slate-900">Quy Chế Hoạt Động CLB FPTU Band</h3>
+                  <div>
+                    <h3 className="font-extrabold text-sm text-slate-900">Quy Chế Hoạt Động FPTU Band</h3>
+                    <p className="text-[10px] text-slate-500 font-medium">Trực thuộc Bộ môn & Phòng CTSV Trường ĐH FPT Phân hiệu TP.HCM</p>
+                  </div>
                 </div>
                 <button 
                   onClick={() => setShowTerms(false)} 
@@ -254,23 +276,23 @@ export default function Register() {
                 className="p-6 overflow-y-auto space-y-4 text-xs text-slate-700 leading-relaxed"
               >
                 <div className="space-y-1 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                  <h4 className="font-extrabold text-slate-900 text-xs">Điều 1. Bảo mật tài nguyên & Lịch trình</h4>
-                  <p className="text-slate-600">Thành viên có trách nhiệm bảo mật thông tin tài khoản. Tuyệt đối không chia sẻ tài nguyên âm nhạc (beat, sheet) hoặc thông tin lịch trình nội bộ CLB FPTU Band ra bên ngoài.</p>
+                  <h4 className="font-extrabold text-slate-900 text-xs">Điều 1. Tư cách & Cơ cấu quản lý</h4>
+                  <p className="text-slate-600">FPTU Band là ban nhạc chính thức thuộc quyền quản lý trực tiếp của Bộ môn và Phòng Công tác Sinh viên (CTSV) Trường Đại học FPT Phân hiệu TP.HCM (không phải của riêng CLB). Mọi hoạt động biểu diễn, xếp show, kiểm duyệt chất lượng đều dưới sự điều phối của Cán bộ phụ trách.</p>
                 </div>
 
                 <div className="space-y-1 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                  <h4 className="font-extrabold text-slate-900 text-xs">Điều 2. Kỷ luật chuyên cần & Đúng giờ</h4>
-                  <p className="text-slate-600">Có mặt trước giờ tập 10 phút. Chậm trễ không lý do chính đáng sẽ áp dụng trừ quỹ tự động theo quy chế biểu diễn CLB.</p>
+                  <h4 className="font-extrabold text-slate-900 text-xs">Điều 2. Quyền lợi Đặt show & Biểu diễn</h4>
+                  <p className="text-slate-600">Cán bộ phòng ban, Giảng viên và Sinh viên đều có quyền đặt ban nhạc (book show) cho các sự kiện nhà trường, bộ môn, đối tác. Giảng viên và Sinh viên là nghệ sĩ/nhạc công có quyền đăng ký và được xếp lịch tham gia đội hình biểu diễn chính thức.</p>
                 </div>
 
                 <div className="space-y-1 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                  <h4 className="font-extrabold text-slate-900 text-xs">Điều 3. Ý thức chuẩn bị bài trước khi ráp</h4>
-                  <p className="text-slate-600">Chủ động tự tập thuộc bài và hợp âm thông qua Kho Nhạc FPTU trước buổi ráp để đảm bảo tiến độ chung của toàn ban.</p>
+                  <h4 className="font-extrabold text-slate-900 text-xs">Điều 3. Kỷ luật chuyên cần & Bảo mật</h4>
+                  <p className="text-slate-600">Có mặt trước giờ diễn và giờ tập ít nhất 10 phút. Tuyệt đối bảo mật tài nguyên âm nhạc (beat, sheet), thông tin hợp đồng và lịch trình nội bộ FPTU Band.</p>
                 </div>
 
                 <div className="space-y-1 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                  <h4 className="font-extrabold text-slate-900 text-xs">Điều 4. Cơ chế trích lập Quỹ Ban Nhạc</h4>
-                  <p className="text-slate-600">Doanh thu mỗi chương trình được phân bổ minh bạch: trích lập Quỹ chung vận hành CLB và chi trả thù lao nhạc công theo phân bổ vai trò.</p>
+                  <h4 className="font-extrabold text-slate-900 text-xs">Điều 4. Cơ chế Tài chính & Quỹ Ban Nhạc</h4>
+                  <p className="text-slate-600">Thù lao biểu diễn được phân bổ minh bạch theo ma trận vai trò chuyên môn, sau khi trích lập phần trăm Quỹ Ban Nhạc theo quy định của Nhà trường và Ban điều phối.</p>
                 </div>
 
                 {!canCheck && (

@@ -152,12 +152,16 @@ export default function DashboardV2() {
             </h1>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/20 border border-orange-400/30 text-orange-200 text-xs font-bold backdrop-blur-md">
               <Sparkles className="w-3.5 h-3.5 text-orange-400" />
-              <span>{user?.instrument || (user?.role === 'admin' ? 'Trưởng Ban FPTU' : 'Thành Viên CLB')}</span>
+              <span>
+                {user?.instrument 
+                  ? `${user.instrument} · ${user.role === 'admin' ? 'Quản Trị Viên' : user.role === 'manager' || user.role === 'staff' ? 'Cán Bộ CTSV/Bộ Môn' : user.role === 'lecturer' ? 'Giảng Viên' : 'Sinh Viên'}`
+                  : (user?.role === 'admin' ? 'Quản Trị Viên' : user?.role === 'manager' || user?.role === 'staff' ? 'Cán Bộ CTSV/Bộ Môn' : user?.role === 'lecturer' ? 'Giảng Viên FPTU' : 'Sinh Viên FPTU')}
+              </span>
             </span>
           </div>
 
           <p className="text-xs sm:text-sm font-medium text-slate-300 mt-2 max-w-xl leading-relaxed">
-            Trung tâm điều phối biểu diễn, lịch trình tập ráp & đối soát tài chính CLB FPTU Band.
+            Hệ thống điều phối biểu diễn, lịch trình tập ráp & quản trị FPTU Band - Trực thuộc Bộ môn và Phòng Công tác Sinh viên (CTSV) Trường ĐH FPT Phân hiệu TP.HCM.
           </p>
         </div>
 
@@ -201,7 +205,7 @@ export default function DashboardV2() {
                 <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-200 shadow-2xs">
                   <DollarSign className="w-4 h-4" />
                 </div>
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Tài chính CLB FPTU</span>
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Tài chính FPTU Band</span>
               </div>
               <Link href="/finance" className="text-slate-400 hover:text-[#F27024] transition-colors">
                 <ArrowUpRight className="w-4 h-4" />

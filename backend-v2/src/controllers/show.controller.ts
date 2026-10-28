@@ -17,8 +17,26 @@ export const getShows = async (req: AuthenticatedRequest, res: Response): Promis
 
 export const createShow = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
-    const newShow = new Show({ ...req.body, createdBy: req.user?._id });
+    const isManagerOrAdmin = req.user?.role === 'admin' || req.user?.role === 'manager' || req.user?.role === 'staff';
+    const status = isManagerOrAdmin ? (req.body.status || 'confirmed') : 'pending';
+    
+    const newShow = new Show({ 
+      ...req.body, 
+      status, 
+      createdBy: req.user?._id 
+    });
     await newShow.save();
+
+    // Thông báo cho ban quản lý nếu Giảng viên / Sinh viên tạo yêu cầu book show
+    if (!isManagerOrAdmin) {
+      const creatorTitle = req.user?.role === 'lecturer' ? 'Giảng viên' : 'Sinh viên';
+      await NotificationService.notifyAdmins({
+        message: `📅 Đơn đặt show mới từ ${creatorTitle} ${req.user?.fullName || ''}: "${newShow.title}". Vui lòng kiểm tra và duyệt xếp lịch!`,
+        link: `/bookings`,
+        type: 'info'
+      });
+    }
+
     res.status(201).json(newShow);
   } catch (error: any) {
     res.status(500).json({ message: error.message });

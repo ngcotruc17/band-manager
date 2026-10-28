@@ -144,7 +144,7 @@ export default function Navbar() {
     },
     {
       id: "management",
-      label: "Quản trị CLB",
+      label: "Quản trị & Điều phối",
       icon: Coins,
       items: [
         {
@@ -157,7 +157,7 @@ export default function Navbar() {
         {
           href: "/members",
           label: "Thành viên ban nhạc",
-          description: "Danh sách nghệ sĩ, nhạc cụ & vai trò",
+          description: "Danh sách cán bộ, giảng viên, sinh viên & vai trò",
           icon: Users,
           colorScheme: "orange"
         }
@@ -238,7 +238,7 @@ export default function Navbar() {
               </span>
             </div>
             <span className="hidden sm:block text-[9px] font-bold text-slate-400 tracking-wider uppercase -mt-0.5">
-              CLB Âm Nhạc Đại Học FPT
+              Bộ Môn & Phòng CTSV ĐH FPT TP.HCM
             </span>
           </div>
         </Link>
@@ -365,7 +365,7 @@ export default function Navbar() {
                 <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
                   <div className="flex items-center gap-2">
                     <Bell className="w-4 h-4 text-[#F27024]" />
-                    <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Thông báo CLB FPTU</h4>
+                    <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Thông báo FPTU Band</h4>
                   </div>
                   {unreadCount > 0 && (
                     <button
@@ -560,14 +560,14 @@ export default function Navbar() {
                 </div>
               </div>
               <span className="px-2 py-0.5 rounded-full bg-white text-[#F27024] text-[10px] font-black border border-orange-200 uppercase">
-                {user.role}
+                {user.role === 'admin' ? 'Admin' : user.role === 'manager' || user.role === 'staff' ? 'Cán bộ CTSV/Bộ môn' : user.role === 'lecturer' ? 'Giảng viên' : 'Sinh viên'}
               </span>
             </div>
 
             {/* Inset Menu Section: Quản trị & Hoạt động */}
             <div className="bg-slate-50/80 border border-slate-200/80 rounded-2xl p-2 space-y-1">
               <div className="px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
-                Quản trị & Hoạt động CLB
+                Quản trị & Điều phối FPTU Band
               </div>
 
               <Link
@@ -635,7 +635,7 @@ export default function Navbar() {
               >
                 <div className="flex items-center gap-2.5">
                   <Bell className="w-4 h-4 text-violet-600" />
-                  <span>Trung tâm thông báo CLB</span>
+                  <span>Trung tâm thông báo FPTU</span>
                 </div>
                 <ChevronRight className="w-4 h-4 text-slate-400" />
               </Link>

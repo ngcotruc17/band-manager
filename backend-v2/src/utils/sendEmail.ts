@@ -171,7 +171,7 @@ export const sendNewRehearsalEmail = async (rehearsal: any): Promise<void> => {
                     <tr>
                       <td align="center" style="background-color:#F27024; padding:35px 20px;">
                         <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#ffffff;font-size:24px;font-weight:900;letter-spacing:1.5px;">FPTU BAND</div>
-                        <div style="font-family:sans-serif;color:#FFF7ED;font-size:11px;font-weight:700;margin-top:6px;text-transform:uppercase;letter-spacing:1px;">Lịch Tập CLB FPTU</div>
+                        <div style="font-family:sans-serif;color:#FFF7ED;font-size:11px;font-weight:700;margin-top:6px;text-transform:uppercase;letter-spacing:1px;">Lịch Trình FPTU Band - ĐH FPT TP.HCM</div>
                       </td>
                     </tr>
                     <!-- Body -->

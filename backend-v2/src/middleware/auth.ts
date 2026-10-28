@@ -21,7 +21,7 @@ export const protect = async (req: AuthenticatedRequest, res: Response, next: Ne
 
       req.user = user as IUser;
 
-      if (!req.user.isApproved && req.user.role !== 'admin') {
+      if (!req.user.isApproved && req.user.role !== 'admin' && req.user.role !== 'system') {
          return res.status(403).json({ message: "Tài khoản chưa được duyệt." });
       }
 
@@ -42,5 +42,14 @@ export const admin = (req: AuthenticatedRequest, res: Response, next: NextFuncti
     return next();
   } else {
     return res.status(403).json({ message: "Chỉ Admin mới có quyền này" });
+  }
+};
+
+// Cán bộ phòng ban (CTSV / Bộ môn) hoặc Admin phụ trách duyệt và xếp lịch biểu diễn
+export const canManageShows = (req: AuthenticatedRequest, res: Response, next: NextFunction): any => {
+  if (req.user && (req.user.role === 'admin' || req.user.role === 'manager' || req.user.role === 'staff')) {
+    return next();
+  } else {
+    return res.status(403).json({ message: "Chỉ Admin hoặc Cán bộ phòng ban phụ trách xếp show mới có quyền này" });
   }
 };

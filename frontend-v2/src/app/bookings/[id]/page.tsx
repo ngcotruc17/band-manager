@@ -245,7 +245,7 @@ export default function BookingDetail() {
   const approvedMembers = show.participants?.filter(p => p.status === 'approved') || [];
   const pendingMembers = show.participants?.filter(p => p.status === 'pending') || [];
   const isJoined = show.participants?.some(p => p.user?._id === user?._id);
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user?.role === 'admin' || user?.role === 'manager' || user?.role === 'staff';
   const canRegister = show.status === 'confirmed' && !show.isRegistrationClosed;
 
   const filteredLibrary = librarySongs.filter(s => 
@@ -254,10 +254,10 @@ export default function BookingDetail() {
   );
 
   return (
-    <div className="min-h-screen p-4 sm:p-8">
+    <div className="min-h-screen p-3.5 sm:p-8 w-full max-w-full overflow-x-hidden">
       
       {/* HEADER: Back Button & Title */}
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="max-w-6xl mx-auto space-y-6 w-full min-w-0">
         <button onClick={() => router.back()} className="flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-indigo-600 ui-card px-4 py-2.5 rounded-2xl shadow-sm transition hover:scale-105 active:scale-95 cursor-pointer">
           <ArrowLeft size={16}/> Quay lại
         </button>

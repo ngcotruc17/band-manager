@@ -27,7 +27,7 @@ export default function AppShell({ children }: AppShellProps) {
   return (
     <>
       <Navbar />
-      <main className="flex-1 flex flex-col pt-20 sm:pt-24 pb-28 lg:pb-16 relative">
+      <main className="flex-1 flex flex-col pt-20 sm:pt-24 pb-28 lg:pb-16 relative w-full max-w-full overflow-x-hidden min-w-0">
         {children}
       </main>
       <GlobalAudioPlayer />

@@ -54,6 +54,7 @@ interface RehearsalItem {
 
 export default function BookingAndRehearsalManager() {
   const { user } = useContext(AuthContext);
+  const canManageShows = user?.role === 'admin' || user?.role === 'manager' || user?.role === 'staff';
   
   // Tab điều khiển chính: "shows" (Lịch diễn) | "rehearsals" (Lịch tập ráp)
   const [subTab, setSubTab] = useState<"shows" | "rehearsals">("shows");
@@ -325,7 +326,7 @@ export default function BookingAndRehearsalManager() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-8 py-6 space-y-6">
+    <div className="max-w-7xl mx-auto px-3.5 sm:px-8 py-4 sm:py-6 space-y-6 w-full max-w-full overflow-x-hidden">
       
       {/* HEADER HỆ THỐNG */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-4 border-b border-slate-200/80">
@@ -337,29 +338,29 @@ export default function BookingAndRehearsalManager() {
             QUẢN LÝ LỊCH TRÌNH FPTU BAND
           </h1>
           <p className="text-xs text-slate-500 font-medium mt-1">
-            Hợp diễn, biểu diễn sân khấu, lịch tập ráp và chấm công chuyên cần FPTU Band
+            Hợp diễn, biểu diễn sân khấu, lịch tập ráp và chấm công chuyên cần FPTU Band · Bộ môn & Phòng CTSV ĐH FPT TP.HCM
           </p>
         </div>
 
         {/* 🍏 iOS Segmented Control Chọn Phân Hệ */}
-        <div className="ios-segmented-container w-full md:w-auto self-start md:self-auto">
+        <div className="ios-segmented-container w-full md:w-auto self-stretch md:self-auto max-w-full no-scrollbar">
           <button
             onClick={() => setSubTab("shows")}
-            className={`ios-segmented-item flex-1 md:flex-none justify-center ${
+            className={`ios-segmented-item flex-1 md:flex-none justify-center text-xs truncate min-w-0 ${
               subTab === "shows" ? "active" : ""
             }`}
           >
-            <Calendar className="w-3.5 h-3.5" />
-            <span>Lịch Biểu Diễn ({bookings.length})</span>
+            <Calendar className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Lịch Biểu Diễn ({bookings.length})</span>
           </button>
           <button
             onClick={() => setSubTab("rehearsals")}
-            className={`ios-segmented-item flex-1 md:flex-none justify-center ${
+            className={`ios-segmented-item flex-1 md:flex-none justify-center text-xs truncate min-w-0 ${
               subTab === "rehearsals" ? "active" : ""
             }`}
           >
-            <Layers className="w-3.5 h-3.5" />
-            <span>Lịch Tập Ráp ({rehearsals.length})</span>
+            <Layers className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Lịch Tập Ráp ({rehearsals.length})</span>
           </button>
         </div>
       </div>
@@ -394,20 +395,20 @@ export default function BookingAndRehearsalManager() {
           </div>
 
           {/* Bộ lọc và Tìm kiếm */}
-          <div className="flex flex-col md:flex-row justify-between gap-4 items-stretch">
-            <div className="relative flex-1 flex items-center">
+          <div className="flex flex-col lg:flex-row justify-between gap-3 items-stretch w-full min-w-0">
+            <div className="relative flex-1 flex items-center min-w-0">
               <div className="absolute left-3.5 flex items-center pointer-events-none text-slate-400">
                 <Search size={18}/>
               </div>
               <input 
                 type="text" placeholder="Tìm tên show, khách hàng, địa điểm..." 
-                className="ui-input w-full pl-11"
+                className="ui-input w-full pl-11 min-w-0 text-xs sm:text-sm"
                 value={bookingSearchTerm} onChange={(e) => setBookingSearchTerm(e.target.value)}
               />
             </div>
 
-            <div className="flex items-center justify-between gap-3 shrink-0">
-              <div className="ios-segmented-container overflow-x-auto max-w-full">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 w-full lg:w-auto min-w-0">
+              <div className="ios-segmented-container overflow-x-auto max-w-full no-scrollbar pb-0.5 flex-1 sm:flex-initial">
                 {[
                   { id: "all", name: "Tất cả" },
                   { id: "pending", name: "Chờ duyệt" },
@@ -417,7 +418,7 @@ export default function BookingAndRehearsalManager() {
                   <button
                     key={tab.id}
                     onClick={() => setBookingActiveTab(tab.id)}
-                    className={`ios-segmented-item whitespace-nowrap ${
+                    className={`ios-segmented-item whitespace-nowrap text-xs ${
                       bookingActiveTab === tab.id ? "active" : ""
                     }`}
                   >
@@ -425,16 +426,16 @@ export default function BookingAndRehearsalManager() {
                   </button>
                 ))}
               </div>
-              {user?.role === 'admin' && (
-                <button onClick={handleBookingCreateClick} className="ui-button-primary flex items-center gap-2 text-xs uppercase tracking-wider whitespace-nowrap">
-                  <Plus size={16}/> Tạo Mới
+              {user && (
+                <button onClick={handleBookingCreateClick} className="ui-button-primary flex items-center justify-center gap-2 text-xs uppercase tracking-wider whitespace-nowrap py-2.5 px-4 rounded-xl shrink-0">
+                  <Plus size={16}/> {canManageShows ? "Lên Lịch / Xếp Show" : "Đặt Show (Book Band)"}
                 </button>
               )}
             </div>
           </div>
 
           {/* Danh sách Bookings */}
-          <div className="grid grid-cols-1 gap-5">
+          <div className="grid grid-cols-1 gap-5 w-full min-w-0">
             {loadingBookings ? (
               <div className="text-center py-20"><Loader className="animate-spin mx-auto text-indigo-500" size={32}/></div>
             ) : filteredBookings.length === 0 ? (
@@ -444,28 +445,28 @@ export default function BookingAndRehearsalManager() {
                </div>
             ) : (
               filteredBookings.map((item) => (
-                <div key={item._id} className="ui-card ui-card-hover group overflow-hidden">
-                  <Link href={`/bookings/${item._id}`} className="p-6 flex flex-col md:flex-row gap-6 items-center md:items-start cursor-pointer">
+                <div key={item._id} className="ui-card ui-card-hover group overflow-hidden w-full min-w-0">
+                  <Link href={`/bookings/${item._id}`} className="p-4 sm:p-6 flex flex-col md:flex-row gap-4 sm:gap-6 items-stretch md:items-start cursor-pointer w-full min-w-0">
                     
                     {/* Calendar Date Card */}
-                    <div className="flex-shrink-0 w-full md:w-24 h-24 bg-gradient-to-br from-slate-900 to-indigo-950 rounded-2xl border border-slate-800 flex flex-col items-center justify-center p-3 text-center shadow-sm">
-                      <span className="text-indigo-300 font-extrabold uppercase text-[10px] tracking-wider mb-0.5">Tháng {new Date(item.date).getMonth() + 1}</span>
-                      <span className="text-3xl font-black text-white leading-none">{new Date(item.date).getDate()}</span>
-                      <span className="text-slate-400 text-[10px] font-bold mt-1">{new Date(item.date).getFullYear()}</span>
+                    <div className="flex-shrink-0 w-full md:w-24 h-14 md:h-24 bg-gradient-to-br from-slate-900 to-indigo-950 rounded-2xl border border-slate-800 flex flex-row md:flex-col items-center justify-between md:justify-center px-4 md:p-3 text-center shadow-sm">
+                      <span className="text-indigo-300 font-extrabold uppercase text-[10px] tracking-wider mb-0 md:mb-0.5">Tháng {new Date(item.date).getMonth() + 1}</span>
+                      <span className="text-xl md:text-3xl font-black text-white leading-none">{new Date(item.date).getDate()}</span>
+                      <span className="text-slate-400 text-[10px] font-bold md:mt-1">{new Date(item.date).getFullYear()}</span>
                     </div>
 
                     {/* Show Details */}
-                    <div className="flex-1 w-full space-y-4">
-                      <div className="flex flex-col sm:flex-row justify-between items-start gap-3">
-                        <div>
-                          <h3 className="text-lg font-black text-slate-900 group-hover:text-indigo-600 transition-colors">{item.title}</h3>
-                          <div className="flex flex-wrap items-center gap-3 text-xs font-semibold text-slate-500 mt-1.5">
-                            <span className="flex items-center gap-1"><User size={14} className="text-indigo-500"/> {item.customerName}</span>
+                    <div className="flex-1 w-full min-w-0 space-y-3 sm:space-y-4">
+                      <div className="flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-3">
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-base sm:text-lg font-black text-slate-900 group-hover:text-indigo-600 transition-colors break-words">{item.title}</h3>
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs font-semibold text-slate-500 mt-1">
+                            <span className="flex items-center gap-1 truncate"><User size={14} className="text-indigo-500 shrink-0"/> {item.customerName}</span>
                             <span className="hidden sm:block text-slate-300">•</span>
-                            <span className="flex items-center gap-1"><Phone size={14} className="text-emerald-600"/> {item.phone || "---"}</span>
+                            <span className="flex items-center gap-1"><Phone size={14} className="text-emerald-600 shrink-0"/> {item.phone || "---"}</span>
                           </div>
                         </div>
-                        <div className="shrink-0">
+                        <div className="shrink-0 self-start">
                           {item.status === 'completed' && <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200 shadow-sm"><CheckCircle size={14}/> Đã diễn</span>}
                           {item.status === 'pending' && <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-50 text-amber-700 text-xs font-bold border border-amber-200 shadow-sm animate-pulse"><Clock size={14}/> Chờ duyệt</span>}
                           {item.status === 'confirmed' && (
@@ -477,19 +478,19 @@ export default function BookingAndRehearsalManager() {
                       </div>
 
                       <div className="flex flex-wrap gap-2 text-xs">
-                        <div className="flex items-center gap-1.5 bg-slate-100 px-3 py-1.5 rounded-lg text-slate-700 font-bold"><Clock size={14} className="text-amber-500"/> {item.time}</div>
-                        <div className="flex items-center gap-1.5 bg-slate-100 px-3 py-1.5 rounded-lg text-slate-700 font-bold max-w-[200px] truncate"><MapPin size={14} className="text-indigo-500"/> {item.location}</div>
-                        {(item as any).eventType && <div className="flex items-center gap-1.5 bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-lg font-bold border border-indigo-200">{(item as any).eventType}</div>}
-                        {(item as any).memberCount && <div className="flex items-center gap-1.5 bg-slate-100 px-3 py-1.5 rounded-lg text-slate-700 font-bold"><Users size={14} className="text-purple-600"/> {(item as any).memberCount} người</div>}
-                        {item.notes && <div className="flex items-center gap-1.5 bg-amber-50 text-amber-800 px-3 py-1.5 rounded-lg font-medium italic border border-amber-200 max-w-[220px] truncate"><FileText size={14}/> {item.notes}</div>}
+                        <div className="flex items-center gap-1.5 bg-slate-100 px-2.5 sm:px-3 py-1.5 rounded-lg text-slate-700 font-bold shrink-0"><Clock size={14} className="text-amber-500"/> {item.time}</div>
+                        <div className="flex items-center gap-1.5 bg-slate-100 px-2.5 sm:px-3 py-1.5 rounded-lg text-slate-700 font-bold max-w-full sm:max-w-[200px] truncate"><MapPin size={14} className="text-indigo-500 shrink-0"/> {item.location}</div>
+                        {(item as any).eventType && <div className="flex items-center gap-1.5 bg-indigo-50 text-indigo-700 px-2.5 sm:px-3 py-1.5 rounded-lg font-bold border border-indigo-200 shrink-0">{(item as any).eventType}</div>}
+                        {(item as any).memberCount && <div className="flex items-center gap-1.5 bg-slate-100 px-2.5 sm:px-3 py-1.5 rounded-lg text-slate-700 font-bold shrink-0"><Users size={14} className="text-purple-600"/> {(item as any).memberCount} người</div>}
+                        {item.notes && <div className="flex items-center gap-1.5 bg-amber-50 text-amber-800 px-2.5 sm:px-3 py-1.5 rounded-lg font-medium italic border border-amber-200 max-w-full sm:max-w-[220px] truncate"><FileText size={14}/> {item.notes}</div>}
                       </div>
                     </div>
 
                     {/* Financial Overview */}
-                    <div className="flex-shrink-0 w-full md:w-44 bg-slate-50 rounded-2xl p-4 border border-slate-200 flex flex-col justify-center">
-                       <div className="text-right mb-2">
+                    <div className="flex-shrink-0 w-full md:w-44 bg-slate-50 rounded-2xl p-3.5 sm:p-4 border border-slate-200 flex flex-col justify-center">
+                       <div className="text-left md:text-right mb-2">
                           <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Cát-xê / người</p>
-                          <p className="text-xl font-black text-emerald-600 mt-0.5">{(item.price || 0).toLocaleString()}đ</p>
+                          <p className="text-lg md:text-xl font-black text-emerald-600 mt-0.5">{(item.price || 0).toLocaleString()}đ</p>
                        </div>
                        <div className="flex justify-between text-[11px] font-bold border-t border-slate-200 pt-2 mt-1">
                           <span className="text-slate-500">Cọc: {(item.deposit || 0).toLocaleString()}</span>
@@ -500,28 +501,28 @@ export default function BookingAndRehearsalManager() {
                     </div>
                   </Link>
                   
-                  {/* TOOLBAR ADMIN */}
-                  {user?.role === 'admin' && (
-                    <div className="bg-slate-50/90 border-t border-slate-200 p-3 flex flex-wrap justify-end gap-2 items-center px-6">
-                       <button onClick={(e) => handleBookingEditClick(e, item)} className="text-xs font-bold text-slate-700 bg-white border border-slate-300 px-3.5 py-1.5 rounded-xl hover:bg-slate-100 shadow-sm flex items-center gap-1.5 transition">
+                  {/* TOOLBAR ADMIN & CÁN BỘ PHÒNG BAN */}
+                  {canManageShows && (
+                    <div className="bg-slate-50/90 border-t border-slate-200 p-3 flex flex-wrap justify-end gap-2 items-center px-4 sm:px-6 w-full min-w-0">
+                       <button onClick={(e) => handleBookingEditClick(e, item)} className="text-xs font-bold text-slate-700 bg-white border border-slate-300 px-3 py-1.5 rounded-xl hover:bg-slate-100 shadow-sm flex items-center gap-1.5 transition">
                           <Edit size={13}/> Sửa
                        </button>
-                       <button onClick={(e) => handleBookingDelete(e, item._id)} className="text-xs font-bold text-rose-600 bg-white border border-rose-200 px-3.5 py-1.5 rounded-xl hover:bg-rose-50 shadow-sm flex items-center gap-1.5 transition">
+                       <button onClick={(e) => handleBookingDelete(e, item._id)} className="text-xs font-bold text-rose-600 bg-white border border-rose-200 px-3 py-1.5 rounded-xl hover:bg-rose-50 shadow-sm flex items-center gap-1.5 transition">
                           <Trash2 size={13}/> Xóa
                        </button>
 
                        {item.status === 'pending' && (
-                            <button onClick={(e) => updateBookingStatus(e, item._id, 'confirmed')} className="text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-1.5 rounded-xl shadow-sm flex items-center gap-1.5 transition">
+                            <button onClick={(e) => updateBookingStatus(e, item._id, 'confirmed')} className="text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 px-3.5 py-1.5 rounded-xl shadow-sm flex items-center gap-1.5 transition">
                                <PlayCircle size={13}/> Duyệt & Mở Nhận ĐK
                             </button>
                        )}
 
                        {item.status === 'confirmed' && (
                          <>
-                            <button onClick={(e) => toggleBookingLock(e, item._id)} className={`text-xs font-bold px-4 py-1.5 rounded-xl shadow-sm flex items-center gap-1.5 text-white transition ${item.isRegistrationClosed ? 'bg-amber-500 hover:bg-amber-600' : 'bg-rose-500 hover:bg-rose-600'}`}>
+                            <button onClick={(e) => toggleBookingLock(e, item._id)} className={`text-xs font-bold px-3.5 py-1.5 rounded-xl shadow-sm flex items-center gap-1.5 text-white transition ${item.isRegistrationClosed ? 'bg-amber-500 hover:bg-amber-600' : 'bg-rose-500 hover:bg-rose-600'}`}>
                                {item.isRegistrationClosed ? <><Unlock size={13}/> Mở đăng ký</> : <><Lock size={13}/> Chốt sổ đăng ký</>}
                             </button>
-                            <button onClick={(e) => updateBookingStatus(e, item._id, 'completed')} className="text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 px-4 py-1.5 rounded-xl shadow-sm flex items-center gap-1.5 transition">
+                            <button onClick={(e) => updateBookingStatus(e, item._id, 'completed')} className="text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 px-3.5 py-1.5 rounded-xl shadow-sm flex items-center gap-1.5 transition">
                               <Check size={13}/> Hoàn thành
                             </button>
                          </>
@@ -557,15 +558,15 @@ export default function BookingAndRehearsalManager() {
             </div>
 
             {/* Thanh bar công cụ */}
-            <div className="flex justify-between items-center gap-4">
+            <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
               <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Nhật ký tập ráp định kỳ</span>
-              <div className="flex gap-2">
-                <Link href="/checkin" className="flex items-center gap-2 bg-slate-900 hover:bg-black text-white px-5 py-3 rounded-2xl font-bold shadow-md transition transform active:scale-[0.98] text-xs uppercase tracking-wider">
-                  <Camera size={18}/> Quét QR Điểm Danh
+              <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                <Link href="/checkin" className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-slate-900 hover:bg-black text-white px-4 py-2.5 rounded-xl font-bold shadow-md transition transform active:scale-[0.98] text-xs uppercase tracking-wider">
+                  <Camera size={16}/> Quét QR Điểm Danh
                 </Link>
-                {user?.role === 'admin' && (
-                  <button onClick={() => setShowRehearsalModal(true)} className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3.5 rounded-2xl font-bold shadow-md shadow-indigo-500/10 transition transform active:scale-[0.98] text-xs uppercase tracking-wider">
-                    <Plus size={18}/> Lên Lịch Tập
+                {canManageShows && (
+                  <button onClick={() => setShowRehearsalModal(true)} className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl font-bold shadow-md shadow-indigo-500/10 transition transform active:scale-[0.98] text-xs uppercase tracking-wider">
+                    <Plus size={16}/> Lên Lịch Tập
                   </button>
                 )}
               </div>
@@ -583,39 +584,39 @@ export default function BookingAndRehearsalManager() {
               ) : (
                 rehearsals.map((item) => (
                   <div key={item._id} className={`ui-card transition-all duration-300 overflow-hidden ${expandedRehearsalId === item._id ? 'ring-2 ring-indigo-500/30 shadow-md' : 'shadow-sm'}`}>
-                    <div className="p-6 flex flex-col md:flex-row gap-6">
+                    <div className="p-4 sm:p-6 flex flex-col md:flex-row gap-4 sm:gap-6">
                       
                       {/* Calendar Date Icon */}
-                      <div className="flex-shrink-0 flex flex-col items-center justify-center w-20 h-20 bg-slate-50 text-slate-800 rounded-2xl border border-slate-200 shadow-sm">
-                        <span className="text-[9px] font-black uppercase text-indigo-600">{new Date(item.date).toLocaleString('vi', { month: 'short' })}</span>
-                        <span className="text-3xl font-black leading-none mt-0.5">{new Date(item.date).getDate()}</span>
+                      <div className="flex-shrink-0 flex flex-row md:flex-col items-center justify-between md:justify-center w-full md:w-20 h-14 md:h-20 bg-slate-50 text-slate-800 rounded-2xl border border-slate-200 px-4 md:p-2 shadow-sm">
+                        <span className="text-[10px] font-black uppercase text-indigo-600">{new Date(item.date).toLocaleString('vi', { month: 'short' })}</span>
+                        <span className="text-xl md:text-3xl font-black leading-none">{new Date(item.date).getDate()}</span>
                       </div>
 
-                      <div className="flex-1 space-y-3">
-                        <h3 className="text-lg font-black text-slate-900 leading-tight">{item.content || "Buổi tập thường kỳ"}</h3>
-                        <div className="flex flex-wrap gap-2.5 text-xs">
+                      <div className="flex-1 min-w-0 space-y-2 sm:space-y-3">
+                        <h3 className="text-base sm:text-lg font-black text-slate-900 leading-tight break-words">{item.content || "Buổi tập thường kỳ"}</h3>
+                        <div className="flex flex-wrap gap-2 text-xs">
                           <div className="flex items-center gap-1.5 bg-slate-100 px-3 py-1.5 rounded-lg text-slate-700 font-bold"><Clock size={14} className="text-orange-500"/> {item.time}</div>
                           <div className="flex items-center gap-1.5 bg-slate-100 px-3 py-1.5 rounded-lg text-slate-700 font-bold"><MapPin size={14} className="text-blue-500"/> {item.location}</div>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3 md:border-l md:pl-6 border-slate-200 justify-between md:justify-start">
-                        {user?.role === 'admin' && (
+                      <div className="flex flex-wrap items-center gap-2 md:border-l md:pl-6 border-slate-200 justify-end md:justify-start">
+                        {canManageShows && (
                           <button 
                             onClick={() => handleShowRehearsalQR(item)}
-                            className="flex items-center gap-1 bg-violet-50 text-violet-700 border border-violet-200 hover:bg-violet-100 px-3.5 py-2.5 rounded-xl font-bold text-xs transition"
+                            className="flex items-center gap-1 bg-violet-50 text-violet-700 border border-violet-200 hover:bg-violet-100 px-3 py-2 rounded-xl font-bold text-xs transition"
                             title="Tạo mã QR điểm danh"
                           >
                             <Camera size={14}/> Mã QR
                           </button>
                         )}
-                        <button onClick={() => toggleRehearsalExpand(item)} className={`flex items-center gap-1.5 px-4.5 py-2.5 rounded-xl font-bold text-xs transition duration-150 ${expandedRehearsalId === item._id ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>
-                          <Users size={15}/> {user?.role === 'admin' ? "Điểm danh" : "Thành viên"}
+                        <button onClick={() => toggleRehearsalExpand(item)} className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-bold text-xs transition duration-150 ${expandedRehearsalId === item._id ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>
+                          <Users size={15}/> {canManageShows ? "Điểm danh" : "Thành viên"}
                           {expandedRehearsalId === item._id ? <ChevronUp size={15}/> : <ChevronDown size={15}/>}
                         </button>
-                        {user?.role === 'admin' && (
-                          <button onClick={() => handleRehearsalDelete(item._id)} className="p-2.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-100 rounded-xl transition">
-                            <Trash2 size={18}/>
+                        {canManageShows && (
+                          <button onClick={() => handleRehearsalDelete(item._id)} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-100 rounded-xl transition">
+                            <Trash2 size={16}/>
                           </button>
                         )}
                       </div>
@@ -623,49 +624,49 @@ export default function BookingAndRehearsalManager() {
 
                     {/* Điểm danh mở rộng */}
                     {expandedRehearsalId === item._id && (
-                      <div className="bg-slate-50/70 border-t border-slate-200 p-6 md:p-7">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div className="bg-slate-50/70 border-t border-slate-200 p-4 sm:p-6 md:p-7">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                           {(editingAttendance || []).map((m) => (
-                            <div key={m.user?._id || m._id} className="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition">
-                              <div className="flex items-center gap-3.5">
-                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-500/10 to-purple-500/10 text-indigo-700 flex items-center justify-center font-black text-base border border-indigo-100">
+                            <div key={m.user?._id || m._id} className="flex items-center justify-between bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition min-w-0">
+                              <div className="flex items-center gap-3 min-w-0 flex-1">
+                                <div className="w-10 h-10 shrink-0 rounded-2xl bg-gradient-to-tr from-indigo-500/10 to-purple-500/10 text-indigo-700 flex items-center justify-center font-black text-sm border border-indigo-100">
                                   {m.user?.fullName?.charAt(0) || "?"}
                                 </div>
-                                <div>
-                                  <p className="font-extrabold text-slate-900 text-xs md:text-sm leading-tight">{m.user?.fullName || "Thành viên"}</p>
-                                  <p className={`text-[10px] font-black uppercase mt-1 ${m.status === 'present' ? 'text-emerald-600' : m.status === 'late' ? 'text-amber-600' : m.status === 'absent' ? 'text-rose-600' : 'text-slate-500'}`}>
+                                <div className="min-w-0 flex-1">
+                                  <p className="font-extrabold text-slate-900 text-xs md:text-sm leading-tight truncate">{m.user?.fullName || "Thành viên"}</p>
+                                  <p className={`text-[10px] font-black uppercase mt-0.5 ${m.status === 'present' ? 'text-emerald-600' : m.status === 'late' ? 'text-amber-600' : m.status === 'absent' ? 'text-rose-600' : 'text-slate-500'}`}>
                                      {m.status === 'pending' ? 'Chưa báo danh' : m.status === 'present' ? 'Có mặt' : m.status === 'late' ? 'Đi muộn' : 'Vắng mặt'}
                                   </p>
                                 </div>
                               </div>
                               
-                              <div className="flex items-center gap-2">
-                                 {user?.role === 'admin' ? (
+                              <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                                 {canManageShows ? (
                                    <>
                                      <button 
                                        onClick={() => changeAttendanceStatus(m.user?._id || m._id, 'present')} 
                                        title="Có mặt"
-                                       className={`p-2.5 rounded-xl transition border ${m.status === 'present' ? 'bg-emerald-50 text-emerald-600 border-emerald-200 shadow-sm' : 'text-slate-400 hover:bg-slate-100 border-transparent'}`}
+                                       className={`p-2 rounded-xl transition border ${m.status === 'present' ? 'bg-emerald-50 text-emerald-600 border-emerald-200 shadow-sm' : 'text-slate-400 hover:bg-slate-100 border-transparent'}`}
                                      >
-                                       <CheckCircle size={18}/>
+                                       <CheckCircle size={16}/>
                                      </button>
                                      <button 
                                        onClick={() => changeAttendanceStatus(m.user?._id || m._id, 'late')} 
                                        title="Trễ (phạt 50k)"
-                                       className={`p-2.5 rounded-xl transition border ${m.status === 'late' ? 'bg-amber-50 text-amber-600 border-amber-200 shadow-sm' : 'text-slate-400 hover:bg-slate-100 border-transparent'}`}
+                                       className={`p-2 rounded-xl transition border ${m.status === 'late' ? 'bg-amber-50 text-amber-600 border-amber-200 shadow-sm' : 'text-slate-400 hover:bg-slate-100 border-transparent'}`}
                                      >
-                                       <Clock size={18}/>
+                                       <Clock size={16}/>
                                      </button>
                                      <button 
                                        onClick={() => changeAttendanceStatus(m.user?._id || m._id, 'absent')} 
                                        title="Vắng (phạt 100k)"
-                                       className={`p-2.5 rounded-xl transition border ${m.status === 'absent' ? 'bg-rose-50 text-rose-600 border-rose-200 shadow-sm' : 'text-slate-400 hover:bg-slate-100 border-transparent'}`}
+                                       className={`p-2 rounded-xl transition border ${m.status === 'absent' ? 'bg-rose-50 text-rose-600 border-rose-200 shadow-sm' : 'text-slate-400 hover:bg-slate-100 border-transparent'}`}
                                      >
-                                       <XCircle size={18}/>
+                                       <XCircle size={16}/>
                                      </button>
                                    </>
                                  ) : m.fine > 0 && (
-                                   <span className="px-3 py-1.5 bg-rose-50 text-rose-600 text-[10px] font-black rounded-xl border border-rose-200 shadow-sm">
+                                   <span className="px-2.5 py-1 bg-rose-50 text-rose-600 text-[10px] font-black rounded-xl border border-rose-200 shadow-sm">
                                      -{m.fine.toLocaleString()}đ
                                    </span>
                                  )}
@@ -673,10 +674,10 @@ export default function BookingAndRehearsalManager() {
                             </div>
                           ))}
                         </div>
-                        {user?.role === 'admin' && (
-                          <div className="mt-6 flex justify-end">
-                             <button onClick={() => saveRehearsalAttendance(item._id)} className="flex items-center gap-1.5 bg-slate-900 text-white px-6 py-2.5 rounded-xl font-black text-xs shadow-md hover:bg-black transition transform active:scale-95 tracking-wide">
-                               <Save size={15}/> LƯU BẢNG ĐIỂM DANH
+                        {canManageShows && (
+                          <div className="mt-5 flex justify-end">
+                             <button onClick={() => saveRehearsalAttendance(item._id)} className="flex items-center gap-1.5 bg-slate-900 text-white px-5 py-2 rounded-xl font-black text-xs shadow-md hover:bg-black transition transform active:scale-95 tracking-wide">
+                               <Save size={14}/> LƯU BẢNG ĐIỂM DANH
                              </button>
                           </div>
                         )}

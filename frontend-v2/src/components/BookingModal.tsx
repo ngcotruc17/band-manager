@@ -42,10 +42,12 @@ interface BookingModalProps {
 }
 
 const EVENT_TYPES = [
-  "Đám cưới / Tiệc cưới",
+  "Sự kiện Trường ĐH FPT / Khai Giảng - Tốt Nghiệp",
+  "Sự kiện Bộ Môn / Hội Thảo / Workshop",
+  "Sự kiện Phòng CTSV / Phong Trào Sinh Viên",
+  "Sự kiện Doanh Nghiệp / Đối Tác",
+  "Đám cưới / Tiệc mừng",
   "Sinh nhật / Kỷ niệm",
-  "Sự kiện FPTU / Đại học",
-  "Sự kiện doanh nghiệp",
   "Hội trường / Liên hoan",
   "Bar / Pub / Lounge",
   "Ngoài trời / Acoustic",
@@ -57,29 +59,29 @@ export default function BookingModal({ isOpen, onClose, onSave, formData, handle
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-[70] flex items-center justify-center p-4 animate-fade-in">
+    <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-[70] flex items-center justify-center p-2.5 sm:p-4 animate-fade-in overflow-x-hidden">
       {/* 🍏 iOS / OneUI Fluid Frosted Glass Modal */}
-      <div className="bg-white/95 backdrop-blur-3xl rounded-[2rem] w-full max-w-2xl shadow-[0_25px_60px_-15px_rgba(15,23,42,0.25)] overflow-hidden border border-white/80 animate-slide-up">
+      <div className="bg-white/95 backdrop-blur-3xl rounded-3xl sm:rounded-[2rem] w-full max-w-[calc(100vw-1.25rem)] sm:max-w-2xl shadow-[0_25px_60px_-15px_rgba(15,23,42,0.25)] overflow-hidden border border-white/80 animate-slide-up">
         
         {/* Header */}
-        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+        <div className="p-4 sm:p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
           <div className="text-left">
-            <h3 className="text-xl font-black text-slate-900 flex items-center gap-2.5 tracking-tight">
+            <h3 className="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-2.5 tracking-tight">
               {editingId
                 ? <><Edit className="text-[#F27024]" size={20}/> Cập nhật Show Diễn</>
-                : <><Plus className="text-[#F27024]" size={20}/> Tạo Booking Show Mới</>}
+                : <><Plus className="text-[#F27024]" size={20}/> Đặt Lịch FPTU Band (Book Show)</>}
             </h3>
-            <p className="text-xs text-slate-500 font-medium mt-1">Lên lịch trình FPTU Band, thông tin khách hàng & phân bổ cát-xê</p>
+            <p className="text-xs text-slate-500 font-medium mt-1">Trực thuộc Bộ môn & Phòng CTSV Trường ĐH FPT Phân hiệu TP.HCM</p>
           </div>
           <button 
             onClick={onClose} 
-            className="p-2 bg-white border border-slate-200/80 rounded-full text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all shadow-2xs cursor-pointer"
+            className="p-2 bg-white border border-slate-200/80 rounded-full text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all shadow-2xs cursor-pointer shrink-0"
           >
             <X size={18}/>
           </button>
         </div>
 
-        <div className="p-6 space-y-4 max-h-[72vh] overflow-y-auto">
+        <div className="p-4 sm:p-6 space-y-4 max-h-[72vh] overflow-y-auto">
 
           {/* Tên show & Khách hàng */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
