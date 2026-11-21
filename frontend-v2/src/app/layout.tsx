@@ -43,22 +43,22 @@ export default function RootLayout({
 
         <AuthProvider>
           <AudioProvider>
+            <Toaster 
+              position="bottom-right" 
+              toastOptions={{
+                style: {
+                  background: 'rgba(255, 255, 255, 0.85)',
+                  backdropFilter: 'blur(20px)',
+                  color: '#0f172a',
+                  border: '1px solid rgba(255, 255, 255, 0.8)',
+                  borderRadius: '1rem',
+                  fontWeight: 700,
+                  fontSize: '0.8125rem',
+                  boxShadow: '0 12px 30px -5px rgba(15, 23, 42, 0.12)'
+                }
+              }}
+            />
             <ProtectedRoute>
-              <Toaster 
-                position="bottom-right" 
-                toastOptions={{
-                  style: {
-                    background: 'rgba(255, 255, 255, 0.85)',
-                    backdropFilter: 'blur(20px)',
-                    color: '#0f172a',
-                    border: '1px solid rgba(255, 255, 255, 0.8)',
-                    borderRadius: '1rem',
-                    fontWeight: 700,
-                    fontSize: '0.8125rem',
-                    boxShadow: '0 12px 30px -5px rgba(15, 23, 42, 0.12)'
-                  }
-                }}
-              />
               <AppShell>{children}</AppShell>
             </ProtectedRoute>
           </AudioProvider>

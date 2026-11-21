@@ -5,6 +5,17 @@ import Transaction from '../models/Transaction';
 import BankWebhookLog from '../models/BankWebhookLog';
 import { SocketService } from '../services/socket.service';
 import { AuthenticatedRequest } from '../middleware/auth';
+import { calculateSalarySplit } from '../utils/salary';
+
+const handleFinanceError = (res: Response, error: any, defaultMessage = "Không tìm thấy giao dịch (ID không hợp lệ)") => {
+  if (error?.name === 'CastError' || error?.kind === 'ObjectId') {
+    return res.status(404).json({ success: false, message: defaultMessage });
+  }
+  if (error?.name === 'ValidationError') {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+  return res.status(500).json({ message: error.message });
+};
 
 export const handleBankWebhook = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -28,8 +39,16 @@ export const handleBankWebhook = async (req: Request, res: Response): Promise<vo
     }
 
 
-    if (!transactionId || !amount || !content) {
+    const rawAmount = amount !== undefined ? amount : req.body.transferAmount;
+    if (!transactionId || rawAmount === undefined || rawAmount === null || rawAmount === '' || !content) {
        res.status(400).json({ message: "Thiếu thông tin giao dịch bắt buộc" });
+       return;
+    }
+
+    // 🛡️ Làm sạch và chuẩn hóa số tiền giao dịch, ngăn chặn triệt để lỗi NaN
+    const parsedAmount = Number(String(rawAmount).replace(/[^0-9.-]/g, ''));
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+       res.status(400).json({ message: "Số tiền giao dịch không hợp lệ" });
        return;
     }
 
@@ -44,7 +63,7 @@ export const handleBankWebhook = async (req: Request, res: Response): Promise<vo
     const webhookLog = new BankWebhookLog({
       transactionId,
       gateway,
-      amount: Number(amount),
+      amount: parsedAmount,
       content,
       senderAccount,
       senderName,
@@ -52,13 +71,14 @@ export const handleBankWebhook = async (req: Request, res: Response): Promise<vo
       rawPayload: req.body
     });
 
-    // 3. Phân tích nội dung chuyển khoản để nhận dạng mã
+    // 3. Phân tích nội dung chuyển khoản để nhận dạng mã (chuẩn hoá bỏ dấu tiếng Việt)
     const cleanContent = content.toUpperCase().replace(/[-_]/g, ' ');
+    const normalized = cleanContent.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     
     // Tìm mã SHOW: Cú pháp "SHOW [SHOW_ID]" hoặc "SHOW[SHOW_ID]"
-    const showMatch = cleanContent.match(/SHOW\s*([A-F0-9]{24})/i);
+    const showMatch = normalized.match(/SHOW\s*([A-F0-9]{24})/i);
     // Tìm mã PHAT: Cú pháp "PHAT [USER_ID]" hoặc "PHAT[USER_ID]"
-    const fineMatch = cleanContent.match(/PHAT\s*([A-F0-9]{24})/i);
+    const fineMatch = normalized.match(/PHAT\s*([A-F0-9]{24})/i);
 
     if (showMatch) {
       const showId = showMatch[1].toLowerCase();
@@ -66,15 +86,89 @@ export const handleBankWebhook = async (req: Request, res: Response): Promise<vo
       
       if (show) {
         // Cập nhật tình trạng đối soát của Show diễn
-        show.bankReconciliation.actualReceived += Number(amount);
+        show.bankReconciliation.actualReceived += parsedAmount;
         show.bankReconciliation.transactions.push(transactionId);
         
         // Nếu tổng nhận >= giá trị show diễn, tự động đánh dấu đã thanh toán xong
         if (show.bankReconciliation.actualReceived >= show.price) {
           show.bankReconciliation.isPaid = true;
-          // Tự động chốt show luôn nếu khách đã thanh toán đủ
+          // Tự động chốt show luôn nếu khách đã thanh toán đủ và kích hoạt chia cát-xê
           if (show.status === 'confirmed') {
             show.status = 'completed';
+
+            // Kích hoạt tính toán chia cát-xê tự động
+            await show.populate('participants.user');
+            const approvedParticipants = show.participants.filter(p => p.status === 'approved');
+
+            const roleMultipliers: Record<string, number> = {};
+            if (show.payoutMatrix?.roleMultipliers) {
+              for (const rm of show.payoutMatrix.roleMultipliers) {
+                roleMultipliers[rm.instrument] = rm.multiplier;
+              }
+            }
+
+            const allowances = (show.payoutMatrix?.allowances || []).map(a => ({
+              id: (a.user as any)?._id ? (a.user as any)._id.toString() : a.user.toString(),
+              amount: a.amount
+            }));
+
+            const members = approvedParticipants.map(p => ({
+              id: ((p.user as any)?._id || p.user).toString(),
+              role: p.role || (p.user as any)?.instrument || ''
+            }));
+
+            const bandFundPercent = show.payoutMatrix?.bandFundPercent !== undefined ? show.payoutMatrix.bandFundPercent : 5;
+
+            const splitResult = calculateSalarySplit({
+              totalPrice: show.price,
+              bandFundPercent,
+              members,
+              roleMultipliers,
+              allowances
+            });
+
+            const memberPayoutList = approvedParticipants.map(p => {
+              const uid = ((p.user as any)?._id || p.user).toString();
+              return {
+                user: (p.user as any)?._id || p.user,
+                amount: splitResult.memberPayouts[uid] || 0
+              };
+            });
+
+            const avgMemberAmount = approvedParticipants.length > 0 
+              ? Math.round(splitResult.remainingPool / approvedParticipants.length) 
+              : 0;
+
+            show.salarySplit = {
+              totalPrice: splitResult.totalPrice,
+              bandFundPercent,
+              bandFundAmount: splitResult.bandFundAmount,
+              memberAmount: avgMemberAmount,
+              members: memberPayoutList
+            };
+
+            // Chi cát-xê cho từng thành viên và tăng số dư ví
+            for (const p of approvedParticipants) {
+              const uid = ((p.user as any)?._id || p.user).toString();
+              const payout = splitResult.memberPayouts[uid] || 0;
+              if (payout > 0 && p.user) {
+                const expenseTrans = new Transaction({
+                  title: `[Tự động] Cát-xê ${(p.user as any).fullName || 'Thành viên'} - Show: ${show.title}`,
+                  amount: -payout,
+                  type: 'expense',
+                  category: 'show',
+                  showId: show._id,
+                  performedBy: (p.user as any)._id || p.user,
+                  webhookLogId: webhookLog._id,
+                  isAutoReconciled: true,
+                  paymentStatus: 'success'
+                });
+                await expenseTrans.save();
+
+                // Cập nhật số dư ví
+                await User.findByIdAndUpdate(uid, { $inc: { walletBalance: payout } });
+              }
+            }
           }
         }
         await show.save();
@@ -82,7 +176,7 @@ export const handleBankWebhook = async (req: Request, res: Response): Promise<vo
         // Tạo giao dịch tài chính hệ thống
         const showTransaction = new Transaction({
           title: `[Tự động] Thanh toán khách hàng - Show: ${show.title}`,
-          amount: Number(amount),
+          amount: parsedAmount,
           type: 'income',
           category: 'show',
           showId: show._id,
@@ -104,8 +198,8 @@ export const handleBankWebhook = async (req: Request, res: Response): Promise<vo
           type: 'show',
           showId: show._id,
           title: show.title,
-          amount: Number(amount),
-          message: `💵 Hệ thống đối soát thành công: Show "${show.title}" đã nhận được ${Number(amount).toLocaleString('vi-VN')}đ.`
+          amount: parsedAmount,
+          message: `💵 Hệ thống đối soát thành công: Show "${show.title}" đã nhận được ${parsedAmount.toLocaleString('vi-VN')}đ.`
         });
 
          res.status(200).json({ 
@@ -124,16 +218,16 @@ export const handleBankWebhook = async (req: Request, res: Response): Promise<vo
 
       if (user) {
         // Tăng tổng tiền đóng phạt thực tế của thành viên
-        user.totalFinePaid += Number(amount);
+        user.totalFinePaid += parsedAmount;
         // Tự động cộng số dư ví tương ứng nếu họ nộp phạt bằng tiền túi ngoài ví
         // Hoặc trừ trực tiếp trong ví nếu ví bị âm
-        user.walletBalance += Number(amount);
+        user.walletBalance += parsedAmount;
         await user.save();
 
         // Ghi nhận giao dịch đóng phạt vào Quỹ chung của band
         const fineTransaction = new Transaction({
           title: `[Tự động] Đóng phạt quỹ chuyên cần - Thành viên: ${user.fullName}`,
-          amount: Number(amount),
+          amount: parsedAmount,
           type: 'income',
           category: 'fine',
           performedBy: user._id,
@@ -153,8 +247,8 @@ export const handleBankWebhook = async (req: Request, res: Response): Promise<vo
           type: 'fine',
           userId: user._id,
           userName: user.fullName,
-          amount: Number(amount),
-          message: `💸 Thành viên ${user.fullName} đã đóng phạt ${Number(amount).toLocaleString('vi-VN')}đ thành công.`
+          amount: parsedAmount,
+          message: `💸 Thành viên ${user.fullName} đã đóng phạt ${parsedAmount.toLocaleString('vi-VN')}đ thành công.`
         });
 
          res.status(200).json({ 
@@ -228,7 +322,7 @@ export const deleteTransaction = async (req: AuthenticatedRequest, res: Response
     await Transaction.findByIdAndDelete(req.params.id);
     res.json({ message: 'Đã xóa' });
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    handleFinanceError(res, error);
   }
 };
 

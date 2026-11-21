@@ -1,11 +1,11 @@
 import React from "react";
-import { Edit, Plus, X, Calendar, Clock, MapPin, DollarSign, User, Phone, Music, Users, Shirt, Tag, FileText, ChevronDown } from "lucide-react";
+import { Edit, Plus, X, Calendar, Clock, MapPin, DollarSign, User, Phone, Music, Users, Shirt, Tag, FileText, ChevronDown, Loader } from "lucide-react";
 
 interface InputGroupProps {
   label: string;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
   name: string;
-  value: any;
+  value?: string | number;
   type?: string;
   placeholder?: string;
   required?: boolean;
@@ -21,7 +21,7 @@ const InputGroup = ({ label, icon: Icon, name, value, type = "text", placeholder
       </div>
       <input
         name={name}
-        value={value}
+        value={value ?? ""}
         onChange={onChange}
         type={type}
         required={required}
@@ -32,13 +32,31 @@ const InputGroup = ({ label, icon: Icon, name, value, type = "text", placeholder
   </div>
 );
 
+export interface BookingFormData {
+  title?: string;
+  customerName?: string;
+  eventType?: string;
+  phone?: string;
+  date?: string;
+  time?: string;
+  location?: string;
+  memberCount?: number | string;
+  dresscode?: string;
+  price?: number | string;
+  deposit?: number | string;
+  extraFee?: number | string;
+  notes?: string;
+  [key: string]: unknown;
+}
+
 interface BookingModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: () => void;
-  formData: any;
+  formData: BookingFormData;
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
   editingId: string | null;
+  isSaving?: boolean;
 }
 
 const EVENT_TYPES = [
@@ -55,7 +73,7 @@ const EVENT_TYPES = [
   "Khác"
 ];
 
-export default function BookingModal({ isOpen, onClose, onSave, formData, handleChange, editingId }: BookingModalProps) {
+export default function BookingModal({ isOpen, onClose, onSave, formData, handleChange, editingId, isSaving }: BookingModalProps) {
   if (!isOpen) return null;
 
   return (
@@ -66,7 +84,7 @@ export default function BookingModal({ isOpen, onClose, onSave, formData, handle
         {/* Header */}
         <div className="p-4 sm:p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
           <div className="text-left">
-            <h3 className="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-2.5 tracking-tight">
+            <h3 className="text-lg sm:xl font-black text-slate-900 flex items-center gap-2.5 tracking-tight">
               {editingId
                 ? <><Edit className="text-[#F27024]" size={20}/> Cập nhật Show Diễn</>
                 : <><Plus className="text-[#F27024]" size={20}/> Đặt Lịch FPTU Band (Book Show)</>}
@@ -86,7 +104,7 @@ export default function BookingModal({ isOpen, onClose, onSave, formData, handle
           {/* Tên show & Khách hàng */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
             <InputGroup label="Tên Show diễn *" icon={Music} name="title" value={formData.title} onChange={handleChange} placeholder="VD: Đêm nhạc FPTU Open Day..." required/>
-            <InputGroup label="Tên khách hàng / Đơn vị" icon={User} name="customerName" value={formData.customerName} onChange={handleChange} placeholder="Người liên hệ chính / Ban tổ chức"/>
+            <InputGroup label="Tên khách hàng / Đơn vị *" icon={User} name="customerName" value={formData.customerName} onChange={handleChange} placeholder="Người liên hệ chính / Ban tổ chức" required/>
           </div>
 
           {/* Loại sự kiện */}
@@ -115,11 +133,11 @@ export default function BookingModal({ isOpen, onClose, onSave, formData, handle
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
             <InputGroup label="SĐT Khách" icon={Phone} name="phone" value={formData.phone} onChange={handleChange} placeholder="090..."/>
             <InputGroup label="Ngày diễn *" icon={Calendar} name="date" value={formData.date} onChange={handleChange} type="date" required/>
-            <InputGroup label="Giờ diễn" icon={Clock} name="time" value={formData.time} onChange={handleChange} type="time"/>
+            <InputGroup label="Giờ diễn *" icon={Clock} name="time" value={formData.time} onChange={handleChange} type="time" required/>
           </div>
 
           {/* Địa điểm */}
-          <InputGroup label="Địa điểm chính xác" icon={MapPin} name="location" value={formData.location} onChange={handleChange} placeholder="Sảnh Alpha FPTU, Hội trường, Nhà hàng..."/>
+          <InputGroup label="Địa điểm chính xác *" icon={MapPin} name="location" value={formData.location} onChange={handleChange} placeholder="Sảnh Alpha FPTU, Hội trường, Nhà hàng..." required/>
 
           {/* Số thành viên & Dress code */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
@@ -129,7 +147,7 @@ export default function BookingModal({ isOpen, onClose, onSave, formData, handle
 
           {/* Tài chính */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 bg-orange-50/50 rounded-2xl border border-orange-200/70">
-            <InputGroup label="Cát-xê / người" icon={DollarSign} name="price" value={formData.price} onChange={handleChange} type="number" placeholder="0"/>
+            <InputGroup label="Cát-xê / người *" icon={DollarSign} name="price" value={formData.price} onChange={handleChange} type="number" placeholder="0" required/>
             <InputGroup label="Tiền đã cọc" icon={DollarSign} name="deposit" value={formData.deposit} onChange={handleChange} type="number" placeholder="0"/>
             <InputGroup label="Phụ phí khác" icon={DollarSign} name="extraFee" value={formData.extraFee} onChange={handleChange} type="number" placeholder="0"/>
           </div>
@@ -160,9 +178,13 @@ export default function BookingModal({ isOpen, onClose, onSave, formData, handle
           </button>
           <button 
             onClick={onSave} 
-            className="px-8 py-2.5 rounded-xl font-extrabold text-xs bg-[#F27024] hover:bg-[#EA580C] text-white shadow-md shadow-[#F27024]/25 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+            disabled={isSaving}
+            className={`px-8 py-2.5 rounded-xl font-extrabold text-xs bg-[#F27024] hover:bg-[#EA580C] text-white shadow-md shadow-[#F27024]/25 transition-all flex items-center justify-center gap-2 ${
+              isSaving ? "opacity-60 cursor-not-allowed" : "hover:scale-105 active:scale-95 cursor-pointer"
+            }`}
           >
-            {editingId ? "Lưu thay đổi" : "Xác nhận tạo"}
+            {isSaving && <Loader className="animate-spin" size={14} />}
+            {isSaving ? "Đang lưu..." : (editingId ? "Lưu thay đổi" : "Xác nhận tạo")}
           </button>
         </div>
       </div>

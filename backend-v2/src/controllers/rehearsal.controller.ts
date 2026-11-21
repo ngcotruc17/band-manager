@@ -6,6 +6,17 @@ import { sendNewRehearsalEmail } from '../utils/sendEmail';
 import { AuthenticatedRequest } from '../middleware/auth';
 import { NotificationService } from '../services/notification.service';
 import { SocketService } from '../services/socket.service';
+import { calculateDistanceMeters } from '../utils/geo';
+
+const handleRehearsalError = (res: Response, error: any, defaultMessage = "Không tìm thấy lịch tập (ID không hợp lệ)") => {
+  if (error?.name === 'CastError' || error?.kind === 'ObjectId') {
+    return res.status(404).json({ success: false, message: defaultMessage });
+  }
+  if (error?.name === 'ValidationError') {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+  return res.status(500).json({ message: error.message });
+};
 
 export const getRehearsals = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
@@ -36,7 +47,7 @@ export const getRehearsals = async (req: AuthenticatedRequest, res: Response): P
 
     res.json(rehearsals);
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    handleRehearsalError(res, error);
   }
 };
 
@@ -60,7 +71,7 @@ export const createRehearsal = async (req: AuthenticatedRequest, res: Response):
     sendNewRehearsalEmail(newRehearsal).catch(err => console.error("Lỗi gửi mail lịch tập mới:", err));
     res.status(201).json(newRehearsal);
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    handleRehearsalError(res, error, "Không thể tạo lịch tập do dữ liệu không hợp lệ");
   }
 };
 
@@ -79,7 +90,7 @@ export const updateAttendance = async (req: AuthenticatedRequest, res: Response)
     
     res.json(rehearsal);
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    handleRehearsalError(res, error);
   }
 };
 
@@ -88,7 +99,7 @@ export const deleteRehearsal = async (req: AuthenticatedRequest, res: Response):
     await Rehearsal.findByIdAndDelete(req.params.id);
     res.json({ message: "Đã xóa lịch tập" });
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    handleRehearsalError(res, error);
   }
 };
 
@@ -106,13 +117,13 @@ export const generateQRToken = async (req: AuthenticatedRequest, res: Response):
     );
     res.json({ token });
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    handleRehearsalError(res, error);
   }
 };
 
 export const checkin = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
-    const { token } = req.body;
+    const { token, coords } = req.body;
     if (!token) {
       res.status(400).json({ message: "Thiếu mã check-in token" });
       return;
@@ -127,7 +138,7 @@ export const checkin = async (req: AuthenticatedRequest, res: Response): Promise
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET || 'mat_khau_bi_mat_cua_ban_123456');
     } catch (err) {
-      res.status(401).json({ message: "Mã QR đã hết hạn hoặc không hợp lệ. Vui lòng quét lại!" });
+      res.status(400).json({ success: false, message: "Mã QR đã hết hạn hoặc không hợp lệ. Vui lòng quét lại!" });
       return;
     }
 
@@ -140,6 +151,42 @@ export const checkin = async (req: AuthenticatedRequest, res: Response): Promise
     if (!rehearsal) {
       res.status(404).json({ message: "Không tìm thấy lịch tập" });
       return;
+    }
+
+    // 📍 Kiểm tra khoảng cách GPS nếu phòng tập có thiết lập toạ độ
+    if (
+      rehearsal.gpsLocation &&
+      typeof rehearsal.gpsLocation.latitude === 'number' &&
+      typeof rehearsal.gpsLocation.longitude === 'number'
+    ) {
+      if (
+        !coords ||
+        typeof coords.latitude !== 'number' ||
+        typeof coords.longitude !== 'number'
+      ) {
+        res.status(400).json({
+          success: false,
+          message: "Buổi tập yêu cầu xác thực vị trí GPS. Vui lòng bật định vị trên thiết bị hoặc gửi yêu cầu duyệt thủ công (GPS Bypass)."
+        });
+        return;
+      }
+
+      const allowedRadius = rehearsal.gpsLocation.radius || 30;
+      const distance = calculateDistanceMeters(
+        rehearsal.gpsLocation.latitude,
+        rehearsal.gpsLocation.longitude,
+        coords.latitude,
+        coords.longitude
+      );
+      if (isNaN(distance) || distance > allowedRadius) {
+        res.status(400).json({
+          success: false,
+          message: `Vị trí điểm danh không hợp lệ. Bạn đang ở cách phòng tập ${Math.round(distance || 9999)}m (cho phép tối đa ${allowedRadius}m).`,
+          distance: Math.round(distance || 9999),
+          allowedRadius
+        });
+        return;
+      }
     }
 
     let record = rehearsal.attendance.find(a => a.user && a.user.toString() === req.user?._id.toString());
@@ -180,6 +227,8 @@ export const checkin = async (req: AuthenticatedRequest, res: Response): Promise
     }
 
     record.status = isLate ? 'late' : 'present';
+    record.checkInTime = new Date();
+    record.method = 'qr';
     if (isLate) {
       record.fine = 50000; // Phạt đi trễ 50k
     } else {
@@ -194,7 +243,7 @@ export const checkin = async (req: AuthenticatedRequest, res: Response): Promise
       fine: record.fine
     });
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    handleRehearsalError(res, error);
   }
 };
 
@@ -244,7 +293,7 @@ export const getLeaderboard = async (req: AuthenticatedRequest, res: Response): 
       fineLeaderboard
     });
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    handleRehearsalError(res, error);
   }
 };
 
@@ -282,6 +331,6 @@ export const requestGPSBypass = async (req: AuthenticatedRequest, res: Response)
 
     res.json({ message: "Yêu cầu duyệt báo danh thủ công đã được gửi tới Ban quản trị!" });
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    handleRehearsalError(res, error);
   }
 };

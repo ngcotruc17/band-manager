@@ -43,6 +43,14 @@ export const updateProfile = async (req: AuthenticatedRequest, res: Response): P
     });
     
   } catch (error: any) {
+    if (error?.name === 'CastError' || error?.kind === 'ObjectId') {
+      res.status(404).json({ success: false, message: "Không tìm thấy người dùng (ID không hợp lệ)" });
+      return;
+    }
+    if (error?.name === 'ValidationError') {
+      res.status(400).json({ success: false, message: error.message });
+      return;
+    }
     res.status(500).json({ message: error.message });
   }
 };

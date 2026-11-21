@@ -1,16 +1,17 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import User from '../models/User';
 import { NotificationService } from '../services/notification.service';
 import { AuthenticatedRequest } from '../middleware/auth';
 
-const generateToken = (id: any): string => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'mat_khau_bi_mat_cua_ban_123456', { expiresIn: '30d' });
+export const generateToken = (id: any, tokenVersion: number = 0): string => {
+  return jwt.sign({ id, tokenVersion }, process.env.JWT_SECRET || 'mat_khau_bi_mat_cua_ban_123456', { expiresIn: '30d' });
 };
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { fullName, username, password, email, phone, role } = req.body;
+    const { fullName, username, password, email, phone, role, instrument } = req.body;
     if (!fullName || !username || !password) {
        res.status(400).json({ message: "Vui lòng nhập đủ: Họ tên, Username, Mật khẩu" });
        return;
@@ -34,7 +35,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       email: email || undefined,
       phone: phone || "",
       password,
-      role: assignedRole
+      role: assignedRole,
+      instrument: instrument && typeof instrument === 'string' ? instrument.trim() : 'Chưa phân công'
     });
     
     if (user) {
@@ -51,7 +53,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         username: user.username,
         email: user.email,
         role: user.role,
-        token: generateToken(user._id),
+        token: generateToken(user._id, user.tokenVersion ?? 0),
       });
     } else {
       res.status(400).json({ message: "Dữ liệu không hợp lệ" });
@@ -64,27 +66,82 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const { username, password } = req.body;
+    if (!username || typeof username !== 'string' || !password || typeof password !== 'string' || !username.trim() || !password.trim()) {
+      res.status(400).json({ success: false, message: "Tên đăng nhập và mật khẩu phải là chuỗi ký tự hợp lệ!" });
+      return;
+    }
     const user = await User.findOne({ $or: [{ username }, { email: username }] });
     if (!user) {
        res.status(400).json({ message: "Sai thông tin tên đăng nhập hoặc email" });
+       return;
+    }
+    if (user.status === 'banned') {
+       res.status(403).json({ success: false, message: 'Tài khoản của bạn đã bị khóa' });
        return;
     }
     if (!user.isApproved && user.role !== 'admin' && user.role !== 'system') {
        res.status(403).json({ message: "Tài khoản của bạn chưa được duyệt hoạt động!" });
        return;
     }
+
+    // --- R1: Check Account Lockout ---
+    const now = Date.now();
+    if (user.lockUntil && new Date(user.lockUntil).getTime() > now) {
+      const lockDate = new Date(user.lockUntil);
+      const pad = (n: number) => n.toString().padStart(2, '0');
+      const timeStr = `${pad(lockDate.getHours())}:${pad(lockDate.getMinutes())}:${pad(lockDate.getSeconds())}`;
+      res.status(429).json({
+        success: false,
+        message: `Tài khoản bị tạm khóa đến [${timeStr}] do nhập sai mật khẩu quá 5 lần`
+      });
+      return;
+    }
+
     const isMatch = await user.matchPassword(password); 
     if (!isMatch) {
-       res.status(400).json({ message: "Mật khẩu không chính xác" });
-       return;
+      // If previous lock has expired, reset counter before incrementing
+      let attempts = user.failedLoginAttempts || 0;
+      if (user.lockUntil && new Date(user.lockUntil).getTime() <= now) {
+        attempts = 0;
+      }
+      attempts += 1;
+      user.failedLoginAttempts = attempts;
+
+      if (attempts >= 5) {
+        const lockUntilDate = new Date(now + 15 * 60 * 1000); // 15 minutes lockout
+        user.lockUntil = lockUntilDate;
+        await user.save();
+
+        const pad = (n: number) => n.toString().padStart(2, '0');
+        const timeStr = `${pad(lockUntilDate.getHours())}:${pad(lockUntilDate.getMinutes())}:${pad(lockUntilDate.getSeconds())}`;
+        res.status(429).json({
+          success: false,
+          message: `Tài khoản bị tạm khóa đến [${timeStr}] do nhập sai mật khẩu quá 5 lần`
+        });
+        return;
+      } else {
+        user.lockUntil = null;
+        await user.save();
+        res.status(400).json({
+          success: false,
+          message: "Mật khẩu không chính xác",
+          failedLoginAttempts: attempts
+        });
+        return;
+      }
     }
     
+    // --- R1: Reset lockout counter and lockUntil on successful login ---
+    user.failedLoginAttempts = 0;
+    user.lockUntil = null;
+    await user.save();
+
     res.json({
       _id: user._id,
       username: user.username,
       fullName: user.fullName,
       role: user.role,
-      token: generateToken(user._id),
+      token: generateToken(user._id, user.tokenVersion ?? 0),
       mustChangePassword: user.mustChangePassword
     });
   } catch (error: any) {
@@ -92,29 +149,112 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+export const generateRandomPassword = (length = 8): string => {
+  const uppers = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  const lowers = 'abcdefghjkmnpqrstuvwxyz';
+  const numbers = '23456789';
+  const all = uppers + lowers + numbers;
+
+  const bytes = crypto.randomBytes(length);
+  const pwd = [
+    uppers[bytes[0] % uppers.length],
+    lowers[bytes[1] % lowers.length],
+    numbers[bytes[2] % numbers.length],
+  ];
+  for (let i = 3; i < length; i++) {
+    pwd.push(all[bytes[i] % all.length]);
+  }
+  for (let i = pwd.length - 1; i > 0; i--) {
+    const j = bytes[i % bytes.length] % (i + 1);
+    [pwd[i], pwd[j]] = [pwd[j], pwd[i]];
+  }
+  return pwd.join('');
+};
+
 export const adminCreateUser = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { fullName, email, role, instrument } = req.body; 
-    if (!email || !fullName) {
-       res.status(400).json({ message: "Vui lòng nhập Email và Họ tên" });
+    const { fullName, email, username, phone, role, instrument } = req.body; 
+    if (!fullName || !fullName.trim()) {
+       res.status(400).json({ message: "Vui lòng nhập Họ và tên thành viên" });
        return;
     }
-    const username = email.split('@')[0];
+
+    // Phân vai: sinh viên, giảng viên, quản trị viên, v.v.
+    const validRoles = ['admin', 'manager', 'staff', 'lecturer', 'student', 'member'];
+    const assignedRole = role && validRoles.includes(role) ? role : 'student';
+
+    // Tạo username nếu chưa có
+    let chosenUsername = username?.trim();
+    if (!chosenUsername) {
+      if (email && email.includes('@')) {
+        chosenUsername = email.split('@')[0].trim().toLowerCase();
+      } else {
+        chosenUsername = fullName
+          .trim()
+          .toLowerCase()
+          .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]/g, "");
+      }
+    }
+    if (!chosenUsername) {
+      chosenUsername = `user${Math.floor(1000 + Math.random() * 9000)}`;
+    }
+
+    // Đảm bảo username không trùng lặp
+    let finalUsername = chosenUsername;
+    let counter = 1;
+    while (await User.findOne({ username: finalUsername })) {
+      finalUsername = `${chosenUsername}${Math.floor(100 + Math.random() * 900)}`;
+      counter++;
+      if (counter > 10) {
+        finalUsername = `${chosenUsername}_${Date.now().toString().slice(-4)}`;
+        break;
+      }
+    }
+
+    // Kiểm tra email nếu có
+    if (email && email.trim()) {
+      const emailExists = await User.findOne({ email: email.trim().toLowerCase() });
+      if (emailExists) {
+        res.status(400).json({ message: "Email này đã được sử dụng bởi thành viên khác!" });
+        return;
+      }
+    }
+
+    // Cấp mật khẩu ngẫu nhiên an toàn (8 ký tự)
+    const rawPassword = generateRandomPassword(8);
+
     const user = new User({
-      username,
-      email,
-      password: "123456",
-      fullName,
-      role: role || 'member',
-      instrument: instrument || 'Chưa phân công',
+      username: finalUsername,
+      email: email && email.trim() ? email.trim().toLowerCase() : undefined,
+      phone: phone ? phone.trim() : "",
+      password: rawPassword, // Được băm qua pre('save') bằng bcrypt
+      fullName: fullName.trim(),
+      role: assignedRole,
+      instrument: instrument ? instrument.trim() : 'Chưa phân công',
       mustChangePassword: true,
       status: 'active',
       isApproved: true
     });
+
     await user.save();
-    res.status(201).json(user);
+
+    res.status(201).json({
+      _id: user._id,
+      fullName: user.fullName,
+      username: user.username,
+      email: user.email,
+      phone: user.phone,
+      role: user.role,
+      instrument: user.instrument,
+      mustChangePassword: user.mustChangePassword,
+      status: user.status,
+      isApproved: user.isApproved,
+      tempPassword: rawPassword,
+      message: "Tạo tài khoản thành viên thành công!"
+    });
   } catch (e: any) {
-    res.status(500).json({ message: e.message });
+    res.status(500).json({ message: "Lỗi tạo tài khoản: " + e.message });
   }
 };
 
@@ -125,6 +265,10 @@ export const changePasswordFirstTime = async (req: AuthenticatedRequest, res: Re
        res.status(401).json({ message: "Không tìm thấy người dùng" });
        return;
     }
+    if (!newPassword || newPassword.length < 6) {
+       res.status(400).json({ message: "Mật khẩu mới phải có tối thiểu 6 ký tự!" });
+       return;
+    }
     const user = await User.findById(req.user._id);
     if (!user) {
        res.status(404).json({ message: "Không tìm thấy tài khoản" });
@@ -132,6 +276,7 @@ export const changePasswordFirstTime = async (req: AuthenticatedRequest, res: Re
     }
     user.password = newPassword; 
     user.mustChangePassword = false; 
+    user.tokenVersion = (user.tokenVersion || 0) + 1; // R3: Invalidate previous tokens
     await user.save();
     res.json({ message: "Đổi mật khẩu thành công!" });
   } catch (error: any) {
@@ -168,11 +313,18 @@ export const resetUserPassword = async (req: Request, res: Response): Promise<vo
        res.status(404).json({ message: "Không tìm thấy người dùng" });
        return;
     }
-    user.password = "123456"; 
+    const rawPassword = generateRandomPassword(8);
+    user.password = rawPassword; 
     user.mustChangePassword = true; 
     user.isApproved = true; 
+    user.tokenVersion = (user.tokenVersion || 0) + 1; // R3: Invalidate previous tokens
     await user.save(); 
-    res.json({ message: `Đã reset mật khẩu của ${user.fullName}` });
+    res.json({ 
+      message: `Đã reset mật khẩu của ${user.fullName}`,
+      tempPassword: rawPassword,
+      username: user.username,
+      fullName: user.fullName
+    });
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
@@ -180,7 +332,7 @@ export const resetUserPassword = async (req: Request, res: Response): Promise<vo
 
 export const approveUser = async (req: Request, res: Response): Promise<void> => {
   try {
-    const user = await User.findByIdAndUpdate(req.params.id, { isApproved: true }, { new: true });
+    const user = await User.findByIdAndUpdate(req.params.id, { isApproved: true, status: 'active' }, { new: true });
     if (!user) {
        res.status(404).json({ message: "Không tìm thấy thành viên" });
        return;

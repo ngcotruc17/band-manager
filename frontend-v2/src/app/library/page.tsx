@@ -6,7 +6,7 @@ import { AuthContext } from "../../context/AuthContext";
 import { AudioContext } from "../../context/AudioContext";
 import { 
   Music, UploadCloud, Trash2, Search, FileText, PlayCircle, Plus, X, Headphones, Loader,
-  BookOpen, Printer, Layers, Disc, HelpCircle, ClipboardCheck, ArrowUp, ArrowDown, Copy, Save, ChevronRight,
+  BookOpen, Printer, Layers, HelpCircle, ClipboardCheck, ArrowUp, ArrowDown, Copy, Save,
   Calendar, Check, ChevronDown
 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -65,7 +65,7 @@ export default function SongLibraryAndRepertoire({ defaultSubTab = "library" }: 
         return titleA.localeCompare(titleB);
       });
       setSongs(sortedSongs);
-    } catch (err) { 
+    } catch { 
       toast.error("Không tải được danh sách nhạc"); 
     } finally { 
       setFetchLoading(false); 
@@ -89,7 +89,7 @@ export default function SongLibraryAndRepertoire({ defaultSubTab = "library" }: 
       setUploadFiles({ sheet: null, beat: null });
       setShowUploadModal(false);
       fetchSongs();
-    } catch (err) { 
+    } catch { 
       toast.error("Lỗi upload bài hát"); 
     } finally { 
       setUploadLoading(false); 
@@ -102,7 +102,7 @@ export default function SongLibraryAndRepertoire({ defaultSubTab = "library" }: 
       await api.delete(`/library/${id}`);
       toast.success("Đã xóa");
       fetchSongs();
-    } catch (err) { 
+    } catch { 
       toast.error("Lỗi khi xóa"); 
     }
   };
@@ -116,7 +116,7 @@ export default function SongLibraryAndRepertoire({ defaultSubTab = "library" }: 
   const [selectedShowId, setSelectedShowId] = useState("");
   const [selectedShow, setSelectedShow] = useState<Show | null>(null);
   const [loadingShowDetail, setLoadingShowDetail] = useState(false);
-  const [plannerSetlist, setPlannerSetlist] = useState<any[]>([]);
+  const [plannerSetlist, setPlannerSetlist] = useState<Array<{ _id: string; title: string; link?: string; note?: string }>>([]);
   const [showNotes, setShowNotes] = useState("");
   const [savingSetlist, setSavingSetlist] = useState(false);
   const [plannerSearchTerm, setPlannerSearchTerm] = useState("");
@@ -130,7 +130,7 @@ export default function SongLibraryAndRepertoire({ defaultSubTab = "library" }: 
         .filter((s: Show) => s.status !== "cancelled")
         .sort((a: Show, b: Show) => new Date(a.date).getTime() - new Date(b.date).getTime());
       setShows(activeShows);
-    } catch (err) {
+    } catch {
       toast.error("Lỗi tải danh sách show diễn");
     } finally {
       setLoadingShows(false);
@@ -151,13 +151,13 @@ export default function SongLibraryAndRepertoire({ defaultSubTab = "library" }: 
       const res = await api.get(`/shows/${showId}`);
       setSelectedShow(res.data);
       const dbSetlist = res.data.setlist || [];
-      const formattedSetlist = dbSetlist.map((item: any) => ({
+      const formattedSetlist = dbSetlist.map((item: { _id?: string; title: string; link?: string; note?: string }, idx: number) => ({
         ...item,
-        _id: item._id || `temp_${Math.random().toString(36).substring(2, 11)}`
+        _id: item._id || `setlist_item_${idx}`
       }));
       setPlannerSetlist(formattedSetlist);
       setShowNotes(res.data.notes || "");
-    } catch (err) {
+    } catch {
       toast.error("Lỗi tải chi tiết Show diễn");
     } finally {
       setLoadingShowDetail(false);
@@ -175,7 +175,7 @@ export default function SongLibraryAndRepertoire({ defaultSubTab = "library" }: 
       title: song.title,
       link: song.sheetUrl || song.beatUrl || "",
       note: song.note || "",
-      _id: `temp_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
+      _id: song._id ? `planner_${song._id}` : `planner_${song.title.replace(/\s+/g, "_")}`
     };
 
     setPlannerSetlist([...plannerSetlist, newItem]);
@@ -230,7 +230,7 @@ export default function SongLibraryAndRepertoire({ defaultSubTab = "library" }: 
           notes: showNotes
         });
       }
-    } catch (err) {
+    } catch {
       toast.error("Lỗi khi lưu Setlist");
     } finally {
       setSavingSetlist(false);
@@ -265,8 +265,17 @@ export default function SongLibraryAndRepertoire({ defaultSubTab = "library" }: 
 
   // Nạp dữ liệu ban đầu
   useEffect(() => {
-    fetchSongs();
-    fetchShows();
+    let isCancelled = false;
+    const initData = async () => {
+      await Promise.resolve();
+      if (isCancelled) return;
+      fetchSongs();
+      fetchShows();
+    };
+    initData();
+    return () => {
+      isCancelled = true;
+    };
   }, [user]);
 
   // Bộ lọc cho Kho Beat/Sheet (Tab 1)
@@ -294,7 +303,6 @@ export default function SongLibraryAndRepertoire({ defaultSubTab = "library" }: 
   // Thống kê Repertoire
   const totalSongs = songs.length;
   const songsWithSheet = songs.filter(s => s.sheetUrl).length;
-  const songsWithBeat = songs.filter(s => s.beatUrl).length;
 
   const getMostPopularTone = () => {
     const tones: Record<string, number> = {};
@@ -324,8 +332,9 @@ export default function SongLibraryAndRepertoire({ defaultSubTab = "library" }: 
     if (filePath.startsWith('http')) return filePath;
     const cleanedPath = filePath.startsWith('/') ? filePath.substring(1) : filePath;
     const hostname = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-    const base = (hostname === 'localhost' || hostname === '127.0.0.1') 
-      ? 'http://localhost:5000' 
+    const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || /^(\d{1,3}\.){3}\d{1,3}$/.test(hostname);
+    const base = isLocal 
+      ? `http://${hostname}:5000` 
       : 'https://band-manager-s9tm.onrender.com';
     return `${base}/${cleanedPath}`;
   };

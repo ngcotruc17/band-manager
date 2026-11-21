@@ -5,6 +5,16 @@ import Booking from '../models/Booking';
 import { NotificationService } from '../services/notification.service';
 import { AuthenticatedRequest } from '../middleware/auth';
 
+const handleEventError = (res: Response, error: any, defaultMessage = "Không tìm thấy sự kiện (ID không hợp lệ)") => {
+  if (error?.name === 'CastError' || error?.kind === 'ObjectId') {
+    return res.status(404).json({ success: false, message: defaultMessage });
+  }
+  if (error?.name === 'ValidationError') {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+  return res.status(500).json({ message: error.message });
+};
+
 export const getEvents = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     const events = await Event.find()
@@ -12,7 +22,7 @@ export const getEvents = async (req: AuthenticatedRequest, res: Response): Promi
       .sort({ date: 1 });
     res.json(events);
   } catch (error: any) { 
-    res.status(500).json({ message: error.message }); 
+    handleEventError(res, error); 
   }
 };
 
@@ -30,7 +40,7 @@ export const getEventDetail = async (req: AuthenticatedRequest, res: Response): 
     const songs = await Song.find({ event: req.params.id });
     res.json({ event, songs });
   } catch (error: any) { 
-    res.status(500).json({ message: error.message }); 
+    handleEventError(res, error); 
   }
 };
 
@@ -89,7 +99,7 @@ export const addSongFromLibrary = async (req: AuthenticatedRequest, res: Respons
     res.status(201).json(newSong);
   } catch (error: any) { 
     console.error("Lỗi clone nhạc:", error);
-    res.status(500).json({ message: error.message }); 
+    handleEventError(res, error); 
   }
 };
 
@@ -98,7 +108,7 @@ export const updateEvent = async (req: AuthenticatedRequest, res: Response): Pro
     const updatedEvent = await Event.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json(updatedEvent);
   } catch (error: any) { 
-    res.status(400).json({ message: error.message }); 
+    handleEventError(res, error); 
   }
 };
 
@@ -107,7 +117,7 @@ export const deleteSong = async (req: AuthenticatedRequest, res: Response): Prom
     await Song.findByIdAndDelete(req.params.songId);
     res.json({ message: 'Đã xóa bài hát' });
   } catch (error: any) { 
-    res.status(500).json({ message: error.message }); 
+    handleEventError(res, error); 
   }
 };
 
@@ -146,7 +156,7 @@ export const joinEvent = async (req: AuthenticatedRequest, res: Response): Promi
 
     res.json(event);
   } catch (error: any) { 
-    res.status(500).json({ message: error.message }); 
+    handleEventError(res, error); 
   }
 };
 
@@ -185,7 +195,7 @@ export const togglePerformer = async (req: AuthenticatedRequest, res: Response):
       res.status(404).json({ message: "Thành viên này chưa đăng ký tham gia show" });
     }
   } catch (error: any) { 
-    res.status(500).json({ message: error.message }); 
+    handleEventError(res, error); 
   }
 };
 
@@ -206,6 +216,6 @@ export const deleteEvent = async (req: AuthenticatedRequest, res: Response): Pro
 
     res.json({ message: 'Đã xóa sự kiện' });
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    handleEventError(res, error); 
   }
 };

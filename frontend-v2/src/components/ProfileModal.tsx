@@ -1,30 +1,36 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import api from "../services/api";
-import { X, User, Mail, Phone, Music, Save, Loader, ShieldCheck, Sparkles } from "lucide-react";
+import { X, User, Mail, Phone, Music, Save, Loader } from "lucide-react";
 import toast from "react-hot-toast";
+import { UserProfile } from "../context/AuthContext";
 
 interface ProfileModalProps {
-  user: any;
+  user: UserProfile | null;
   onClose: () => void;
-  onUpdateSuccess: (updatedUser: any) => void;
+  onUpdateSuccess: (updatedUser: Partial<UserProfile>) => void;
 }
 
 export default function ProfileModal({ user, onClose, onUpdateSuccess }: ProfileModalProps) {
-  const [formData, setFormData] = useState({ fullName: "", email: "", phone: "", instrument: "" });
+  const [formData, setFormData] = useState({
+    fullName: user?.fullName || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
+    instrument: user?.instrument || ""
+  });
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (user) {
-      setFormData({
-        fullName: user.fullName || "",
-        email: user.email || "",
-        phone: user.phone || "",
-        instrument: user.instrument || ""
-      });
-    }
-  }, [user]);
+  const [prevUser, setPrevUser] = useState(user);
+  if (user !== prevUser) {
+    setPrevUser(user);
+    setFormData({
+      fullName: user?.fullName || "",
+      email: user?.email || "",
+      phone: user?.phone || "",
+      instrument: user?.instrument || ""
+    });
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,8 +40,9 @@ export default function ProfileModal({ user, onClose, onUpdateSuccess }: Profile
       toast.success("Hồ sơ cá nhân đã được cập nhật thành công!");
       onUpdateSuccess(res.data);
       onClose();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Lỗi cập nhật hồ sơ");
+    } catch (err: unknown) {
+      const errorObj = err as { response?: { data?: { message?: string } } };
+      toast.error(errorObj.response?.data?.message || "Lỗi cập nhật hồ sơ");
     } finally {
       setLoading(false);
     }

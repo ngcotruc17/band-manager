@@ -20,7 +20,10 @@ router.post('/login', login);
 
 // Routes yêu cầu đăng nhập (Authenticated)
 router.get('/me', protect, getMe);
+router.put('/change-password', protect, changePasswordFirstTime);
 router.put('/change-password-first', protect, changePasswordFirstTime);
+router.post('/change-password', protect, changePasswordFirstTime);
+router.post('/change-password-first-time', protect, changePasswordFirstTime);
 
 // Routes yêu cầu quyền Admin
 router.post('/admin-create', protect, admin, adminCreateUser);

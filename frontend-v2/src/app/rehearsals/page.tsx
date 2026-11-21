@@ -4,11 +4,12 @@ import React, { useState, useEffect, useContext } from "react";
 import Link from "next/link";
 import api from "../../services/api";
 import { AuthContext } from "../../context/AuthContext";
+import { calculateFine } from "../../utils/fine";
 import { 
-  Calendar, Clock, MapPin, Music, Plus, CheckCircle, XCircle, 
-  DollarSign, Users, ChevronDown, ChevronUp, Trash2, Save, 
-  Loader, AlertCircle, Camera, X, RefreshCw, QrCode, Copy, Check,
-  ExternalLink, Layers
+  Calendar, Clock, MapPin, Music, Plus, 
+  Users, ChevronDown, ChevronUp, Trash2, Save, 
+  Loader, Camera, X, QrCode, Copy, Check,
+  ExternalLink, Layers, ArrowUpDown, Search
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -38,6 +39,8 @@ export default function RehearsalManagerPage() {
   const canManage = user?.role === "admin" || user?.role === "manager" || user?.role === "staff";
   const [rehearsals, setRehearsals] = useState<RehearsalItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
+  const [searchTerm, setSearchTerm] = useState("");
   
   // Modals
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -58,7 +61,7 @@ export default function RehearsalManagerPage() {
     try {
       const res = await api.get("/rehearsals");
       setRehearsals(res.data || []);
-    } catch (err) {
+    } catch {
       toast.error("Lỗi tải danh sách lịch tập ráp");
     } finally {
       setLoading(false);
@@ -66,7 +69,16 @@ export default function RehearsalManagerPage() {
   };
 
   useEffect(() => {
-    fetchRehearsals();
+    let isCancelled = false;
+    const initData = async () => {
+      await Promise.resolve();
+      if (isCancelled) return;
+      fetchRehearsals();
+    };
+    initData();
+    return () => {
+      isCancelled = true;
+    };
   }, []);
 
   const fetchQRToken = async (rehearsalId: string) => {
@@ -74,7 +86,7 @@ export default function RehearsalManagerPage() {
     try {
       const res = await api.get(`/rehearsals/${rehearsalId}/qr-token`);
       setQrToken(res.data.token);
-    } catch (err) {
+    } catch {
       toast.error("Không thể tạo mã QR điểm danh");
     } finally {
       setQrLoading(false);
@@ -110,7 +122,7 @@ export default function RehearsalManagerPage() {
       setShowCreateModal(false);
       setNewForm({ date: "", time: "", location: "", content: "" });
       fetchRehearsals();
-    } catch (err) {
+    } catch {
       toast.error("Lỗi tạo lịch tập");
     }
   };
@@ -121,7 +133,7 @@ export default function RehearsalManagerPage() {
       await api.delete(`/rehearsals/${id}`);
       toast.success("Đã xóa buổi tập");
       fetchRehearsals();
-    } catch (err) {
+    } catch {
       toast.error("Lỗi xóa buổi tập");
     }
   };
@@ -138,9 +150,7 @@ export default function RehearsalManagerPage() {
   const changeStatus = (memberId: string, newStatus: "pending" | "present" | "late" | "absent") => {
     setEditingAttendance(prev => prev.map(m => {
       if (m.user?._id === memberId || m._id === memberId) {
-        let fine = 0;
-        if (newStatus === "late") fine = 20000;
-        if (newStatus === "absent") fine = 50000;
+        const fine = calculateFine(newStatus);
         return { ...m, status: newStatus, fine };
       }
       return m;
@@ -161,7 +171,7 @@ export default function RehearsalManagerPage() {
       toast.success("Đã lưu bảng điểm danh thành công!");
       fetchRehearsals();
       setExpandedId(null);
-    } catch (err) {
+    } catch {
       toast.error("Lỗi lưu điểm danh");
     } finally {
       setSavingAttendance(false);
@@ -185,6 +195,18 @@ export default function RehearsalManagerPage() {
     if (typeof window === "undefined" || !qrRehearsal || !qrToken) return "";
     return `${window.location.origin}/checkin?rehearsalId=${qrRehearsal._id}&token=${qrToken}`;
   };
+
+  // Sắp xếp Lịch tập ráp (Mặc định: Mới nhất đến cũ nhất)
+  const sortedRehearsals = [...rehearsals]
+    .filter(r => 
+      (r.content || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (r.location || "").toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      const dateA = new Date(a.date).getTime() || 0;
+      const dateB = new Date(b.date).getTime() || 0;
+      return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
+    });
 
   return (
     <div className="max-w-7xl mx-auto px-3.5 sm:px-8 py-4 sm:py-6 space-y-6 w-full max-w-full overflow-x-hidden">
@@ -229,25 +251,63 @@ export default function RehearsalManagerPage() {
         </div>
       </div>
 
+      {/* Toolbar: Tìm kiếm & Sắp xếp Lịch Trình */}
+      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
+        <div className="relative flex-1 min-w-0">
+          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+            <Search size={16} />
+          </div>
+          <input
+            type="text"
+            placeholder="Tìm theo nội dung bài tập, địa điểm..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-slate-200 bg-white shadow-sm focus:ring-2 ring-[#F27024] font-medium outline-none text-slate-800 transition text-xs sm:text-sm"
+          />
+        </div>
+
+        {/* Nút Sắp xếp Lịch trình */}
+        <div className="relative flex items-center shrink-0">
+          <div className="flex items-center gap-1.5 px-3.5 py-2.5 bg-white border border-slate-200 rounded-2xl shadow-sm text-xs font-bold text-slate-700 w-full sm:w-auto justify-between sm:justify-start">
+            <div className="flex items-center gap-1.5">
+              <ArrowUpDown size={15} className="text-[#F27024] shrink-0" />
+              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Sắp xếp:</span>
+            </div>
+            <div className="relative flex items-center">
+              <select
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value as "newest" | "oldest")}
+                className="bg-transparent outline-none cursor-pointer font-bold text-slate-800 text-xs pr-5 appearance-none"
+                title="Sắp xếp danh sách lịch tập"
+              >
+                <option value="newest">Mới nhất trước (Mặc định)</option>
+                <option value="oldest">Cũ nhất trước</option>
+              </select>
+              <ChevronDown size={13} className="text-slate-400 pointer-events-none absolute right-0" />
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Main List */}
       {loading ? (
         <div className="text-center py-24">
           <Loader className="w-8 h-8 text-indigo-600 animate-spin mx-auto mb-3" />
           <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Đang nạp lịch tập...</p>
         </div>
-      ) : rehearsals.length === 0 ? (
+      ) : sortedRehearsals.length === 0 ? (
         <div className="ui-card p-12 text-center space-y-3">
           <div className="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto">
             <Music size={28} />
           </div>
-          <h3 className="font-bold text-base text-slate-800">Chưa có lịch tập ráp nào</h3>
+          <h3 className="font-bold text-base text-slate-800">Không tìm thấy lịch tập ráp nào</h3>
           <p className="text-xs text-slate-500 max-w-sm mx-auto">
-            Admin có thể bấm &quot;Lên Lịch Tập Mới&quot; để thiết lập thời gian, phòng tập và danh sách bài ráp cho anh em.
+            Hãy thử tìm bằng từ khóa khác hoặc bấm &quot;Lên Lịch Tập Mới&quot; để thiết lập buổi tập mới.
           </p>
         </div>
       ) : (
         <div className="space-y-4">
-          {rehearsals.map((item) => {
+          {sortedRehearsals.map((item) => {
             const isExpanded = expandedId === item._id;
             const presentCount = (item.attendance || []).filter(a => a.status === "present").length;
             const lateCount = (item.attendance || []).filter(a => a.status === "late").length;

@@ -16,7 +16,7 @@ router.post('/bank-webhook', handleBankWebhook);
 // Các API nghiệp vụ tài chính ban nhạc
 router.get('/', protect, getTransactions);
 router.post('/', protect, createTransaction);
-router.delete('/:id', protect, deleteTransaction);
+router.delete('/:id', protect, admin, deleteTransaction);
 router.get('/webhooks', protect, admin, getWebhookLogs);
 
 export default router;

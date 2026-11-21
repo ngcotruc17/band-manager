@@ -3,6 +3,16 @@ import Booking from '../models/Booking';
 import Event from '../models/Event';
 import { AuthenticatedRequest } from '../middleware/auth';
 
+const handleBookingError = (res: Response, error: any, defaultMessage = "Không tìm thấy booking (ID không hợp lệ)") => {
+  if (error?.name === 'CastError' || error?.kind === 'ObjectId') {
+    return res.status(404).json({ success: false, message: defaultMessage });
+  }
+  if (error?.name === 'ValidationError') {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+  return res.status(500).json({ message: error.message });
+};
+
 export const getBookings = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     const now = new Date();
@@ -31,7 +41,7 @@ export const getBookings = async (req: AuthenticatedRequest, res: Response): Pro
     const bookings = await Booking.find().sort({ date: -1 });
     res.json(bookings);
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    handleBookingError(res, error);
   }
 };
 
@@ -73,7 +83,7 @@ export const updateStatus = async (req: AuthenticatedRequest, res: Response): Pr
     );
     res.json(booking);
   } catch (error: any) {
-    res.status(400).json({ message: error.message });
+    handleBookingError(res, error);
   }
 };
 
@@ -86,6 +96,6 @@ export const deleteBooking = async (req: AuthenticatedRequest, res: Response): P
     }
     res.json({ message: 'Đã xóa booking và event liên quan' });
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    handleBookingError(res, error);
   }
 };

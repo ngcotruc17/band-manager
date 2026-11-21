@@ -295,8 +295,7 @@ export default function DashboardV2() {
 
       </section>
 
-      {/* 🍏 Grouped Schedules Hub: Unified Shows & Rehearsals with iOS Segmented Control */}
-      {/* 🍏 Grouped Schedules Hub: Unified Shows & Rehearsals with iOS Segmented Control */}
+      {/* Grouped Schedules Hub: Unified Shows & Rehearsals with iOS Segmented Control */}
       <section className="ui-card p-6 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 mb-4 border-b border-slate-200/80">
           <div className="flex items-center gap-3">

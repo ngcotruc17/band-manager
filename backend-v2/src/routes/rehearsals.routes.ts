@@ -9,7 +9,7 @@ import {
   getLeaderboard,
   requestGPSBypass
 } from '../controllers/rehearsal.controller';
-import { protect, admin } from '../middleware/auth';
+import { protect, admin, canManageShows } from '../middleware/auth';
 
 const router = Router();
 
@@ -20,7 +20,7 @@ router.get('/', protect, getRehearsals);
 router.post('/', protect, admin, createRehearsal);
 router.put('/:id/attendance', protect, admin, updateAttendance);
 router.delete('/:id', protect, admin, deleteRehearsal);
-router.get('/:id/qr-token', protect, generateQRToken);
+router.get('/:id/qr-token', protect, canManageShows, generateQRToken);
 router.post('/:id/checkin', protect, checkin);
 router.post('/:id/gps-bypass', protect, requestGPSBypass);
 

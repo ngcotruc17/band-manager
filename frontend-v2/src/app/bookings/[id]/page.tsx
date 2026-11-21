@@ -5,8 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import api from '../../../services/api';
 import { AuthContext } from "../../../context/AuthContext";
 import { 
-  Calendar, Clock, MapPin, User, ArrowLeft, Music, 
-  Lock, Unlock, Check, X, AlertCircle, Plus, Search, FileText, PlayCircle, ShieldCheck, Loader, CheckCircle, CheckSquare, Phone, Copy, Printer 
+  Calendar, Clock, MapPin, ArrowLeft, Music, 
+  Lock, Unlock, Check, X, Plus, Search, FileText, ShieldCheck, Loader, CheckCircle, CheckSquare, Phone, Copy 
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -83,7 +83,7 @@ export default function BookingDetail() {
     try {
       const res = await api.get(`/shows/${id}`);
       setShow(res.data);
-    } catch (error) { 
+    } catch { 
       toast.error("Không tải được chi tiết Show"); 
     } finally {
       setLoading(false);
@@ -91,16 +91,39 @@ export default function BookingDetail() {
   }, [id]);
 
   useEffect(() => { 
-    fetchShow(); 
-  }, [fetchShow]);
+    let isCancelled = false;
+    const loadShow = async () => {
+      await Promise.resolve();
+      if (!id || isCancelled) return;
+      try {
+        const res = await api.get(`/shows/${id}`);
+        if (!isCancelled) {
+          setShow(res.data);
+        }
+      } catch {
+        if (!isCancelled) {
+          toast.error("Không tải được chi tiết Show");
+        }
+      } finally {
+        if (!isCancelled) {
+          setLoading(false);
+        }
+      }
+    };
+    loadShow();
+    return () => {
+      isCancelled = true;
+    };
+  }, [id]);
 
   const handleJoin = async () => {
     try { 
       await api.post(`/shows/${id}/join`); 
       toast.success("Đã thay đổi trạng thái đăng ký!"); 
       fetchShow(); 
-    } catch (err: any) { 
-      toast.error(err.response?.data?.message || "Lỗi thao tác"); 
+    } catch (err: unknown) { 
+      const errorObj = err as { response?: { data?: { message?: string } } };
+      toast.error(errorObj.response?.data?.message || "Lỗi thao tác"); 
     }
   };
 
@@ -109,7 +132,7 @@ export default function BookingDetail() {
       await api.put(`/shows/${id}/approve-participant`, { userId }); 
       toast.success("Đã duyệt thành viên!"); 
       fetchShow(); 
-    } catch (err) { 
+    } catch { 
       toast.error("Lỗi duyệt"); 
     }
   };
@@ -120,7 +143,7 @@ export default function BookingDetail() {
       await api.put(`/shows/${id}/remove-participant`, { userId }); 
       toast.success("Đã xóa khỏi danh sách"); 
       fetchShow(); 
-    } catch (err) { 
+    } catch { 
       toast.error("Lỗi xóa"); 
     }
   };
@@ -130,7 +153,7 @@ export default function BookingDetail() {
       await api.put(`/shows/${id}/toggle-registration`); 
       toast.success("Đã đổi trạng thái đăng ký"); 
       fetchShow(); 
-    } catch (err) { 
+    } catch { 
       toast.error("Lỗi thao tác"); 
     }
   };
@@ -143,7 +166,7 @@ export default function BookingDetail() {
       setMusicForm({ title: "", link: "", note: "" });
       setShowAddMusicModal(false);
       fetchShow();
-    } catch (err) { 
+    } catch { 
       toast.error("Lỗi thêm nhạc"); 
     }
   };
@@ -154,7 +177,7 @@ export default function BookingDetail() {
       await api.delete(`/shows/${id}/setlist/${songId}`); 
       toast.success("Đã xóa khỏi setlist"); 
       fetchShow(); 
-    } catch (err) { 
+    } catch { 
       toast.error("Lỗi xóa nhạc"); 
     }
   };
@@ -164,7 +187,7 @@ export default function BookingDetail() {
       const res = await api.get(`/library`);
       setLibrarySongs(res.data || []);
       setShowLibraryModal(true);
-    } catch (err) { 
+    } catch { 
       toast.error("Lỗi tải kho nhạc"); 
     }
   };
@@ -192,7 +215,7 @@ export default function BookingDetail() {
       toast.success(`Đã thêm: ${song.title || song.name}`);
       fetchShow();
       setShowLibraryModal(false);
-    } catch (err) { 
+    } catch { 
       toast.error("Lỗi thêm nhạc"); 
     }
   };
@@ -219,9 +242,18 @@ export default function BookingDetail() {
     const getAPIBase = () => {
       if (typeof window !== 'undefined') {
         const hostname = window.location.hostname;
-        if (hostname === 'localhost' || hostname === '127.0.0.1') {
-          return 'http://localhost:5000';
+        const isLocal = 
+          hostname === 'localhost' || 
+          hostname === '127.0.0.1' || 
+          /^(\d{1,3}\.){3}\d{1,3}$/.test(hostname);
+
+        if (isLocal) {
+          return `http://${hostname}:5000`;
         }
+      }
+      if (process.env.NEXT_PUBLIC_API_URL) {
+        const raw = process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, '');
+        return raw.endsWith('/api') ? raw.replace(/\/api$/, '') : raw;
       }
       return 'https://band-manager-s9tm.onrender.com';
     };
@@ -233,11 +265,31 @@ export default function BookingDetail() {
     return link;
   };
 
-  if (loading || !show) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-transparent flex flex-col items-center justify-center space-y-4">
         <Loader className="animate-spin text-indigo-600" size={40} />
         <p className="text-indigo-600 font-bold animate-pulse text-xs uppercase tracking-widest">Đang tải chi tiết Lịch diễn...</p>
+      </div>
+    );
+  }
+
+  if (!show) {
+    return (
+      <div className="min-h-screen p-6 flex flex-col items-center justify-center space-y-4 text-center">
+        <div className="ui-card p-8 max-w-md w-full space-y-4 text-center">
+          <div className="w-16 h-16 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center mx-auto border border-rose-200">
+            <X size={32} />
+          </div>
+          <h2 className="text-xl font-black text-slate-800">Không tìm thấy Lịch diễn</h2>
+          <p className="text-xs text-slate-500 font-medium">Lịch diễn không tồn tại hoặc ID không hợp lệ.</p>
+          <button
+            onClick={() => router.push("/bookings")}
+            className="ui-button-primary w-full py-3 text-xs flex items-center justify-center gap-2"
+          >
+            <ArrowLeft size={16} /> Quay lại danh sách Lịch diễn
+          </button>
+        </div>
       </div>
     );
   }

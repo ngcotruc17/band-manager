@@ -35,8 +35,12 @@ export default function Login() {
 
     setSubmitting(true);
     try {
-      await login({ username: username.trim(), password: password.trim() });
-      router.push("/dashboard");
+      const res = await login({ username: username.trim(), password: password.trim() });
+      if (res?.mustChangePassword) {
+        router.push("/change-password");
+      } else {
+        router.push("/dashboard");
+      }
     } catch {
       // Toast error handled in AuthContext
     } finally {
@@ -145,17 +149,17 @@ export default function Login() {
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={() => { setUsername("admin"); setPassword("admin123"); }}
+              onClick={() => { setUsername("nguyencongtruc.work@gmail.com"); setPassword("123456"); }}
               className="flex-1 py-1.5 px-2 rounded-xl bg-white border border-slate-200 hover:border-orange-300 text-[11px] font-bold text-slate-700 hover:text-[#F27024] transition text-center shadow-2xs cursor-pointer"
             >
-              Trưởng Ban FPTU (admin)
+              Trưởng Ban (Admin)
             </button>
             <button
               type="button"
-              onClick={() => { setUsername("member"); setPassword("member123"); }}
+              onClick={() => { setUsername("trucnc8"); setPassword("123456"); }}
               className="flex-1 py-1.5 px-2 rounded-xl bg-white border border-slate-200 hover:border-orange-300 text-[11px] font-bold text-slate-700 hover:text-[#F27024] transition text-center shadow-2xs cursor-pointer"
             >
-              Nghệ Sĩ FPTU (member)
+              Nghệ Sĩ (Thành viên)
             </button>
           </div>
         </div>

@@ -12,7 +12,7 @@ export const protect = async (req: AuthenticatedRequest, res: Response, next: Ne
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     try {
       token = req.headers.authorization.split(' ')[1];
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'mat_khau_bi_mat_cua_ban_123456') as { id: string };
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'mat_khau_bi_mat_cua_ban_123456') as { id: string; tokenVersion?: number };
 
       const user = await User.findById(decoded.id).select('-password');
       if (!user) {
@@ -20,6 +20,19 @@ export const protect = async (req: AuthenticatedRequest, res: Response, next: Ne
       }
 
       req.user = user as IUser;
+
+      // --- R3: Verify Token Version (Token Revocation Guard) ---
+      const userTokenVersion = user.tokenVersion ?? 0;
+      const decodedTokenVersion = decoded.tokenVersion ?? 0;
+      if (decodedTokenVersion !== userTokenVersion) {
+        return res.status(401).json({
+          message: "Phiên đăng nhập đã hết hạn hoặc mật khẩu đã thay đổi. Vui lòng đăng nhập lại."
+        });
+      }
+
+      if (req.user.status === 'banned') {
+        return res.status(403).json({ success: false, message: 'Tài khoản của bạn đã bị khóa' });
+      }
 
       if (!req.user.isApproved && req.user.role !== 'admin' && req.user.role !== 'system') {
          return res.status(403).json({ message: "Tài khoản chưa được duyệt." });

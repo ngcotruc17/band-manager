@@ -54,9 +54,9 @@ export const getDashboardData = async (req: Request, res: Response): Promise<voi
     // 5. ĐẾM THÀNH VIÊN
     const totalMembers = await User.countDocuments({ isApproved: true });
 
-    // 6. TÍNH DOANH THU THỰC TẾ THEO THÁNG (T1 - T6)
+    // 6. TÍNH DOANH THU THỰC TẾ THEO THÁNG (T1 - T12)
     const currentYear = today.getFullYear();
-    const monthlyRevenue = Array(6).fill(0).map((_, i) => {
+    const monthlyRevenue = Array(12).fill(0).map((_, i) => {
       const total = allShows
         .filter(s => {
           const d = new Date(s.date);

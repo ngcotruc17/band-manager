@@ -48,4 +48,25 @@ api.interceptors.request.use(
   }
 );
 
+// Interceptor tự động xử lý khi nhận mã phản hồi 401 Unauthorized
+api.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    if (error?.response?.status === 401) {
+      const url = error?.config?.url || '';
+      const isCheckinRequest = url.includes('/checkin');
+
+      if (!isCheckinRequest && typeof window !== 'undefined') {
+        localStorage.removeItem('token');
+        if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+          window.location.href = '/login';
+        }
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;

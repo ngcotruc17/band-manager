@@ -4,7 +4,7 @@ import React, { useContext, useState } from "react";
 import { AudioContext } from "../context/AudioContext";
 import { 
   Play, Pause, X, Music, RotateCcw, RotateCw, 
-  Volume2, VolumeX, Disc3, Radio, Sparkles 
+  Volume2, VolumeX 
 } from "lucide-react";
 
 export default function GlobalAudioPlayer() {

@@ -1,6 +1,7 @@
 "use client";
 
-import React, { createContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useState, useEffect, ReactNode, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 import api from "../services/api";
 import toast from "react-hot-toast";
 
@@ -23,63 +24,251 @@ export interface UserProfile {
   totalFinePaid?: number;
 }
 
+export interface LoginCredentials {
+  username?: string;
+  password?: string;
+  [key: string]: unknown;
+}
+
+export interface LoginResponse {
+  token: string;
+  mustChangePassword?: boolean;
+  _id?: string;
+  username?: string;
+  fullName?: string;
+  role?: UserRole;
+  [key: string]: unknown;
+}
+
+interface AxiosErrorLike {
+  response?: {
+    status?: number;
+    data?: {
+      message?: string;
+    };
+  };
+}
+
+export type AuthChannelMessage =
+  | { type: "LOGOUT"; timestamp: number }
+  | { type: "LOGIN"; token: string; user?: UserProfile; timestamp: number };
+
 interface AuthContextType {
   user: UserProfile | null;
   loading: boolean;
-  login: (formData: any) => Promise<any>;
-  logout: () => void;
+  setUser: (user: UserProfile | null) => void;
+  updateUser: (updatedUser: Partial<UserProfile>) => void;
+  refreshUser: () => Promise<void>;
+  login: (formData: LoginCredentials) => Promise<LoginResponse>;
+  logout: (broadcast?: boolean) => void;
 }
 
 export const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
-  login: async () => {},
-  logout: () => {}
+  setUser: () => {},
+  updateUser: () => {},
+  refreshUser: async () => {},
+  login: async () => ({ token: "" }),
+  logout: () => {},
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Tải thông tin tài khoản khi load lại trang
-  const loadUser = async () => {
-    if (typeof window === 'undefined') return;
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setUser(null);
-      setLoading(false);
-      return;
-    }
+  const router = useRouter();
+  const authChannelRef = useRef<BroadcastChannel | null>(null);
+  const userRef = useRef<UserProfile | null>(user);
+  const lastLogoutTimestampRef = useRef<number>(0);
+  const lastLoginTimestampRef = useRef<number>(0);
 
-    try {
-      const res = await api.get("/auth/me");
-      setUser(res.data);
-    } catch (error: any) {
-      console.error("Lỗi xác thực:", error.response?.data?.message);
-      localStorage.removeItem("token");
-      setUser(null);
-      if (error.response?.status === 403) {
-        toast.error("Phiên đăng nhập hết hạn hoặc tài khoản chưa được duyệt!");
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Luôn đồng bộ userRef với state user
   useEffect(() => {
-    loadUser();
+    userRef.current = user;
+  }, [user]);
+
+  const updateUser = useCallback((updated: Partial<UserProfile>) => {
+    setUser((prev) => (prev ? { ...prev, ...updated } : null));
   }, []);
 
-  const login = async (formData: any) => {
+  const refreshUser = useCallback(async () => {
+    if (typeof window === "undefined") return;
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const res = await api.get<UserProfile>("/auth/me");
+      setUser(res.data);
+    } catch (error: unknown) {
+      console.error("Lỗi làm mới thông tin user:", error);
+    }
+  }, []);
+
+  /**
+   * Xử lý đăng xuất từ tab khác gửi qua BroadcastChannel hoặc storage event
+   */
+  const handleRemoteLogout = useCallback(() => {
+    const now = Date.now();
+    // Chống xử lý trùng lặp nếu cả BroadcastChannel và storage event cùng kích hoạt
+    if (now - lastLogoutTimestampRef.current < 1000) {
+      return;
+    }
+    lastLogoutTimestampRef.current = now;
+
+    const hadToken = typeof window !== "undefined" && !!localStorage.getItem("token");
+    const hadUser = !!userRef.current;
+
+    localStorage.removeItem("token");
+    setUser(null);
+
+    if (hadToken || hadUser) {
+      toast.error("Phiên làm việc đã kết thúc từ tab khác");
+      router.push("/login");
+    }
+  }, [router]);
+
+  /**
+   * Xử lý đăng nhập thành công từ tab khác gửi qua BroadcastChannel hoặc storage event
+   */
+  const handleRemoteLogin = useCallback(async (token: string, newUser?: UserProfile) => {
+    const now = Date.now();
+    if (now - lastLoginTimestampRef.current < 1000) {
+      return;
+    }
+    lastLoginTimestampRef.current = now;
+
+    if (typeof window !== "undefined") {
+      localStorage.setItem("token", token);
+    }
+
+    if (newUser) {
+      setUser(newUser);
+    } else {
+      try {
+        const res = await api.get<UserProfile>("/auth/me");
+        setUser(res.data);
+      } catch (err) {
+        console.error("Lỗi đồng bộ thông tin user từ tab khác:", err);
+      }
+    }
+  }, []);
+
+  // Khởi tạo BroadcastChannel và Fallback storage listener
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    let channel: BroadcastChannel | null = null;
+    if ("BroadcastChannel" in window) {
+      try {
+        channel = new BroadcastChannel("auth_channel");
+        authChannelRef.current = channel;
+
+        channel.onmessage = (event: MessageEvent<AuthChannelMessage>) => {
+          if (!event.data) return;
+          if (event.data.type === "LOGOUT") {
+            handleRemoteLogout();
+          } else if (event.data.type === "LOGIN") {
+            handleRemoteLogin(event.data.token, event.data.user);
+          }
+        };
+      } catch (err) {
+        console.warn("BroadcastChannel không được hỗ trợ hoặc khởi tạo thất bại:", err);
+      }
+    }
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "token") {
+        if (!e.newValue) {
+          // Token bị xóa ở tab khác
+          handleRemoteLogout();
+        } else if (e.newValue) {
+          // Token được cập nhật ở tab khác
+          handleRemoteLogin(e.newValue);
+        }
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      if (channel) {
+        channel.close();
+        authChannelRef.current = null;
+      }
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, [handleRemoteLogout, handleRemoteLogin]);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    const initAuth = async () => {
+      // Async boundary ensures setState is never called synchronously inside effect
+      await Promise.resolve();
+      if (isCancelled) return;
+
+      if (typeof window === "undefined") return;
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const res = await api.get<UserProfile>("/auth/me");
+        if (!isCancelled) {
+          setUser(res.data);
+        }
+      } catch (error: unknown) {
+        if (!isCancelled) {
+          const axiosError = error as AxiosErrorLike;
+          console.error("Lỗi xác thực:", axiosError.response?.data?.message);
+          localStorage.removeItem("token");
+          setUser(null);
+          if (axiosError.response?.status === 403) {
+            toast.error("Phiên đăng nhập hết hạn hoặc tài khoản chưa được duyệt!");
+          }
+        }
+      } finally {
+        if (!isCancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    initAuth();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
+
+  const login = async (formData: LoginCredentials): Promise<LoginResponse> => {
     setLoading(true);
     try {
-      const res = await api.post("/auth/login", formData);
+      const res = await api.post<LoginResponse & UserProfile>("/auth/login", formData);
       localStorage.setItem("token", res.data.token);
-      setUser(res.data);
+      const userProfile = res.data as unknown as UserProfile;
+      setUser(userProfile);
       toast.success("Đăng nhập thành công!");
+
+      // Broadcast sự kiện LOGIN sang các tab khác
+      try {
+        authChannelRef.current?.postMessage({
+          type: "LOGIN",
+          token: res.data.token,
+          user: userProfile,
+          timestamp: Date.now(),
+        });
+      } catch (err) {
+        console.error("Lỗi broadcast LOGIN:", err);
+      }
+
       return res.data;
-    } catch (err: any) {
-      const errMsg = err.response?.data?.message || "Sai tên đăng nhập hoặc mật khẩu";
+    } catch (err: unknown) {
+      const axiosError = err as AxiosErrorLike;
+      const errMsg = axiosError.response?.data?.message || "Sai tên đăng nhập hoặc mật khẩu";
       toast.error(errMsg);
       throw err;
     } finally {
@@ -87,14 +276,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const logout = () => {
+  const logout = useCallback((broadcast: boolean = true) => {
     localStorage.removeItem("token");
     setUser(null);
-    toast.success("Đã đăng xuất");
-  };
+    if (broadcast) {
+      try {
+        authChannelRef.current?.postMessage({
+          type: "LOGOUT",
+          timestamp: Date.now(),
+        });
+      } catch (err) {
+        console.error("Lỗi broadcast LOGOUT:", err);
+      }
+      toast.success("Đã đăng xuất");
+    }
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, setUser, updateUser, refreshUser, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

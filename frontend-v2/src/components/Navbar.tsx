@@ -7,9 +7,9 @@ import { AuthContext } from "../context/AuthContext";
 import api from "../services/api";
 import { 
   Music, LogOut, Menu, X, Bell, ChevronDown, ChevronRight,
-  Settings, Radio, Calendar, DollarSign, BookOpen, 
+  Settings, Calendar, DollarSign, BookOpen, 
   CheckSquare, ShieldCheck, Sparkles, Layers, MessageSquare, 
-  Users, CalendarDays, Music2, Coins, ArrowUpRight, Flame
+  Users, CalendarDays, Music2, Coins, Flame
 } from "lucide-react";
 import ProfileModal from "./ProfileModal";
 
@@ -39,7 +39,7 @@ interface NavGroup {
 }
 
 export default function Navbar() {
-  const { user, logout } = useContext(AuthContext);
+  const { user, logout, updateUser } = useContext(AuthContext);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -55,21 +55,28 @@ export default function Navbar() {
   const profileRef = useRef<HTMLDivElement | null>(null);
   const navRef = useRef<HTMLDivElement | null>(null);
 
-  const fetchNotifications = async () => {
-    if (!user) return;
-    try {
-      const res = await api.get("/notifications");
-      setNotifications(res.data || []);
-      setUnreadCount((res.data || []).filter((n: NotificationItem) => !n.isRead).length);
-    } catch {
-      // Quiet fail if network / auth not ready
-    }
-  };
-
   useEffect(() => {
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 25000);
-    return () => clearInterval(interval);
+    let isMounted = true;
+    const loadNotis = async () => {
+      await Promise.resolve();
+      if (!isMounted || !user) return;
+      try {
+        const res = await api.get("/notifications");
+        if (isMounted) {
+          setNotifications(res.data || []);
+          setUnreadCount((res.data || []).filter((n: NotificationItem) => !n.isRead).length);
+        }
+      } catch {
+        // Quiet fail if network / auth not ready
+      }
+    };
+
+    loadNotis();
+    const interval = setInterval(loadNotis, 25000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, [user]);
 
   useEffect(() => {
@@ -84,10 +91,12 @@ export default function Navbar() {
   }, []);
 
   // Close dropdown and drawer on route change
-  useEffect(() => {
+  const [prevPath, setPrevPath] = useState(pathname);
+  if (pathname !== prevPath) {
+    setPrevPath(pathname);
     setOpenDropdown(null);
     setIsMenuOpen(false);
-  }, [pathname]);
+  }
 
   if (!user || pathname === "/change-password" || pathname === "/login" || pathname === "/register") return null;
 
@@ -154,13 +163,13 @@ export default function Navbar() {
           icon: DollarSign,
           colorScheme: "emerald"
         },
-        {
+        ...(user?.role === "admin" || user?.role === "lecturer" ? [{
           href: "/members",
           label: "Thành viên ban nhạc",
           description: "Danh sách cán bộ, giảng viên, sinh viên & vai trò",
           icon: Users,
-          colorScheme: "orange"
-        }
+          colorScheme: "orange" as const
+        }] : [])
       ]
     }
   ];
@@ -525,7 +534,7 @@ export default function Navbar() {
         <button
           type="button"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className={`oneui-tab-item ${isMenuOpen || pathname === "/finance" || pathname === "/members" || pathname === "/notifications" ? "active" : ""}`}
+          className={`oneui-tab-item ${isMenuOpen || pathname === "/finance" || ((user?.role === "admin" || user?.role === "lecturer") && pathname === "/members") || pathname === "/notifications" ? "active" : ""}`}
         >
           <div className="oneui-tab-icon">
             {isMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
@@ -549,20 +558,22 @@ export default function Navbar() {
             <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto -mt-1 mb-2" />
 
             {/* User Quick Info Tile */}
-            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-orange-50/70 border border-orange-200/70">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#F27024] to-[#EA580C] text-white flex items-center justify-center font-black text-sm shadow-sm">
-                  {user.fullName ? user.fullName.charAt(0).toUpperCase() : "U"}
+            {user && (
+              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-orange-50/70 border border-orange-200/70">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#F27024] to-[#EA580C] text-white flex items-center justify-center font-black text-sm shadow-sm">
+                    {user.fullName ? user.fullName.charAt(0).toUpperCase() : "U"}
+                  </div>
+                  <div>
+                    <h4 className="font-extrabold text-xs text-slate-900">{user.fullName}</h4>
+                    <p className="text-[11px] text-slate-500 font-medium">@{user.username} • {user.instrument || "FPTU Band"}</p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="font-extrabold text-xs text-slate-900">{user.fullName}</h4>
-                  <p className="text-[11px] text-slate-500 font-medium">@{user.username} • {user.instrument || "FPTU Band"}</p>
-                </div>
+                <span className="px-2 py-0.5 rounded-full bg-white text-[#F27024] text-[10px] font-black border border-orange-200 uppercase">
+                  {user.role === 'admin' ? 'Admin' : user.role === 'manager' || user.role === 'staff' ? 'Cán bộ CTSV/Bộ môn' : user.role === 'lecturer' ? 'Giảng viên' : 'Sinh viên'}
+                </span>
               </div>
-              <span className="px-2 py-0.5 rounded-full bg-white text-[#F27024] text-[10px] font-black border border-orange-200 uppercase">
-                {user.role === 'admin' ? 'Admin' : user.role === 'manager' || user.role === 'staff' ? 'Cán bộ CTSV/Bộ môn' : user.role === 'lecturer' ? 'Giảng viên' : 'Sinh viên'}
-              </span>
-            </div>
+            )}
 
             {/* Inset Menu Section: Quản trị & Hoạt động */}
             <div className="bg-slate-50/80 border border-slate-200/80 rounded-2xl p-2 space-y-1">
@@ -584,19 +595,21 @@ export default function Navbar() {
                 <ChevronRight className="w-4 h-4 text-slate-400" />
               </Link>
 
-              <Link
-                href="/members"
-                onClick={() => setIsMenuOpen(false)}
-                className={`flex items-center justify-between p-2.5 rounded-xl text-xs font-bold transition-all ${
-                  pathname === "/members" ? "bg-[#F27024] text-white shadow-sm" : "hover:bg-white text-slate-700"
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <Users className="w-4 h-4 text-orange-600" />
-                  <span>Thành viên ban nhạc FPTU</span>
-                </div>
-                <ChevronRight className="w-4 h-4 text-slate-400" />
-              </Link>
+              {(user?.role === "admin" || user?.role === "lecturer") && (
+                <Link
+                  href="/members"
+                  onClick={() => setIsMenuOpen(false)}
+                  className={`flex items-center justify-between p-2.5 rounded-xl text-xs font-bold transition-all ${
+                    pathname === "/members" ? "bg-[#F27024] text-white shadow-sm" : "hover:bg-white text-slate-700"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Users className="w-4 h-4 text-orange-600" />
+                    <span>Thành viên ban nhạc FPTU</span>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-slate-400" />
+                </Link>
+              )}
 
               <Link
                 href="/rehearsals"
@@ -678,7 +691,11 @@ export default function Navbar() {
         <ProfileModal 
           user={user}
           onClose={() => setShowProfileModal(false)}
-          onUpdateSuccess={() => window.location.reload()}
+          onUpdateSuccess={(updatedUser) => {
+            if (updatedUser) {
+              updateUser(updatedUser);
+            }
+          }}
         />
       )}
     </>

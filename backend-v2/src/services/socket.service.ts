@@ -1,5 +1,7 @@
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import { Server as HTTPServer } from 'http';
+import jwt from 'jsonwebtoken';
+import { env } from '../config/env';
 
 export class SocketService {
   private static io: SocketIOServer | null = null;
@@ -10,6 +12,27 @@ export class SocketService {
         origin: true, // Cho phép kết nối WebSocket từ mọi origin hợp lệ (Localhost, LAN IP, Production)
         methods: ['GET', 'POST'],
         credentials: true
+      }
+    });
+
+    // 🔒 Xác thực JWT trong WebSocket Handshake
+    this.io.use((socket: Socket, next) => {
+      try {
+        const rawToken = socket.handshake.auth?.token || socket.handshake.query?.token;
+        if (!rawToken || typeof rawToken !== 'string') {
+          return next(new Error('Authentication error: Invalid or missing token'));
+        }
+
+        const token = rawToken.startsWith('Bearer ') ? rawToken.slice(7).trim() : rawToken.trim();
+        if (!token) {
+          return next(new Error('Authentication error: Invalid or missing token'));
+        }
+
+        const decoded = jwt.verify(token, env.JWT_SECRET);
+        (socket as any).user = decoded;
+        return next();
+      } catch (err) {
+        return next(new Error('Authentication error: Invalid or missing token'));
       }
     });
 

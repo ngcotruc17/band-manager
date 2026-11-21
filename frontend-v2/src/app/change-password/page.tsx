@@ -5,13 +5,13 @@ import api from '../../services/api';
 import { AuthContext } from "../../context/AuthContext";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { Lock, Eye, EyeOff, Loader, Key } from "lucide-react";
+import { Lock, Eye, EyeOff, Loader, Key, Shield, GraduationCap, User } from "lucide-react";
 
 export default function ChangePassword() {
   const [formData, setFormData] = useState({ newPassword: "", confirmPassword: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { logout } = useContext(AuthContext);
+  const { logout, user } = useContext(AuthContext);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -39,8 +39,9 @@ export default function ChangePassword() {
       toast.success("Đổi mật khẩu thành công! Vui lòng đăng nhập lại.", { id: toastId });
       logout(); 
       router.push("/login");
-    } catch (err: any) {
-      const errMsg = err.response?.data?.message || "Lỗi khi đổi mật khẩu";
+    } catch (err: unknown) {
+      const errorObj = err as { response?: { data?: { message?: string } } };
+      const errMsg = errorObj.response?.data?.message || "Lỗi khi đổi mật khẩu";
       toast.error(errMsg, { id: toastId });
     } finally {
       setLoading(false);
@@ -64,9 +65,32 @@ export default function ChangePassword() {
         <h2 className="text-2xl font-black bg-gradient-to-r from-slate-900 via-slate-800 to-slate-950 bg-clip-text text-transparent tracking-tight">
           ĐỔI MẬT KHẨU LẦN ĐẦU
         </h2>
-        <p className="text-slate-500 text-xs mt-2.5 mb-8 leading-relaxed font-semibold">
+        <p className="text-slate-500 text-xs mt-2.5 mb-6 leading-relaxed font-semibold">
           Vì lý do an toàn bảo mật, vui lòng thay đổi mật khẩu mặc định được cấp ban đầu để bắt đầu sử dụng hệ thống.
         </p>
+
+        {user && (
+          <div className="mb-6 p-3.5 rounded-2xl bg-indigo-50/50 border border-indigo-100 text-left">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-indigo-400">Tài khoản đăng nhập</div>
+            <div className="text-xs font-black text-slate-800">{user.fullName} <span className="text-slate-400 font-medium">(@{user.username})</span></div>
+            <div className="flex items-center gap-1.5 text-[11px] text-slate-600 font-semibold mt-1">
+              <span className="text-slate-400 font-medium">Vai trò:</span>
+              {user.role === 'admin' ? (
+                <span className="inline-flex items-center gap-1 text-rose-600 font-bold bg-rose-50 px-2 py-0.5 rounded-lg border border-rose-200 text-[10px]">
+                  <Shield size={11} /> Quản trị viên
+                </span>
+              ) : user.role === 'lecturer' ? (
+                <span className="inline-flex items-center gap-1 text-amber-700 font-bold bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-200 text-[10px]">
+                  <GraduationCap size={11} /> Giảng viên
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-blue-700 font-bold bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-200 text-[10px]">
+                  <User size={11} /> Sinh viên
+                </span>
+              )}
+            </div>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-5 text-left">
           <div className="space-y-1.5">

@@ -5,7 +5,7 @@ import { useParams, useSearchParams, useRouter } from "next/navigation";
 import api from "../../services/api";
 import {
   Camera, CheckCircle, XCircle, Loader, RefreshCw,
-  QrCode, Music, KeyRound, SwitchCamera, Flashlight, Clock
+  QrCode, Music, KeyRound, Clock, ChevronDown
 } from "lucide-react";
 import toast from "react-hot-toast";
 import jsQR from "jsqr";
@@ -20,7 +20,7 @@ interface RehearsalItem {
 
 type Mode = "camera" | "manual";
 
-export default function CheckIn() {
+function CheckInContent() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -34,7 +34,14 @@ export default function CheckIn() {
 
   const [loading, setLoading] = useState<boolean>(false);
   const [availableRehearsals, setAvailableRehearsals] = useState<RehearsalItem[]>([]);
-  const [selectedRehearsal, setSelectedRehearsal] = useState<string>("");
+  const [selectedRehearsal, setSelectedRehearsal] = useState<string>(urlRehearsalId || "");
+  const [prevUrlId, setPrevUrlId] = useState(urlRehearsalId);
+  if (urlRehearsalId !== prevUrlId) {
+    setPrevUrlId(urlRehearsalId);
+    if (urlRehearsalId) {
+      setSelectedRehearsal(urlRehearsalId);
+    }
+  }
   const [manualToken, setManualToken] = useState<string>(tokenFromUrl);
   const [result, setResult] = useState<{
     success: boolean;
@@ -54,32 +61,104 @@ export default function CheckIn() {
 
   // Nạp danh sách buổi tập
   useEffect(() => {
-    if (urlRehearsalId) {
-      setSelectedRehearsal(urlRehearsalId);
-      return;
-    }
+    if (urlRehearsalId) return;
+    let isCancelled = false;
     const fetchRehearsals = async () => {
+      await Promise.resolve();
+      if (isCancelled) return;
       try {
         const res = await api.get("/rehearsals");
-        setAvailableRehearsals(res.data || []);
-        if (res.data?.length > 0) setSelectedRehearsal(res.data[0]._id);
+        if (!isCancelled) {
+          setAvailableRehearsals(res.data || []);
+          if (res.data?.length > 0) setSelectedRehearsal(res.data[0]._id);
+        }
       } catch {
         console.error("Lỗi nạp danh sách tập");
       }
     };
     fetchRehearsals();
+    return () => {
+      isCancelled = true;
+    };
   }, [urlRehearsalId]);
+
+  // API điểm danh
+  const handleCheckInWithToken = useCallback(async (token: string, rehearsalId: string) => {
+    await Promise.resolve();
+    if (!rehearsalId) { toast.error("Không xác định được buổi tập!"); return; }
+    if (!token) { toast.error("Token không hợp lệ!"); return; }
+
+    setLoading(true);
+    setAutoSubmitting(false);
+    try {
+      const res = await api.post(`/rehearsals/${rehearsalId}/checkin`, { token: token.trim() });
+      setResult({
+        success: true,
+        message: res.data.message || "Điểm danh thành công!",
+        status: res.data.status,
+        fine: res.data.fine
+      });
+      toast.success("Điểm danh thành công!");
+    } catch (err: unknown) {
+      const axiosError = err as { response?: { data?: { message?: string } } };
+      const errMsg = axiosError.response?.data?.message || "Mã QR hết hạn hoặc không hợp lệ. Vui lòng thử lại!";
+      setResult({ success: false, message: errMsg });
+      toast.error("Điểm danh thất bại");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   // Auto-submit nếu có token từ URL
   useEffect(() => {
     if (tokenFromUrl && selectedRehearsal) {
-      handleCheckInWithToken(tokenFromUrl, selectedRehearsal);
+      const timer = setTimeout(() => {
+        handleCheckInWithToken(tokenFromUrl, selectedRehearsal);
+      }, 0);
+      return () => clearTimeout(timer);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tokenFromUrl, selectedRehearsal]);
+  }, [tokenFromUrl, selectedRehearsal, handleCheckInWithToken]);
+
+  // Dừng camera
+  const stopCamera = useCallback(() => {
+    if (scanLoopRef.current) cancelAnimationFrame(scanLoopRef.current);
+    streamRef.current?.getTracks().forEach(t => t.stop());
+    streamRef.current = null;
+    setCameraReady(false);
+    setScanning(false);
+  }, []);
+
+  // Xử lý khi phát hiện QR
+  const handleQRDetected = useCallback((data: string) => {
+    setScanning(false);
+    stopCamera();
+    toast.success("Đã quét được mã QR!");
+
+    // Trích xuất token từ URL trong QR
+    let token = data;
+    try {
+      const url = new URL(data);
+      const t = url.searchParams.get("token");
+      const rId = url.searchParams.get("rehearsalId") || url.pathname.split("/checkin/")[1];
+      if (t) token = t;
+      if (rId && !selectedRehearsal) setSelectedRehearsal(rId);
+    } catch {
+      // data có thể là token thô
+    }
+
+    const rehearsalId = selectedRehearsal || urlRehearsalId || "";
+    if (rehearsalId) {
+      handleCheckInWithToken(token, rehearsalId);
+    } else {
+      // Không biết buổi tập, chuyển sang manual mode với token đã điền
+      setManualToken(token);
+      setMode("manual");
+    }
+  }, [selectedRehearsal, urlRehearsalId, handleCheckInWithToken, stopCamera]);
 
   // Khởi động camera
   const startCamera = useCallback(async () => {
+    await Promise.resolve();
     setCameraError("");
     setCameraReady(false);
     try {
@@ -95,22 +174,14 @@ export default function CheckIn() {
           setScanning(true);
         };
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errObj = err as Error;
       setCameraError(
-        err.name === "NotAllowedError"
+        errObj.name === "NotAllowedError"
           ? "Bạn chưa cấp quyền truy cập camera. Vui lòng cho phép quyền camera và thử lại."
           : "Không thể mở camera. Vui lòng kiểm tra thiết bị hoặc dùng tab Nhập Mã."
       );
     }
-  }, []);
-
-  // Dừng camera
-  const stopCamera = useCallback(() => {
-    if (scanLoopRef.current) cancelAnimationFrame(scanLoopRef.current);
-    streamRef.current?.getTracks().forEach(t => t.stop());
-    streamRef.current = null;
-    setCameraReady(false);
-    setScanning(false);
   }, []);
 
   // Vòng lặp scan QR từ frame camera
@@ -152,66 +223,20 @@ export default function CheckIn() {
   // Khởi động camera khi chuyển sang tab camera
   useEffect(() => {
     if (mode === "camera" && !result) {
-      startCamera();
+      const timer = setTimeout(() => {
+        startCamera();
+      }, 0);
+      return () => {
+        clearTimeout(timer);
+        stopCamera();
+      };
     } else {
-      stopCamera();
+      const timer = setTimeout(() => {
+        stopCamera();
+      }, 0);
+      return () => clearTimeout(timer);
     }
-    return () => stopCamera();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, result]);
-
-  // Xử lý khi phát hiện QR
-  const handleQRDetected = (data: string) => {
-    setScanning(false);
-    stopCamera();
-    toast.success("Đã quét được mã QR!");
-
-    // Trích xuất token từ URL trong QR
-    let token = data;
-    try {
-      const url = new URL(data);
-      const t = url.searchParams.get("token");
-      const rId = url.searchParams.get("rehearsalId") || url.pathname.split("/checkin/")[1];
-      if (t) token = t;
-      if (rId && !selectedRehearsal) setSelectedRehearsal(rId);
-    } catch {
-      // data có thể là token thô
-    }
-
-    const rehearsalId = selectedRehearsal || urlRehearsalId || "";
-    if (rehearsalId) {
-      handleCheckInWithToken(token, rehearsalId);
-    } else {
-      // Không biết buổi tập, chuyển sang manual mode với token đã điền
-      setManualToken(token);
-      setMode("manual");
-    }
-  };
-
-  // API điểm danh
-  const handleCheckInWithToken = async (token: string, rehearsalId: string) => {
-    if (!rehearsalId) { toast.error("Không xác định được buổi tập!"); return; }
-    if (!token) { toast.error("Token không hợp lệ!"); return; }
-
-    setLoading(true);
-    setAutoSubmitting(false);
-    try {
-      const res = await api.post(`/rehearsals/${rehearsalId}/checkin`, { token: token.trim() });
-      setResult({
-        success: true,
-        message: res.data.message || "Điểm danh thành công!",
-        status: res.data.status,
-        fine: res.data.fine
-      });
-      toast.success("Điểm danh thành công!");
-    } catch (err: any) {
-      const errMsg = err.response?.data?.message || "Mã QR hết hạn hoặc không hợp lệ. Vui lòng thử lại!";
-      setResult({ success: false, message: errMsg });
-      toast.error("Điểm danh thất bại");
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [mode, result, startCamera, stopCamera]);
 
   // Submit từ form nhập tay
   const handleManualSubmit = (e: React.FormEvent) => {
@@ -332,17 +357,20 @@ export default function CheckIn() {
                     <span className="text-xs font-semibold italic">Chưa có lịch tập nào</span>
                   </div>
                 ) : (
-                  <select
-                    value={selectedRehearsal}
-                    onChange={(e) => setSelectedRehearsal(e.target.value)}
-                    className="w-full p-3 border border-slate-200 bg-slate-50 focus:bg-white rounded-2xl outline-none font-bold text-slate-800 text-sm transition focus:ring-2 ring-indigo-500/25 cursor-pointer"
-                  >
-                    {availableRehearsals.map((r) => (
-                      <option key={r._id} value={r._id}>
-                        {new Date(r.date).toLocaleDateString("vi-VN")} — {r.time} · {r.location}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative flex items-center">
+                    <select
+                      value={selectedRehearsal}
+                      onChange={(e) => setSelectedRehearsal(e.target.value)}
+                      className="w-full p-3 pr-10 border border-slate-200 bg-slate-50 focus:bg-white rounded-2xl outline-none font-bold text-slate-800 text-sm transition focus:ring-2 ring-indigo-500/25 appearance-none cursor-pointer"
+                    >
+                      {availableRehearsals.map((r) => (
+                        <option key={r._id} value={r._id}>
+                          {new Date(r.date).toLocaleDateString("vi-VN")} — {r.time} · {r.location}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown size={14} className="text-slate-400 pointer-events-none absolute right-3.5" />
+                  </div>
                 )}
               </div>
             )}
@@ -491,5 +519,19 @@ export default function CheckIn() {
         }
       `}</style>
     </div>
+  );
+}
+
+export default function CheckIn() {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="w-full flex-1 flex items-center justify-center p-8">
+          <Loader className="animate-spin text-[#F27024]" size={36} />
+        </div>
+      }
+    >
+      <CheckInContent />
+    </React.Suspense>
   );
 }

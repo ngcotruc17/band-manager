@@ -4,6 +4,16 @@ import User from '../models/User';
 import { sendCustomAdminEmail } from '../utils/sendEmail';
 import { AuthenticatedRequest } from '../middleware/auth';
 
+const handleNotificationError = (res: Response, error: any, defaultMessage = "Không tìm thấy thông báo (ID không hợp lệ)") => {
+  if (error?.name === 'CastError' || error?.kind === 'ObjectId') {
+    return res.status(404).json({ success: false, message: defaultMessage });
+  }
+  if (error?.name === 'ValidationError') {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+  return res.status(500).json({ message: error.message });
+};
+
 export const getMyNotifications = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     if (!req.user) {
@@ -15,16 +25,20 @@ export const getMyNotifications = async (req: AuthenticatedRequest, res: Respons
       .limit(20);
     res.json(notis);
   } catch (error: any) { 
-    res.status(500).json({ message: error.message }); 
+    handleNotificationError(res, error); 
   }
 };
 
 export const markAsRead = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
-    await Notification.findByIdAndUpdate(req.params.id, { isRead: true });
+    const noti = await Notification.findByIdAndUpdate(req.params.id, { isRead: true });
+    if (!noti) {
+      res.status(404).json({ success: false, message: "Không tìm thấy thông báo" });
+      return;
+    }
     res.json({ success: true });
   } catch (error: any) { 
-    res.status(500).json({ message: error.message }); 
+    handleNotificationError(res, error); 
   }
 };
 
@@ -40,7 +54,7 @@ export const markAllRead = async (req: AuthenticatedRequest, res: Response): Pro
     );
     res.json({ message: 'Đã đọc hết' });
   } catch (error: any) { 
-    res.status(500).json({ message: error.message }); 
+    handleNotificationError(res, error); 
   }
 };
 
@@ -94,6 +108,6 @@ export const sendCustomNotification = async (req: AuthenticatedRequest, res: Res
     res.json({ message: "Đã gửi thông báo thành công!" });
   } catch (error: any) {
     console.error("Lỗi gửi thông báo tùy chỉnh:", error);
-    res.status(500).json({ message: error.message });
+    handleNotificationError(res, error);
   }
 };

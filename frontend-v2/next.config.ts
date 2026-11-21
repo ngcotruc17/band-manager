@@ -1,10 +1,11 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    root: path.resolve(__dirname, ".."),
+  },
   allowedDevOrigins: ['localhost', '127.0.0.1', '192.168.2.13'],
-  experimental: {
-    // Cho phép Turbopack nhận diện đúng thư mục root frontend-v2
-  }
 };
 
 export default nextConfig;

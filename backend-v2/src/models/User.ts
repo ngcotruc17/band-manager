@@ -21,6 +21,11 @@ export interface IUser extends Document {
   isApproved: boolean;
   createdAt: Date;
   
+  // R1 & R3: Account Lockout & Token Revocation
+  failedLoginAttempts?: number;
+  lockUntil?: Date | null;
+  tokenVersion?: number;
+  
   // Nâng cấp v2.0
   walletBalance: number;
   totalFinePaid: number;
@@ -61,6 +66,11 @@ const userSchema = new Schema<IUser>({
   instrument: { type: String, default: 'Chưa phân công' },
   isApproved: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
+  
+  // R1 & R3: Account Lockout & Token Revocation
+  failedLoginAttempts: { type: Number, default: 0 },
+  lockUntil: { type: Date, default: null },
+  tokenVersion: { type: Number, default: 0 },
   
   // Nâng cấp v2.0
   walletBalance: { type: Number, default: 0 },

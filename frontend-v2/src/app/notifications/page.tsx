@@ -26,6 +26,8 @@ interface Member {
   isApproved: boolean;
 }
 
+export type NotificationCategory = "general" | "urgent" | "show" | "rehearsal" | "finance";
+
 export default function NotificationsHubPage() {
   const { user } = useContext(AuthContext);
   const [activeTab, setActiveTab] = useState<"inbox" | "broadcast">("inbox");
@@ -36,7 +38,7 @@ export default function NotificationsHubPage() {
   const [members, setMembers] = useState<Member[]>([]);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [category, setCategory] = useState<"general" | "urgent" | "show" | "rehearsal" | "finance">("general");
+  const [category, setCategory] = useState<NotificationCategory>("general");
   const [recipientType, setRecipientType] = useState("all");
   const [submitting, setSubmitting] = useState(false);
 
@@ -62,8 +64,17 @@ export default function NotificationsHubPage() {
   };
 
   useEffect(() => {
-    fetchNotifications();
-    fetchMembers();
+    let isCancelled = false;
+    const initData = async () => {
+      await Promise.resolve();
+      if (isCancelled || !user) return;
+      fetchNotifications();
+      fetchMembers();
+    };
+    initData();
+    return () => {
+      isCancelled = true;
+    };
   }, [user]);
 
   const handleMarkAsRead = async (id: string) => {
@@ -105,8 +116,9 @@ export default function NotificationsHubPage() {
       setContent("");
       setActiveTab("inbox");
       fetchNotifications();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Lỗi gửi thông báo");
+    } catch (err: unknown) {
+      const errorObj = err as { response?: { data?: { message?: string } } };
+      toast.error(errorObj.response?.data?.message || "Lỗi gửi thông báo");
     } finally {
       setSubmitting(false);
     }
@@ -271,7 +283,7 @@ export default function NotificationsHubPage() {
                 <label className="text-xs font-bold text-slate-700">Phân loại tin *</label>
                 <select
                   value={category}
-                  onChange={(e) => setCategory(e.target.value as any)}
+                  onChange={(e) => setCategory(e.target.value as NotificationCategory)}
                   className="ui-input w-full text-xs font-semibold cursor-pointer"
                 >
                   <option value="general">Thông báo chung</option>

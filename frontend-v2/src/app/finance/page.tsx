@@ -4,9 +4,9 @@ import React, { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import api from '../../services/api';
 import { 
-  DollarSign, TrendingUp, AlertCircle, Calendar, 
-  UploadCloud, FileText, CheckCircle, RefreshCw, 
-  Search, ShieldAlert, CreditCard, Clock, CheckCircle2,
+  DollarSign, TrendingUp, AlertCircle, 
+  UploadCloud, FileText, 
+  Search, ShieldAlert, CreditCard,
   Trash2, Plus, ArrowDown, ArrowUp, Loader, Download
 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -31,7 +31,7 @@ interface WebhookLog {
   content: string;
   senderName: string;
   processed: boolean;
-  rawPayload?: any;
+  rawPayload?: Record<string, unknown>;
   createdAt: string;
 }
  
@@ -65,7 +65,7 @@ export default function FinanceV2() {
         const webhookRes = await api.get("/finance/webhooks");
         setWebhookLogs(webhookRes.data || []);
       }
-    } catch (err) {
+    } catch {
       toast.error("Lỗi nạp dữ liệu tài chính");
     } finally {
       setLoading(false);
@@ -73,9 +73,16 @@ export default function FinanceV2() {
   };
  
   useEffect(() => {
-    if (user) {
+    let isCancelled = false;
+    const loadFinance = async () => {
+      await Promise.resolve();
+      if (isCancelled || !user) return;
       fetchFinanceData();
-    }
+    };
+    loadFinance();
+    return () => {
+      isCancelled = true;
+    };
   }, [user]);
  
   // Xử lý nộp hóa đơn phát sinh chi phí
@@ -88,20 +95,39 @@ export default function FinanceV2() {
  
     setLoading(true);
     try {
-      // Gửi giao dịch lên API
-      await api.post("/finance", {
-        title: invoiceData.title,
-        amount: Number(invoiceData.amount),
-        type: "expense",
-        category: invoiceData.category
-      });
+      if (invoiceFile) {
+        const formData = new FormData();
+        formData.append("title", invoiceData.title);
+        formData.append("amount", String(invoiceData.amount));
+        formData.append("type", "expense");
+        formData.append("category", invoiceData.category);
+        if (invoiceData.notes) {
+          formData.append("notes", invoiceData.notes);
+        }
+        formData.append("invoice", invoiceFile);
+
+        await api.post("/finance", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data"
+          }
+        });
+      } else {
+        await api.post("/finance", {
+          title: invoiceData.title,
+          amount: Number(invoiceData.amount),
+          type: "expense",
+          category: invoiceData.category,
+          ...(invoiceData.notes ? { notes: invoiceData.notes } : {})
+        });
+      }
       toast.success("Đã ghi nhận chi phí phát sinh và khấu trừ Quỹ Band!");
       setInvoiceData({ title: "", amount: "", category: "equipment", notes: "" });
       setInvoiceFile(null);
       setShowUploadModal(false);
       fetchFinanceData();
-    } catch (err) {
-      toast.error("Lỗi khi kê khai chi phí");
+    } catch (err: unknown) {
+      const axiosError = err as { response?: { data?: { message?: string } } };
+      toast.error(axiosError.response?.data?.message || "Lỗi khi kê khai chi phí");
     } finally {
       setLoading(false);
     }
@@ -114,7 +140,7 @@ export default function FinanceV2() {
       await api.delete(`/finance/${id}`);
       toast.success("Đã xóa giao dịch thành công");
       fetchFinanceData();
-    } catch (err) {
+    } catch {
       toast.error("Không thể xóa giao dịch");
     }
   };
@@ -354,7 +380,7 @@ export default function FinanceV2() {
  
                         <div className="space-y-1 text-slate-700 font-semibold">
                           <p className="font-extrabold text-slate-800">{log.senderName || "KHONG RO NGUOI GUI"}</p>
-                          <p className="text-slate-500 italic">" {log.content} "</p>
+                          <p className="text-slate-500 italic">&ldquo; {log.content} &rdquo;</p>
                         </div>
  
                         <div className="flex justify-between items-center pt-2 border-t border-slate-100 text-[9px] font-bold text-slate-400">

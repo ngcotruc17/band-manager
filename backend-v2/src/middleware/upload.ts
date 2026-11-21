@@ -1,11 +1,21 @@
 import multer, { FileFilterCallback } from 'multer';
 import path from 'path';
+import fs from 'fs';
 import { Request } from 'express';
+
+// Đường dẫn lưu file thống nhất anchored với backend-v2/uploads
+export const uploadDir = process.env.UPLOAD_DIR
+  ? path.resolve(process.env.UPLOAD_DIR)
+  : path.resolve(__dirname, '../../uploads');
+
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 // Cấu hình nơi lưu file
 const storage = multer.diskStorage({
   destination: function (req: Request, file: Express.Multer.File, cb: (error: Error | null, destination: string) => void) {
-    cb(null, 'uploads/'); // Lưu vào thư mục uploads
+    cb(null, uploadDir); // Lưu vào thư mục uploads được định vị chính xác
   },
   filename: function (req: Request, file: Express.Multer.File, cb: (error: Error | null, filename: string) => void) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -24,5 +34,9 @@ const fileFilter = (req: Request, file: Express.Multer.File, cb: FileFilterCallb
   }
 };
 
-const upload = multer({ storage: storage, fileFilter: fileFilter });
+const upload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: { fileSize: 15 * 1024 * 1024 } // 15MB DoS protection limit
+});
 export default upload;

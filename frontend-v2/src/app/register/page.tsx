@@ -7,7 +7,7 @@ import { AuthContext } from "../../context/AuthContext";
 import api from "../../services/api";
 import { 
   UserPlus, Mail, Lock, User, X, CheckSquare, Square,
-  Phone, Music, ArrowRight, Loader, ShieldCheck
+  Phone, Music, ArrowRight, ShieldCheck, ChevronDown
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -21,6 +21,7 @@ export default function Register() {
     email: "",
     phone: "",
     role: "student",
+    instrument: "Guitar",
     password: "",
     confirmPassword: ""
   });
@@ -74,12 +75,14 @@ export default function Register() {
         email: formData.email,
         phone: formData.phone,
         role: formData.role,
+        instrument: formData.instrument,
         password: formData.password,
       });
       toast.success("Đăng ký thành công! Ban quản lý (CTSV / Bộ môn) sẽ duyệt kích hoạt tài khoản của bạn.", { id: toastId });
       router.push("/login");
-    } catch (err: any) {
-      const errMsg = err.response?.data?.message || "Lỗi tạo tài khoản";
+    } catch (err: unknown) {
+      const errorObj = err as { response?: { data?: { message?: string } } };
+      const errMsg = errorObj.response?.data?.message || "Lỗi tạo tài khoản";
       toast.error(errMsg, { id: toastId });
       setShowTerms(false);
     } finally {
@@ -146,20 +149,45 @@ export default function Register() {
             </div>
           </div>
 
-          {/* Phân vai / Chức danh tại FPTU */}
-          <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-slate-700">Vai trò / Chức danh tại FPTU *</label>
-            <div className="relative flex items-center">
-              <select
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-                className="ui-input w-full px-4 py-3 text-xs sm:text-sm font-bold text-slate-800 bg-white cursor-pointer"
-              >
-                <option value="student">🎓 Sinh viên FPTU (Nhạc công / Đặt ban nhạc)</option>
-                <option value="lecturer">👨‍🏫 Giảng viên FPTU (Biểu diễn / Đặt ban nhạc)</option>
-                <option value="manager">🏛️ Cán bộ Bộ môn / CTSV (Phụ trách xếp show & quản lý)</option>
-              </select>
+          {/* Phân vai & Nhạc cụ chuyên môn */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-slate-700">Vai trò tại FPTU *</label>
+              <div className="relative flex items-center">
+                <select
+                  name="role"
+                  value={formData.role}
+                  onChange={handleChange}
+                  className="ui-input w-full px-4 pr-10 py-3 text-xs sm:text-sm font-bold text-slate-800 bg-white cursor-pointer appearance-none"
+                >
+                  <option value="student">Sinh viên FPTU</option>
+                  <option value="lecturer">Giảng viên FPTU</option>
+                  <option value="manager">Cán bộ Bộ môn / CTSV</option>
+                </select>
+                <ChevronDown size={14} className="text-slate-400 pointer-events-none absolute right-3.5" />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-slate-700">Nhạc cụ chuyên môn *</label>
+              <div className="relative flex items-center">
+                <select
+                  name="instrument"
+                  value={formData.instrument}
+                  onChange={handleChange}
+                  className="ui-input w-full px-4 pr-10 py-3 text-xs sm:text-sm font-bold text-slate-800 bg-white cursor-pointer appearance-none"
+                >
+                  <option value="Guitar">Guitar (Lead/Rhythm)</option>
+                  <option value="Bass">Bass</option>
+                  <option value="Drums">Trống (Drums/Cajon)</option>
+                  <option value="Keyboard">Keyboard / Piano</option>
+                  <option value="Vocal">Hát chính / Vocal</option>
+                  <option value="Saxophone">Saxophone / Kèn</option>
+                  <option value="Violin">Violin</option>
+                  <option value="Khác">Nhạc cụ khác / Đặt show</option>
+                </select>
+                <ChevronDown size={14} className="text-slate-400 pointer-events-none absolute right-3.5" />
+              </div>
             </div>
           </div>
 
@@ -273,31 +301,31 @@ export default function Register() {
               <div 
                 ref={termsBodyRef} 
                 onScroll={handleScroll} 
-                className="p-6 overflow-y-auto space-y-4 text-xs text-slate-700 leading-relaxed"
+                className="p-6 overflow-y-auto space-y-4 text-xs text-slate-700 leading-relaxed max-h-[50vh]"
               >
                 <div className="space-y-1 p-3 rounded-xl bg-slate-50 border border-slate-100">
                   <h4 className="font-extrabold text-slate-900 text-xs">Điều 1. Tư cách & Cơ cấu quản lý</h4>
-                  <p className="text-slate-600">FPTU Band là ban nhạc chính thức thuộc quyền quản lý trực tiếp của Bộ môn và Phòng Công tác Sinh viên (CTSV) Trường Đại học FPT Phân hiệu TP.HCM (không phải của riêng CLB). Mọi hoạt động biểu diễn, xếp show, kiểm duyệt chất lượng đều dưới sự điều phối của Cán bộ phụ trách.</p>
+                  <p className="text-slate-600">FPTU Band là ban nhạc chính thức trực thuộc quyền quản lý trực tiếp của Bộ môn và Phòng Công tác Sinh viên (CTSV) Trường Đại học FPT Phân hiệu TP.HCM (không thuộc riêng bất kỳ câu lạc bộ nào). Mọi hoạt động biểu diễn, xếp lịch tập, phê duyệt thành viên và giám sát chất lượng đều do Ban điều phối phụ trách.</p>
                 </div>
 
                 <div className="space-y-1 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                  <h4 className="font-extrabold text-slate-900 text-xs">Điều 2. Quyền lợi Đặt show & Biểu diễn</h4>
-                  <p className="text-slate-600">Cán bộ phòng ban, Giảng viên và Sinh viên đều có quyền đặt ban nhạc (book show) cho các sự kiện nhà trường, bộ môn, đối tác. Giảng viên và Sinh viên là nghệ sĩ/nhạc công có quyền đăng ký và được xếp lịch tham gia đội hình biểu diễn chính thức.</p>
+                  <h4 className="font-extrabold text-slate-900 text-xs">Điều 2. Thu thập dữ liệu cơ bản & Cam kết quyền riêng tư</h4>
+                  <p className="text-slate-600">Hệ thống chỉ thu thập các thông tin tối thiểu cần thiết cho công tác điều phối ban nhạc: Họ và tên, Địa chỉ Email, Số điện thoại liên lạc, Vai trò tại FPTU và Nhạc cụ chuyên môn. Hệ thống cam kết <strong>tuyệt đối KHÔNG sử dụng định vị GPS</strong> và <strong>tuyệt đối KHÔNG thu thập hoặc xử lý dữ liệu sinh trắc học FaceID</strong>.</p>
                 </div>
 
                 <div className="space-y-1 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                  <h4 className="font-extrabold text-slate-900 text-xs">Điều 3. Kỷ luật chuyên cần & Bảo mật</h4>
-                  <p className="text-slate-600">Có mặt trước giờ diễn và giờ tập ít nhất 10 phút. Tuyệt đối bảo mật tài nguyên âm nhạc (beat, sheet), thông tin hợp đồng và lịch trình nội bộ FPTU Band.</p>
+                  <h4 className="font-extrabold text-slate-900 text-xs">Điều 3. Kỷ luật chuyên cần & Chế tài vắng tập / Đi muộn</h4>
+                  <p className="text-slate-600">Thành viên có trách nhiệm tham gia đầy đủ, đúng giờ các buổi tập ráp và show diễn (có mặt trước ít nhất 10 phút). Đi muộn quá 15 phút sẽ bị áp dụng mức phạt 50.000 VNĐ; vắng tập không có lý do chính đáng sẽ bị phạt 100.000 VNĐ nộp trực tiếp vào Quỹ Ban Nhạc để duy trì hoạt động.</p>
                 </div>
 
                 <div className="space-y-1 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                  <h4 className="font-extrabold text-slate-900 text-xs">Điều 4. Cơ chế Tài chính & Quỹ Ban Nhạc</h4>
-                  <p className="text-slate-600">Thù lao biểu diễn được phân bổ minh bạch theo ma trận vai trò chuyên môn, sau khi trích lập phần trăm Quỹ Ban Nhạc theo quy định của Nhà trường và Ban điều phối.</p>
+                  <h4 className="font-extrabold text-slate-900 text-xs">Điều 4. Cơ chế Tài chính, Thù lao biểu diễn & Quỹ Ban Nhạc</h4>
+                  <p className="text-slate-600">Thù lao biểu diễn được phân bổ minh bạch theo ma trận hệ số vai trò chuyên môn sau khi trích nộp đúng 10% vào Quỹ Ban Nhạc theo quy định của Nhà trường và Ban điều phối. Quỹ ban nhạc được dùng tái đầu tư nhạc cụ, trang thiết bị âm thanh và hỗ trợ thành viên.</p>
                 </div>
 
                 {!canCheck && (
                   <div className="sticky bottom-0 bg-amber-50 border border-amber-200 p-2.5 text-center text-amber-800 font-bold text-[10px] rounded-xl shadow-xs">
-                    ⬇️ CUỘN XUỐNG DƯỚI CÙNG ĐỂ KÍCH HOẠT NÚT ĐỒNG Ý
+                    ⬇️ VUI LÒNG CUỘN ĐỌC HẾT QUY CHẾ ĐỂ MỞ KHÓA NÚT XÁC NHẬN
                   </div>
                 )}
               </div>

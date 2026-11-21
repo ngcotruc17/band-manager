@@ -57,16 +57,21 @@ export const calculateSalarySplit = (input: SalarySplitInput): SalarySplitResult
   };
 };
 
-// Regex parser test helper for bank transfer descriptions
+// Regex parser test helper for bank transfer descriptions with Vietnamese diacritics normalization
 export const parseBankTransferContent = (content: string) => {
   const cleanContent = content.toUpperCase().replace(/[-_]/g, ' ');
-  const showMatch = cleanContent.match(/SHOW\s*([A-F0-9]{24})/i);
-  const fineMatch = cleanContent.match(/PHAT\s*([A-F0-9]{24})/i);
+  const normalized = cleanContent.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const showMatch = normalized.match(/SHOW\s*([A-F0-9]{24})/i);
+  const fineMatch = normalized.match(/PHAT\s*([A-F0-9]{24})/i);
 
   return {
     showId: showMatch ? showMatch[1].toLowerCase() : null,
     userId: fineMatch ? fineMatch[1].toLowerCase() : null
   };
+};
+
+export const sanitizeCurrencyAmount = (raw: any): number => {
+  return Number(String(raw).replace(/[^0-9.-]/g, ''));
 };
 
 export const runFinanceTests = (): { passed: boolean; details: string[] } => {
@@ -110,6 +115,26 @@ export const runFinanceTests = (): { passed: boolean; details: string[] } => {
   } else {
     passed = false;
     details.push(`❌ Test 3 Failed: Expected Band Fund 1,000,000 but got ${splitResult.bandFundAmount}`);
+  }
+
+  // Test 4: Vietnamese Diacritics Regex Parsing
+  const test4Show = parseBankTransferContent("Chuyển tiền cọc SHOW 65d83f12a4b8c9123456789a đã xong");
+  const test4Fine = parseBankTransferContent("Nộp tiền PHẠT 65d83f12a4b8c9123456789b tập trễ");
+  if (test4Show.showId === "65d83f12a4b8c9123456789a" && test4Fine.userId === "65d83f12a4b8c9123456789b") {
+    details.push("✅ Test 4 Passed: Correctly parsed Vietnamese diacritics in SHOW and PHAT transfer descriptions.");
+  } else {
+    passed = false;
+    details.push("❌ Test 4 Failed: Vietnamese diacritics parsing failed.");
+  }
+
+  // Test 5: Currency Sanitization (prevent NaN)
+  const amt1 = sanitizeCurrencyAmount("1,500,000");
+  const amt2 = sanitizeCurrencyAmount("  2,000,000 VND ");
+  if (amt1 === 1500000 && amt2 === 2000000 && !isNaN(amt1) && !isNaN(amt2)) {
+    details.push("✅ Test 5 Passed: Successfully sanitized formatted currency strings without NaN corruption.");
+  } else {
+    passed = false;
+    details.push(`❌ Test 5 Failed: Currency sanitization failed: amt1=${amt1}, amt2=${amt2}`);
   }
 
   return { passed, details };

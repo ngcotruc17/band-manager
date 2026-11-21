@@ -5,13 +5,25 @@ import Transaction from '../models/Transaction';
 import { sendNewShowEmail, sendApproveEmail, sendSalarySplitEmail } from '../utils/sendEmail';
 import { NotificationService } from '../services/notification.service';
 import { AuthenticatedRequest } from '../middleware/auth';
+import { calculateSalarySplit } from '../utils/salary';
+
+const handleShowError = (res: Response, error: any, defaultMessage = "Không tìm thấy Show (ID không hợp lệ)") => {
+  if (error?.name === 'CastError' || error?.kind === 'ObjectId') {
+    return res.status(404).json({ success: false, message: defaultMessage });
+  }
+  if (error?.name === 'ValidationError') {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+  return res.status(500).json({ message: error.message });
+};
 
 export const getShows = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
-    const shows = await Show.find().sort({ date: 1 });
+    const sortOrder = req.query.sort === 'asc' ? 1 : -1;
+    const shows = await Show.find().sort({ date: sortOrder });
     res.json(shows);
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    handleShowError(res, error);
   }
 };
 
@@ -39,7 +51,7 @@ export const createShow = async (req: AuthenticatedRequest, res: Response): Prom
 
     res.status(201).json(newShow);
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    handleShowError(res, error, "Không thể tạo show do dữ liệu không hợp lệ");
   }
 };
 
@@ -48,7 +60,7 @@ export const deleteShow = async (req: AuthenticatedRequest, res: Response): Prom
     await Show.findByIdAndDelete(req.params.id);
     res.json({ message: "Đã xóa show" });
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    handleShowError(res, error);
   }
 };
 
@@ -74,22 +86,52 @@ export const updateShowStatus = async (req: AuthenticatedRequest, res: Response)
 
     if (status === 'completed') {
       const approvedParticipants = oldShow.participants.filter(p => p.status === 'approved');
-      const N = approvedParticipants.length;
       const totalPrice = oldShow.price || 0;
-      const bandFundPercent = 5;
-      const bandFundAmount = Math.round(totalPrice * (bandFundPercent / 100));
-      const remainingAmount = totalPrice - bandFundAmount;
-      const memberAmount = N > 0 ? Math.round(remainingAmount / N) : 0;
+      const bandFundPercent = oldShow.payoutMatrix?.bandFundPercent !== undefined ? oldShow.payoutMatrix.bandFundPercent : 5;
 
-      salarySplit = {
+      const roleMultipliers: Record<string, number> = {};
+      if (oldShow.payoutMatrix?.roleMultipliers) {
+        for (const rm of oldShow.payoutMatrix.roleMultipliers) {
+          roleMultipliers[rm.instrument] = rm.multiplier;
+        }
+      }
+
+      const allowances = (oldShow.payoutMatrix?.allowances || []).map(a => ({
+        id: (a.user as any)?._id ? (a.user as any)._id.toString() : a.user.toString(),
+        amount: a.amount
+      }));
+
+      const members = approvedParticipants.map(p => ({
+        id: ((p.user as any)?._id || p.user).toString(),
+        role: p.role || (p.user as any)?.instrument || ''
+      }));
+
+      const splitResult = calculateSalarySplit({
         totalPrice,
         bandFundPercent,
-        bandFundAmount,
-        memberAmount,
-        members: approvedParticipants.map(p => ({
-          user: (p.user as any)._id,
-          amount: memberAmount
-        }))
+        members,
+        roleMultipliers,
+        allowances
+      });
+
+      const memberPayoutList = approvedParticipants.map(p => {
+        const uid = ((p.user as any)?._id || p.user).toString();
+        return {
+          user: (p.user as any)?._id || p.user,
+          amount: splitResult.memberPayouts[uid] || 0
+        };
+      });
+
+      const avgMemberAmount = approvedParticipants.length > 0 
+        ? Math.round(splitResult.remainingPool / approvedParticipants.length) 
+        : 0;
+
+      salarySplit = {
+        totalPrice: splitResult.totalPrice,
+        bandFundPercent,
+        bandFundAmount: splitResult.bandFundAmount,
+        memberAmount: avgMemberAmount,
+        members: memberPayoutList
       };
 
       // Tạo các bản ghi giao dịch
@@ -105,18 +147,23 @@ export const updateShowStatus = async (req: AuthenticatedRequest, res: Response)
         });
         await incomeTrans.save();
 
-        // 2. Chi cát-xê cho từng thành viên tham gia
+        // 2. Chi cát-xê cho từng thành viên tham gia & cập nhật ví
         for (const p of approvedParticipants) {
-          if (memberAmount > 0 && p.user) {
+          const uid = ((p.user as any)?._id || p.user).toString();
+          const payout = splitResult.memberPayouts[uid] || 0;
+          if (payout > 0 && p.user) {
             const expenseTrans = new Transaction({
               title: `Cát-xê ${(p.user as any).fullName || 'Thành viên'} - Show: ${oldShow.title}`,
-              amount: -memberAmount,
+              amount: -payout,
               type: 'expense',
               category: 'show',
               showId: oldShow._id,
-              performedBy: (p.user as any)._id
+              performedBy: (p.user as any)._id || p.user
             });
             await expenseTrans.save();
+
+            // Tăng số dư ví của thành viên
+            await User.findByIdAndUpdate(uid, { $inc: { walletBalance: payout } });
           }
         }
       }
@@ -156,7 +203,7 @@ export const updateShowStatus = async (req: AuthenticatedRequest, res: Response)
     res.json(updatedShow);
   } catch (error: any) { 
     console.error("Lỗi trong updateShowStatus:", error);
-    res.status(500).json({ message: error.message }); 
+    handleShowError(res, error); 
   }
 };
 
@@ -169,7 +216,7 @@ export const getShowById = async (req: AuthenticatedRequest, res: Response): Pro
     }
     res.json(show);
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    handleShowError(res, error);
   }
 };
 
@@ -182,6 +229,26 @@ export const joinShow = async (req: AuthenticatedRequest, res: Response): Promis
     const show = await Show.findById(req.params.id);
     if (!show) {
       res.status(404).json({ message: "Không tìm thấy Show" });
+      return;
+    }
+
+    // 🔒 Kiểm tra trạng thái và thời hạn đóng đăng ký của Show
+    if (show.status === 'completed' || show.status === 'cancelled') {
+      res.status(400).json({ success: false, message: "Show diễn đã kết thúc hoặc bị hủy, không thể thay đổi đăng ký" });
+      return;
+    }
+
+    if (show.isRegistrationClosed) {
+      res.status(400).json({ success: false, message: "Đăng ký tham gia show diễn này đã đóng" });
+      return;
+    }
+
+    const lockHours = show.lockRegistrationHours !== undefined ? show.lockRegistrationHours : 24;
+    const showDate = new Date(show.date).getTime();
+    const now = Date.now();
+    const lockTime = showDate - lockHours * 60 * 60 * 1000;
+    if (now >= lockTime) {
+      res.status(400).json({ success: false, message: `Đã hết hạn đăng ký (khóa trước giờ diễn ${lockHours} tiếng)` });
       return;
     }
 
@@ -207,7 +274,7 @@ export const joinShow = async (req: AuthenticatedRequest, res: Response): Promis
       res.json({ message: "Đã đăng ký tham gia, vui lòng chờ Admin duyệt!" });
     }
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    handleShowError(res, error);
   }
 };
 
@@ -241,7 +308,7 @@ export const approveParticipant = async (req: AuthenticatedRequest, res: Respons
       res.status(404).json({ message: "Không tìm thấy thành viên trong danh sách đăng ký" });
     }
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    handleShowError(res, error);
   }
 };
 
@@ -252,11 +319,12 @@ export const removeParticipant = async (req: AuthenticatedRequest, res: Response
       res.status(404).json({ message: "Không tìm thấy Show" });
       return;
     }
+
     show.participants = show.participants.filter(p => p.user.toString() !== req.body.userId) as any;
     await show.save();
     res.json({ message: "Đã xóa khỏi show" });
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    handleShowError(res, error);
   }
 };
 
@@ -267,11 +335,12 @@ export const toggleRegistration = async (req: AuthenticatedRequest, res: Respons
       res.status(404).json({ message: "Không tìm thấy Show" });
       return;
     }
+
     show.isRegistrationClosed = !show.isRegistrationClosed;
     await show.save();
     res.json({ message: "Đã thay đổi trạng thái đăng ký" });
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    handleShowError(res, error);
   }
 };
 
@@ -280,7 +349,7 @@ export const updateShow = async (req: AuthenticatedRequest, res: Response): Prom
     const updated = await Show.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json(updated);
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    handleShowError(res, error);
   }
 };
 
@@ -291,11 +360,12 @@ export const addSongToSetlist = async (req: AuthenticatedRequest, res: Response)
       res.status(404).json({ message: "Không tìm thấy Show" });
       return;
     }
+
     show.setlist.push({ ...req.body, addedBy: req.user?._id });
     await show.save();
     res.json(show.setlist);
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    handleShowError(res, error);
   }
 };
 
@@ -306,10 +376,11 @@ export const removeSongFromSetlist = async (req: AuthenticatedRequest, res: Resp
       res.status(404).json({ message: "Không tìm thấy Show" });
       return;
     }
+
     show.setlist = show.setlist.filter(item => (item as any)._id.toString() !== req.params.songId);
     await show.save();
     res.json(show.setlist);
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    handleShowError(res, error);
   }
 };

@@ -1,6 +1,6 @@
 "use client";
  
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { io, Socket } from "socket.io-client";
 import api from "../../services/api";
 import { 
@@ -110,10 +110,10 @@ const transposeChord = (chord: string, semitones: number): string => {
     root = flats[root];
   }
   
-  let idx = scale.indexOf(root.toUpperCase());
+  const idx = scale.indexOf(root.toUpperCase());
   if (idx === -1) return chord;
   
-  let newIdx = (idx + semitones + 12) % 12;
+  const newIdx = (idx + semitones + 12) % 12;
   return scale[newIdx] + suffix;
 };
 
@@ -175,7 +175,8 @@ export default function DigitalMusicStand() {
   // Web Audio Click Synthesizer
   const playClickSound = (isFirstBeat: boolean) => {
     try {
-      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const AudioCtxClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const audioCtx = new AudioCtxClass();
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       
@@ -196,14 +197,16 @@ export default function DigitalMusicStand() {
   // Metronome Timer Effect
   useEffect(() => {
     if (!metronomeEnabled || bpm <= 0) {
-      setCurrentBeat(0);
-      return;
+      const timer = setTimeout(() => setCurrentBeat(0), 0);
+      return () => clearTimeout(timer);
     }
     
     const intervalMs = (60 / bpm) * 1000;
     let beat = 1;
-    setCurrentBeat(beat);
-    if (metronomeSoundEnabled) playClickSound(true);
+    const initialTimer = setTimeout(() => {
+      setCurrentBeat(1);
+      if (metronomeSoundEnabled) playClickSound(true);
+    }, 0);
     
     const timer = setInterval(() => {
       beat = beat === 4 ? 1 : beat + 1;
@@ -212,8 +215,11 @@ export default function DigitalMusicStand() {
         playClickSound(beat === 1);
       }
     }, intervalMs);
-    
-    return () => clearInterval(timer);
+
+    return () => {
+      clearTimeout(initialTimer);
+      clearInterval(timer);
+    };
   }, [metronomeEnabled, bpm, metronomeSoundEnabled]);
 
   // Auto-scroll Animation Effect
@@ -246,42 +252,27 @@ export default function DigitalMusicStand() {
     return () => cancelAnimationFrame(animationFrameId);
   }, [autoScroll, isPlayingScroll, bpm, scrollSpeedMultiplier]);
 
-  // Reset scroll và transpose khi đổi bài hát
-  useEffect(() => {
+  const [prevSongIdx, setPrevSongIdx] = useState(activeSongIndex);
+  if (activeSongIndex !== prevSongIdx) {
+    setPrevSongIdx(activeSongIndex);
     setTranspose(0);
     setIsPlayingScroll(false);
+  }
+
+  // Reset scroll khi đổi bài hát
+  useEffect(() => {
     if (lyricsContainerRef.current) {
       lyricsContainerRef.current.scrollTop = 0;
     }
   }, [activeSongIndex]);
- 
-  // Nạp danh sách show diễn
-  useEffect(() => {
-    const fetchShows = async () => {
-      try {
-        const res = await api.get("/shows");
-        const activeShows = (res.data || []).filter((s: ShowItem) => s.status !== "cancelled");
-        setShows(activeShows);
-        if (activeShows.length > 0) {
-          handleSelectShow(activeShows[0]._id);
-        } else {
-          setLoading(false);
-        }
-      } catch (err) {
-        toast.error("Không thể tải danh sách show diễn");
-        setLoading(false);
-      }
-    };
-    fetchShows();
-  }, []);
- 
-  const handleSelectShow = async (showId: string) => {
+
+  const handleSelectShow = useCallback(async (showId: string) => {
     setSelectedShowId(showId);
     setLoading(true);
     try {
       const res = await api.get(`/shows/${showId}`);
       const dbSetlist = res.data.setlist || [];
-      const formatted = dbSetlist.map((s: any) => ({
+      const formatted = dbSetlist.map((s: { title: string; note?: string; link?: string }) => ({
         title: s.title,
         note: s.note || "Tone hợp âm",
         sheetUrl: s.link || "",
@@ -289,12 +280,41 @@ export default function DigitalMusicStand() {
       }));
       setSetlist(formatted);
       setActiveSongIndex(0);
-    } catch (err) {
+    } catch {
       toast.error("Lỗi tải Setlist bài hát");
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+ 
+  // Nạp danh sách show diễn
+  useEffect(() => {
+    let isCancelled = false;
+    const fetchShows = async () => {
+      await Promise.resolve();
+      if (isCancelled) return;
+      try {
+        const res = await api.get("/shows");
+        if (isCancelled) return;
+        const activeShows = (res.data || []).filter((s: ShowItem) => s.status !== "cancelled");
+        setShows(activeShows);
+        if (activeShows.length > 0) {
+          handleSelectShow(activeShows[0]._id);
+        } else {
+          setLoading(false);
+        }
+      } catch {
+        if (!isCancelled) {
+          toast.error("Không thể tải danh sách show diễn");
+          setLoading(false);
+        }
+      }
+    };
+    fetchShows();
+    return () => {
+      isCancelled = true;
+    };
+  }, [handleSelectShow]);
  
   // Quản lý kết nối Socket.io
   useEffect(() => {

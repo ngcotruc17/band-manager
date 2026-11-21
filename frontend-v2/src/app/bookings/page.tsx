@@ -3,12 +3,13 @@
 import React, { useState, useEffect, useContext } from "react";
 import api from '../../services/api'; 
 import { AuthContext } from "../../context/AuthContext";
+import { calculateFine } from "../../utils/fine";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { 
   Calendar, MapPin, User, Phone, DollarSign, Plus, Search, 
   CheckCircle, XCircle, Clock, Music, FileText, Loader, Lock, Unlock, PlayCircle, Check, Edit, Trash2,
-  Users, ChevronDown, ChevronUp, Save, Camera, X, RefreshCw, Layers
+  Users, ChevronDown, ChevronUp, Save, Camera, X, RefreshCw, Layers, ArrowUpDown
 } from "lucide-react";
 import BookingModal from "../../components/BookingModal"; 
 
@@ -68,6 +69,10 @@ export default function BookingAndRehearsalManager() {
   const [bookingSearchTerm, setBookingSearchTerm] = useState("");
   const [editingBookingId, setEditingBookingId] = useState<string | null>(null);
   const [bookingActiveTab, setBookingActiveTab] = useState("all");
+  type BookingSortOption = "newest" | "oldest" | "price-desc" | "price-asc";
+  const [bookingSort, setBookingSort] = useState<BookingSortOption>("newest");
+  const [rehearsalSort, setRehearsalSort] = useState<"newest" | "oldest">("newest");
+  const [isSavingBooking, setIsSavingBooking] = useState(false);
 
   const initialBookingForm = {
     title: "", customerName: "", phone: "", date: "", time: "", location: "",
@@ -80,7 +85,7 @@ export default function BookingAndRehearsalManager() {
     try {
       const res = await api.get('/shows'); 
       setBookings(res.data || []);
-    } catch (err) {
+    } catch {
       toast.error("Lỗi tải danh sách show");
     } finally {
       setLoadingBookings(false);
@@ -106,10 +111,10 @@ export default function BookingAndRehearsalManager() {
       price: String(item.price || 0),
       deposit: String(item.deposit || 0),
       notes: item.notes || "",
-      eventType: (item as any).eventType || "",
-      memberCount: String((item as any).memberCount || ""),
-      dresscode: (item as any).dresscode || "",
-      extraFee: String((item as any).extraFee || "")
+      eventType: item.eventType || "",
+      memberCount: String(item.memberCount || ""),
+      dresscode: item.dresscode || "",
+      extraFee: String(item.extraFee || "")
     });
     setShowBookingModal(true);
   };
@@ -121,11 +126,21 @@ export default function BookingAndRehearsalManager() {
   };
 
   const handleBookingSave = async () => {
-    if (!bookingFormData.title || !bookingFormData.date || !bookingFormData.price) {
+    if (isSavingBooking) return;
+    if (
+      !bookingFormData.title?.trim() ||
+      !bookingFormData.customerName?.trim() ||
+      !bookingFormData.date ||
+      !bookingFormData.time?.trim() ||
+      !bookingFormData.location?.trim() ||
+      bookingFormData.price === undefined ||
+      bookingFormData.price === ''
+    ) {
       toast.error("Vui lòng nhập các thông tin bắt buộc!");
       return;
     }
     
+    setIsSavingBooking(true);
     try {
       if (editingBookingId) {
         await api.put(`/shows/${editingBookingId}`, bookingFormData);
@@ -138,8 +153,11 @@ export default function BookingAndRehearsalManager() {
       setBookingFormData(initialBookingForm);
       setEditingBookingId(null);
       fetchBookings();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Lỗi thao tác");
+    } catch (err: unknown) {
+      const errorObj = err as { response?: { data?: { message?: string } } };
+      toast.error(errorObj.response?.data?.message || "Lỗi thao tác");
+    } finally {
+      setIsSavingBooking(false);
     }
   };
 
@@ -151,7 +169,7 @@ export default function BookingAndRehearsalManager() {
       await api.delete(`/shows/${id}`); 
       toast.success("Đã xóa"); 
       fetchBookings(); 
-    } catch (err) { 
+    } catch { 
       toast.error("Lỗi xóa"); 
     }
   };
@@ -163,7 +181,7 @@ export default function BookingAndRehearsalManager() {
       await api.put(`/shows/${id}/status`, { status }); 
       toast.success("Đã cập nhật trạng thái!"); 
       fetchBookings(); 
-    } catch (err) { 
+    } catch { 
       toast.error("Lỗi cập nhật"); 
     }
   };
@@ -175,7 +193,7 @@ export default function BookingAndRehearsalManager() {
       await api.put(`/shows/${id}/toggle-registration`); 
       toast.success("Đã thay đổi trạng thái đăng ký"); 
       fetchBookings(); 
-    } catch (err) { 
+    } catch { 
       toast.error("Lỗi thao tác"); 
     }
   };
@@ -199,7 +217,7 @@ export default function BookingAndRehearsalManager() {
     try {
       const res = await api.get("/rehearsals");
       setRehearsals(res.data || []);
-    } catch (err) { 
+    } catch { 
       toast.error("Lỗi tải lịch tập"); 
     } finally { 
       setLoadingRehearsals(false); 
@@ -214,7 +232,7 @@ export default function BookingAndRehearsalManager() {
       setShowRehearsalModal(false);
       setRehearsalForm({ date: "", time: "", location: "", content: "" });
       fetchRehearsals();
-    } catch (err) { 
+    } catch { 
       toast.error("Lỗi tạo lịch"); 
     }
   };
@@ -225,7 +243,7 @@ export default function BookingAndRehearsalManager() {
       await api.delete(`/rehearsals/${id}`);
       toast.success("Đã xóa");
       fetchRehearsals();
-    } catch (err) { 
+    } catch { 
       toast.error("Lỗi xóa"); 
     }
   };
@@ -243,9 +261,7 @@ export default function BookingAndRehearsalManager() {
     setEditingAttendance(prev => prev.map(m => {
       const mUserId = m.user?._id || m.user;
       if (mUserId === memberId || m._id === memberId) {
-        let fine = 0;
-        if (newStatus === 'late') fine = 50000;
-        if (newStatus === 'absent') fine = 100000;
+        const fine = calculateFine(newStatus);
         return { ...m, status: newStatus, fine };
       }
       return m;
@@ -258,7 +274,7 @@ export default function BookingAndRehearsalManager() {
       toast.success("Đã cập nhật điểm danh!");
       fetchRehearsals(); 
       setExpandedRehearsalId(null);
-    } catch (err) { 
+    } catch { 
       toast.error("Lỗi lưu điểm danh"); 
     }
   };
@@ -268,7 +284,7 @@ export default function BookingAndRehearsalManager() {
     try {
       const res = await api.get(`/rehearsals/${rehearsalId}/qr-token`);
       setQrToken(res.data.token);
-    } catch (err) {
+    } catch {
       toast.error("Không thể tạo mã QR điểm danh");
     } finally {
       setQrLoading(false);
@@ -294,8 +310,17 @@ export default function BookingAndRehearsalManager() {
 
   // Nạp dữ liệu ban đầu
   useEffect(() => {
-    fetchBookings();
-    fetchRehearsals();
+    let isCancelled = false;
+    const initData = async () => {
+      await Promise.resolve();
+      if (isCancelled) return;
+      fetchBookings();
+      fetchRehearsals();
+    };
+    initData();
+    return () => {
+      isCancelled = true;
+    };
   }, []);
 
   // Tính toán số liệu Shows
@@ -310,6 +335,24 @@ export default function BookingAndRehearsalManager() {
                         (b.location || "").toLowerCase().includes(bookingSearchTerm.toLowerCase());
     const matchTab = bookingActiveTab === "all" || b.status === bookingActiveTab;
     return matchSearch && matchTab;
+  });
+
+  // Sắp xếp Lịch diễn (Mặc định: Mới nhất đến cũ nhất)
+  const sortedBookings = [...filteredBookings].sort((a, b) => {
+    const dateA = new Date(a.date).getTime() || 0;
+    const dateB = new Date(b.date).getTime() || 0;
+    if (bookingSort === "newest") return dateB - dateA;
+    if (bookingSort === "oldest") return dateA - dateB;
+    if (bookingSort === "price-desc") return (b.price || 0) - (a.price || 0);
+    if (bookingSort === "price-asc") return (a.price || 0) - (b.price || 0);
+    return dateB - dateA;
+  });
+
+  // Sắp xếp Lịch tập ráp (Mặc định: Mới nhất đến cũ nhất)
+  const sortedRehearsals = [...rehearsals].sort((a, b) => {
+    const dateA = new Date(a.date).getTime() || 0;
+    const dateB = new Date(b.date).getTime() || 0;
+    return rehearsalSort === "newest" ? dateB - dateA : dateA - dateB;
   });
 
   // Tính toán số liệu Rehearsals
@@ -426,6 +469,27 @@ export default function BookingAndRehearsalManager() {
                   </button>
                 ))}
               </div>
+
+              {/* Nút Sắp xếp Lịch diễn */}
+              <div className="relative flex items-center shrink-0">
+                <div className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 rounded-xl shadow-2xs text-xs font-bold text-slate-700">
+                  <ArrowUpDown size={14} className="text-[#F27024] shrink-0" />
+                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider hidden sm:inline">Sắp xếp:</span>
+                  <select
+                    value={bookingSort}
+                    onChange={(e) => setBookingSort(e.target.value as BookingSortOption)}
+                    className="bg-transparent outline-none cursor-pointer font-bold text-slate-800 text-xs pr-4 appearance-none"
+                    title="Sắp xếp danh sách lịch diễn"
+                  >
+                    <option value="newest">Mới nhất trước (Mặc định)</option>
+                    <option value="oldest">Cũ nhất trước</option>
+                    <option value="price-desc">Thù lao cao nhất</option>
+                    <option value="price-asc">Thù lao thấp nhất</option>
+                  </select>
+                  <ChevronDown size={12} className="text-slate-400 pointer-events-none absolute right-2.5" />
+                </div>
+              </div>
+
               {user && (
                 <button onClick={handleBookingCreateClick} className="ui-button-primary flex items-center justify-center gap-2 text-xs uppercase tracking-wider whitespace-nowrap py-2.5 px-4 rounded-xl shrink-0">
                   <Plus size={16}/> {canManageShows ? "Lên Lịch / Xếp Show" : "Đặt Show (Book Band)"}
@@ -438,13 +502,13 @@ export default function BookingAndRehearsalManager() {
           <div className="grid grid-cols-1 gap-5 w-full min-w-0">
             {loadingBookings ? (
               <div className="text-center py-20"><Loader className="animate-spin mx-auto text-indigo-500" size={32}/></div>
-            ) : filteredBookings.length === 0 ? (
+            ) : sortedBookings.length === 0 ? (
                <div className="text-center py-16 ui-card border-dashed">
                   <Music size={36} className="mx-auto text-slate-400 mb-3"/>
                   <p className="text-slate-500 text-xs font-semibold">Không tìm thấy show diễn nào.</p>
                </div>
             ) : (
-              filteredBookings.map((item) => (
+              sortedBookings.map((item) => (
                 <div key={item._id} className="ui-card ui-card-hover group overflow-hidden w-full min-w-0">
                   <Link href={`/bookings/${item._id}`} className="p-4 sm:p-6 flex flex-col md:flex-row gap-4 sm:gap-6 items-stretch md:items-start cursor-pointer w-full min-w-0">
                     
@@ -480,8 +544,8 @@ export default function BookingAndRehearsalManager() {
                       <div className="flex flex-wrap gap-2 text-xs">
                         <div className="flex items-center gap-1.5 bg-slate-100 px-2.5 sm:px-3 py-1.5 rounded-lg text-slate-700 font-bold shrink-0"><Clock size={14} className="text-amber-500"/> {item.time}</div>
                         <div className="flex items-center gap-1.5 bg-slate-100 px-2.5 sm:px-3 py-1.5 rounded-lg text-slate-700 font-bold max-w-full sm:max-w-[200px] truncate"><MapPin size={14} className="text-indigo-500 shrink-0"/> {item.location}</div>
-                        {(item as any).eventType && <div className="flex items-center gap-1.5 bg-indigo-50 text-indigo-700 px-2.5 sm:px-3 py-1.5 rounded-lg font-bold border border-indigo-200 shrink-0">{(item as any).eventType}</div>}
-                        {(item as any).memberCount && <div className="flex items-center gap-1.5 bg-slate-100 px-2.5 sm:px-3 py-1.5 rounded-lg text-slate-700 font-bold shrink-0"><Users size={14} className="text-purple-600"/> {(item as any).memberCount} người</div>}
+                        {item.eventType && <div className="flex items-center gap-1.5 bg-indigo-50 text-indigo-700 px-2.5 sm:px-3 py-1.5 rounded-lg font-bold border border-indigo-200 shrink-0">{item.eventType}</div>}
+                        {item.memberCount && <div className="flex items-center gap-1.5 bg-slate-100 px-2.5 sm:px-3 py-1.5 rounded-lg text-slate-700 font-bold shrink-0"><Users size={14} className="text-purple-600"/> {item.memberCount} người</div>}
                         {item.notes && <div className="flex items-center gap-1.5 bg-amber-50 text-amber-800 px-2.5 sm:px-3 py-1.5 rounded-lg font-medium italic border border-amber-200 max-w-full sm:max-w-[220px] truncate"><FileText size={14}/> {item.notes}</div>}
                       </div>
                     </div>
@@ -560,7 +624,25 @@ export default function BookingAndRehearsalManager() {
             {/* Thanh bar công cụ */}
             <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
               <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Nhật ký tập ráp định kỳ</span>
-              <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                {/* Nút Sắp xếp Lịch tập ráp */}
+                <div className="relative flex items-center shrink-0">
+                  <div className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 rounded-xl shadow-2xs text-xs font-bold text-slate-700">
+                    <ArrowUpDown size={14} className="text-[#F27024] shrink-0" />
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider hidden sm:inline">Sắp xếp:</span>
+                    <select
+                      value={rehearsalSort}
+                      onChange={(e) => setRehearsalSort(e.target.value as "newest" | "oldest")}
+                      className="bg-transparent outline-none cursor-pointer font-bold text-slate-800 text-xs pr-4 appearance-none"
+                      title="Sắp xếp danh sách lịch tập"
+                    >
+                      <option value="newest">Mới nhất trước (Mặc định)</option>
+                      <option value="oldest">Cũ nhất trước</option>
+                    </select>
+                    <ChevronDown size={12} className="text-slate-400 pointer-events-none absolute right-2.5" />
+                  </div>
+                </div>
+
                 <Link href="/checkin" className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-slate-900 hover:bg-black text-white px-4 py-2.5 rounded-xl font-bold shadow-md transition transform active:scale-[0.98] text-xs uppercase tracking-wider">
                   <Camera size={16}/> Quét QR Điểm Danh
                 </Link>
@@ -576,13 +658,13 @@ export default function BookingAndRehearsalManager() {
             <div className="space-y-5">
               {loadingRehearsals ? (
                 <div className="text-center py-20"><Loader className="animate-spin mx-auto text-indigo-600" size={32}/></div>
-              ) : rehearsals.length === 0 ? (
+              ) : sortedRehearsals.length === 0 ? (
                  <div className="text-center py-16 ui-card border-dashed">
                     <Music size={36} className="mx-auto text-slate-400 mb-3"/>
                     <p className="text-slate-500 text-xs font-semibold">Chưa có lịch tập nào được ghi nhận.</p>
                  </div>
               ) : (
-                rehearsals.map((item) => (
+                sortedRehearsals.map((item) => (
                   <div key={item._id} className={`ui-card transition-all duration-300 overflow-hidden ${expandedRehearsalId === item._id ? 'ring-2 ring-indigo-500/30 shadow-md' : 'shadow-sm'}`}>
                     <div className="p-4 sm:p-6 flex flex-col md:flex-row gap-4 sm:gap-6">
                       
@@ -697,6 +779,7 @@ export default function BookingAndRehearsalManager() {
         formData={bookingFormData} 
         handleChange={handleBookingChange} 
         editingId={editingBookingId} 
+        isSaving={isSavingBooking}
       />
 
       {/* MODAL CREATE REHEARSAL */}
