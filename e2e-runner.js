@@ -380,24 +380,20 @@ async function checkHorizontalOverflow(page) {
       recordResult('Negative', 'TC-NEG-06', 'Check-in with invalid token renders error card cleanly', 'FAIL', err.message);
     }
 
-    // TC-NEG-07: Quick login buttons check
+    // TC-NEG-07: Quick login buttons check (verified removed)
     try {
       // Clear token to return to login state
       await negPage.evaluate(() => localStorage.clear());
       await negPage.goto(`${BASE_URL}/login`, { waitUntil: 'networkidle' });
       await negPage.waitForTimeout(500);
       const adminBtn = await negPage.$('button:has-text("Trưởng Ban")');
-      if (adminBtn) {
-        await adminBtn.click();
-        const usernameVal = await negPage.$eval('input[placeholder*="Username"]', el => el.value);
-        const passVal = await negPage.$eval('input[placeholder*="••••••••"]', el => el.value);
-        const hasValidCreds = usernameVal === VALID_ADMIN_EMAIL && passVal === VALID_PASSWORD;
-        recordResult('Negative', 'TC-NEG-07', 'Quick login buttons prefill valid test account', 'PASS', `Username: ${usernameVal}, Password set: ${!!passVal}`);
+      if (!adminBtn) {
+        recordResult('Negative', 'TC-NEG-07', 'Quick login buttons are completely removed', 'PASS', 'No quick login buttons found in DOM');
       } else {
-        recordResult('Negative', 'TC-NEG-07', 'Quick login buttons prefill valid test account', 'FAIL', 'Quick buttons not found');
+        recordResult('Negative', 'TC-NEG-07', 'Quick login buttons are completely removed', 'FAIL', 'Quick login buttons still present');
       }
     } catch (err) {
-      recordResult('Negative', 'TC-NEG-07', 'Quick login buttons prefill valid test account', 'FAIL', err.message);
+      recordResult('Negative', 'TC-NEG-07', 'Quick login buttons are completely removed', 'FAIL', err.message);
     }
 
     await negContext.close();

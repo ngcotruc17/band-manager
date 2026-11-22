@@ -33,6 +33,8 @@ router.put('/:id', protect, admin, async (req, res): Promise<any> => {
     if (instrument !== undefined) updateData.instrument = instrument;
     if (fullName !== undefined) updateData.fullName = fullName;
     if (phone !== undefined) updateData.phone = phone;
+    if (req.body.isApproved !== undefined) updateData.isApproved = req.body.isApproved;
+    if (req.body.isActive !== undefined) updateData.isActive = req.body.isActive;
 
     const user = await User.findByIdAndUpdate(
       req.params.id, 

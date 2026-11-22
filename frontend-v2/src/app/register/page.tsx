@@ -20,7 +20,6 @@ export default function Register() {
     username: "",
     email: "",
     phone: "",
-    role: "student",
     instrument: "Guitar",
     password: "",
     confirmPassword: ""
@@ -74,11 +73,10 @@ export default function Register() {
         username: formData.username,
         email: formData.email,
         phone: formData.phone,
-        role: formData.role,
         instrument: formData.instrument,
         password: formData.password,
       });
-      toast.success("Đăng ký thành công! Ban quản lý (CTSV / Bộ môn) sẽ duyệt kích hoạt tài khoản của bạn.", { id: toastId });
+      toast.success("Đăng ký thành công! Tài khoản của bạn đang chờ quản trị viên phê duyệt.", { id: toastId });
       router.push("/login");
     } catch (err: unknown) {
       const errorObj = err as { response?: { data?: { message?: string } } };
@@ -91,57 +89,58 @@ export default function Register() {
   };
 
   return (
-    <div className="w-full flex-1 flex items-center justify-center p-4 sm:p-6 relative overflow-hidden py-4 sm:py-6">
+    <div className="w-full flex-1 flex items-center justify-center p-3 sm:p-4 relative overflow-hidden">
       
       {/* Ambient concert stage lighting background */}
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-gradient-to-tr from-orange-500/12 to-amber-500/10 rounded-full blur-[130px] pointer-events-none" />
       <div className="absolute bottom-1/4 left-1/3 -translate-x-1/2 w-[400px] h-[400px] bg-gradient-to-tr from-amber-500/8 to-rose-500/5 rounded-full blur-[100px] pointer-events-none" />
 
       {/* 🍏 iOS / OneUI Fluid Frosted Glass Register Sheet */}
-      <div className="w-full max-w-lg ui-card p-6 sm:p-8 space-y-4 relative z-10 shadow-[0_25px_60px_-15px_rgba(242,112,36,0.15)] rounded-[2rem] my-auto">
+      <div className="w-full max-w-lg ui-card p-5 sm:p-6 space-y-3.5 relative z-10 shadow-[0_20px_50px_-15px_rgba(242,112,36,0.15)] rounded-3xl my-auto">
         
         {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-[#F27024] via-[#FA8C16] to-[#EA580C] flex items-center justify-center text-white mx-auto shadow-md shadow-orange-500/25 border border-white/30">
-            <UserPlus size={24} />
+        <div className="text-center space-y-1.5">
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#F27024] via-[#FA8C16] to-[#EA580C] flex items-center justify-center text-white mx-auto shadow-md shadow-orange-500/25 border border-white/30">
+            <UserPlus size={22} />
           </div>
           <div>
-            <h1 className="text-xl font-extrabold tracking-tight text-slate-900 uppercase">Đăng Ký Tài Khoản FPTU Band</h1>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">Trực thuộc Bộ môn & Phòng CTSV Trường ĐH FPT Phân hiệu TP.HCM</p>
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 uppercase">Đăng Ký Tài Khoản</h1>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">Ban Nhạc Đại học FPT TP.HCM</p>
           </div>
         </div>
 
         {/* Form Đăng ký ban đầu */}
-        <form onSubmit={handleInitialSubmit} className="space-y-3.5">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
+        <form onSubmit={handleInitialSubmit} className="space-y-3">
+          {/* Row 1: Full name + Username */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1 text-left">
               <label className="block text-xs font-bold text-slate-700">Họ và tên *</label>
               <div className="relative flex items-center">
                 <div className="absolute left-3.5 flex items-center pointer-events-none text-slate-400">
-                  <User size={18} />
+                  <User size={17} />
                 </div>
                 <input
                   type="text"
                   name="fullName"
                   required
-                  className="ui-input w-full pl-11 pr-4 py-3 text-sm font-medium"
+                  className="ui-input w-full pl-10 pr-3.5 py-2.5 text-sm font-medium"
                   placeholder="Ví dụ: Nguyễn Văn A..."
                   onChange={handleChange}
                 />
               </div>
             </div>
             
-            <div className="space-y-1.5">
+            <div className="space-y-1 text-left">
               <label className="block text-xs font-bold text-slate-700">Tên đăng nhập *</label>
               <div className="relative flex items-center">
                 <div className="absolute left-3.5 flex items-center pointer-events-none text-slate-400">
-                  <Music size={18} />
+                  <Music size={17} />
                 </div>
                 <input
                   type="text"
                   name="username"
                   required
-                  className="ui-input w-full pl-11 pr-4 py-3 text-sm font-medium"
+                  className="ui-input w-full pl-10 pr-3.5 py-2.5 text-sm font-medium"
                   placeholder="username..."
                   onChange={handleChange}
                 />
@@ -149,111 +148,99 @@ export default function Register() {
             </div>
           </div>
 
-          {/* Phân vai & Nhạc cụ chuyên môn */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-slate-700">Vai trò tại FPTU *</label>
+          {/* Row 2: Email + Phone */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1 text-left">
+              <label className="block text-xs font-bold text-slate-700">Địa chỉ Email *</label>
               <div className="relative flex items-center">
-                <select
-                  name="role"
-                  value={formData.role}
+                <div className="absolute left-3.5 flex items-center pointer-events-none text-slate-400">
+                  <Mail size={17} />
+                </div>
+                <input
+                  type="email"
+                  name="email"
+                  required
+                  className="ui-input w-full pl-10 pr-3.5 py-2.5 text-sm font-medium"
+                  placeholder="email@example.com"
                   onChange={handleChange}
-                  className="ui-input w-full px-4 pr-10 py-3 text-xs sm:text-sm font-bold text-slate-800 bg-white cursor-pointer appearance-none"
-                >
-                  <option value="student">Sinh viên FPTU</option>
-                  <option value="lecturer">Giảng viên FPTU</option>
-                  <option value="manager">Cán bộ Bộ môn / CTSV</option>
-                </select>
-                <ChevronDown size={14} className="text-slate-400 pointer-events-none absolute right-3.5" />
+                />
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-slate-700">Nhạc cụ chuyên môn *</label>
+            <div className="space-y-1 text-left">
+              <label className="block text-xs font-bold text-slate-700">Số điện thoại *</label>
               <div className="relative flex items-center">
-                <select
-                  name="instrument"
-                  value={formData.instrument}
+                <div className="absolute left-3.5 flex items-center pointer-events-none text-slate-400">
+                  <Phone size={17} />
+                </div>
+                <input
+                  type="text"
+                  name="phone"
+                  required
+                  className="ui-input w-full pl-10 pr-3.5 py-2.5 text-sm font-medium"
+                  placeholder="0912345678..."
                   onChange={handleChange}
-                  className="ui-input w-full px-4 pr-10 py-3 text-xs sm:text-sm font-bold text-slate-800 bg-white cursor-pointer appearance-none"
-                >
-                  <option value="Guitar">Guitar (Lead/Rhythm)</option>
-                  <option value="Bass">Bass</option>
-                  <option value="Drums">Trống (Drums/Cajon)</option>
-                  <option value="Keyboard">Keyboard / Piano</option>
-                  <option value="Vocal">Hát chính / Vocal</option>
-                  <option value="Saxophone">Saxophone / Kèn</option>
-                  <option value="Violin">Violin</option>
-                  <option value="Khác">Nhạc cụ khác / Đặt show</option>
-                </select>
-                <ChevronDown size={14} className="text-slate-400 pointer-events-none absolute right-3.5" />
+                />
               </div>
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-slate-700">Địa chỉ Email *</label>
+          {/* Row 3: Nhạc cụ chuyên môn */}
+          <div className="space-y-1 text-left">
+            <label className="block text-xs font-bold text-slate-700">Nhạc cụ chuyên môn *</label>
             <div className="relative flex items-center">
               <div className="absolute left-3.5 flex items-center pointer-events-none text-slate-400">
-                <Mail size={18} />
+                <Music size={17} />
               </div>
-              <input
-                type="email"
-                name="email"
-                required
-                className="ui-input w-full pl-11 pr-4 py-3 text-sm font-medium"
-                placeholder="email@example.com"
+              <select
+                name="instrument"
+                value={formData.instrument}
                 onChange={handleChange}
-              />
+                className="ui-input w-full pl-10 pr-10 py-2.5 text-xs sm:text-sm font-bold text-slate-800 bg-white cursor-pointer appearance-none"
+              >
+                <option value="Guitar">Guitar (Lead/Rhythm)</option>
+                <option value="Bass">Bass</option>
+                <option value="Drums">Trống (Drums/Cajon)</option>
+                <option value="Keyboard">Keyboard / Piano</option>
+                <option value="Vocal">Hát chính / Vocal</option>
+                <option value="Saxophone">Saxophone / Kèn</option>
+                <option value="Violin">Violin</option>
+                <option value="Khác">Nhạc cụ khác / Đặt show</option>
+              </select>
+              <ChevronDown size={14} className="text-slate-400 pointer-events-none absolute right-3.5" />
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-slate-700">Số điện thoại liên lạc *</label>
-            <div className="relative flex items-center">
-              <div className="absolute left-3.5 flex items-center pointer-events-none text-slate-400">
-                <Phone size={18} />
-              </div>
-              <input
-                type="text"
-                name="phone"
-                required
-                className="ui-input w-full pl-11 pr-4 py-3 text-sm font-medium"
-                placeholder="0912345678..."
-                onChange={handleChange}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
+          {/* Row 4: Password + Confirm Password */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1 text-left">
               <label className="block text-xs font-bold text-slate-700">Mật khẩu *</label>
               <div className="relative flex items-center">
                 <div className="absolute left-3.5 flex items-center pointer-events-none text-slate-400">
-                  <Lock size={18} />
+                  <Lock size={17} />
                 </div>
                 <input
                   type="password"
                   name="password"
                   required
-                  className="ui-input w-full pl-11 pr-4 py-3 text-sm font-medium"
+                  className="ui-input w-full pl-10 pr-3.5 py-2.5 text-sm font-medium"
                   placeholder="Tối thiểu 6 ký tự"
                   onChange={handleChange}
                 />
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-slate-700">Xác nhận lại mật khẩu *</label>
+            <div className="space-y-1 text-left">
+              <label className="block text-xs font-bold text-slate-700">Xác nhận mật khẩu *</label>
               <div className="relative flex items-center">
                 <div className="absolute left-3.5 flex items-center pointer-events-none text-slate-400">
-                  <Lock size={18} />
+                  <Lock size={17} />
                 </div>
                 <input
                   type="password"
                   name="confirmPassword"
                   required
-                  className="ui-input w-full pl-11 pr-4 py-3 text-sm font-medium"
+                  className="ui-input w-full pl-10 pr-3.5 py-2.5 text-sm font-medium"
                   placeholder="Nhập lại mật khẩu..."
                   onChange={handleChange}
                 />
@@ -263,16 +250,16 @@ export default function Register() {
 
           <button
             type="submit"
-            className="ui-button-primary w-full flex items-center justify-center gap-2 mt-2"
+            className="ui-button-primary w-full flex items-center justify-center gap-2 mt-2 py-2.5 text-xs sm:text-sm font-bold"
           >
             <span>ĐỌC ĐIỀU KHOẢN HOẠT ĐỘNG</span>
             <ArrowRight size={16} />
           </button>
         </form>
 
-        <div className="text-center text-xs font-medium text-slate-500 pt-3 border-t border-slate-200">
+        <div className="text-center text-xs font-medium text-slate-500 pt-2.5 border-t border-slate-100">
           Đã có tài khoản?{" "}
-          <Link href="/login" className="text-[#F27024] hover:text-orange-700 font-bold underline">
+          <Link href="/login" className="text-[#F27024] hover:text-orange-700 font-bold underline ml-1">
             Đăng nhập ngay
           </Link>
         </div>

@@ -14,11 +14,11 @@ export default function AppShell({ children }: AppShellProps) {
   
   // Các trang xác thực / nhập thông tin độc lập không hiển thị Navbar hay AudioPlayer
   // và cần căn giữa chính xác 100% chiều cao màn hình (không chừa khoảng trống pt-16 / pb-20)
-  const isAuthPage = pathname === "/login" || pathname === "/register" || pathname === "/change-password";
+  const isAuthPage = pathname === "/login" || pathname === "/register" || pathname === "/change-password" || pathname === "/change-password-first";
 
   if (isAuthPage) {
     return (
-      <main className="min-h-screen w-full flex flex-col justify-center items-center relative overflow-x-hidden">
+      <main className="min-h-[100dvh] w-full flex flex-col justify-center items-center relative overflow-x-hidden">
         {children}
       </main>
     );

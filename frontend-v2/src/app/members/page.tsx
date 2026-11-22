@@ -41,8 +41,13 @@ export default function MemberAndNotificationManager() {
   const isAdmin = user?.role === "admin";
   const [members, setMembers] = useState<Member[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [roleFilter, setRoleFilter] = useState<"all" | "student" | "lecturer" | "admin">("all");
+  const [roleFilter, setRoleFilter] = useState<"all" | "pending" | "student" | "lecturer" | "admin">("all");
   const [loading, setLoading] = useState(true);
+
+  // Modal phê duyệt và cấp vai trò thành viên
+  const [approvingMember, setApprovingMember] = useState<Member | null>(null);
+  const [selectedRoleForApproval, setSelectedRoleForApproval] = useState<MemberRole>("student");
+  const [submittingApprove, setSubmittingApprove] = useState(false);
 
   // Tab con của Admin: "list" (Danh sách thành viên) | "notify" (Gửi thông báo)
   const [adminTab, setAdminTab] = useState<"list" | "notify">("list");
@@ -98,13 +103,27 @@ export default function MemberAndNotificationManager() {
     };
   }, []);
 
-  const handleApprove = async (id: string, name: string) => {
+  const handleOpenApproveModal = (m: Member) => {
+    setApprovingMember(m);
+    const initialRole = (m.role === 'admin' || m.role === 'lecturer' || m.role === 'student') ? m.role : 'student';
+    setSelectedRoleForApproval(initialRole);
+  };
+
+  const handleConfirmApprove = async () => {
+    if (!approvingMember) return;
+    setSubmittingApprove(true);
     try {
-      await api.put(`/auth/users/${id}/approve`);
-      toast.success(`Đã duyệt ${name} thành công!`);
+      const res = await api.put(`/auth/users/${approvingMember._id}/approve`, {
+        role: selectedRoleForApproval
+      });
+      toast.success(res.data?.message || `Đã duyệt ${approvingMember.fullName} thành công!`);
+      setApprovingMember(null);
       fetchMembers();
-    } catch { 
-      toast.error("Lỗi duyệt thành viên"); 
+    } catch (err: unknown) {
+      const errorObj = err as { response?: { data?: { message?: string } } };
+      toast.error(errorObj.response?.data?.message || "Lỗi duyệt thành viên");
+    } finally {
+      setSubmittingApprove(false);
     }
   };
 
@@ -296,6 +315,11 @@ LƯU Ý BẢO MẬT: Khi đăng nhập lần đầu tiên vào hệ thống FPTU
     }
   };
 
+  const pendingCount = members.filter(m => !m.isApproved).length;
+  const studentCount = members.filter(m => m.role === "student").length;
+  const lecturerCount = members.filter(m => m.role === "lecturer").length;
+  const adminCount = members.filter(m => m.role === "admin").length;
+
   const filteredMembers = members.filter(m => {
     const matchesSearch =
       (m.fullName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -303,16 +327,12 @@ LƯU Ý BẢO MẬT: Khi đăng nhập lần đầu tiên vào hệ thống FPTU
       (m.username || "").toLowerCase().includes(searchTerm.toLowerCase());
     
     if (!matchesSearch) return false;
+    if (roleFilter === "pending") return !m.isApproved;
     if (roleFilter === "all") return true;
     return m.role === roleFilter;
   });
 
   const approvedMembers = members.filter(m => m.isApproved);
-
-  // Thống kê vai trò
-  const studentCount = members.filter(m => m.role === "student").length;
-  const lecturerCount = members.filter(m => m.role === "lecturer").length;
-  const adminCount = members.filter(m => m.role === "admin").length;
 
   return (
     <div className="min-h-screen p-3.5 sm:p-8 w-full max-w-full overflow-x-hidden">
@@ -389,6 +409,18 @@ LƯU Ý BẢO MẬT: Khi đăng nhập lần đầu tiên vào hệ thống FPTU
                   }`}
                 >
                   Tất cả ({members.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRoleFilter("pending")}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
+                    roleFilter === "pending"
+                      ? "bg-amber-500 text-white shadow-sm"
+                      : "text-slate-600 hover:text-amber-700"
+                  }`}
+                >
+                  <Clock size={13} />
+                  <span>Chờ duyệt ({pendingCount})</span>
                 </button>
                 <button
                   type="button"
@@ -555,7 +587,7 @@ LƯU Ý BẢO MẬT: Khi đăng nhập lần đầu tiên vào hệ thống FPTU
                         {!m.isApproved && (
                           <button
                             type="button"
-                            onClick={() => handleApprove(m._id, m.fullName)}
+                            onClick={() => handleOpenApproveModal(m)}
                             className="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md transition cursor-pointer"
                           >
                             Duyệt
@@ -1027,6 +1059,123 @@ LƯU Ý BẢO MẬT: Khi đăng nhập lần đầu tiên vào hệ thống FPTU
                   className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition text-xs cursor-pointer"
                 >
                   Hoàn Tất & Đóng
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Modal Phê Duyệt & Cấp Quyền Vai Trò */}
+      {approvingMember && (
+        <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-white/95 backdrop-blur-3xl max-w-md w-full overflow-hidden flex flex-col shadow-[0_25px_60px_-15px_rgba(15,23,42,0.25)] rounded-[2rem] border border-white/80 animate-slide-up">
+            <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-200">
+                  <CheckCircle2 size={20} />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-sm text-slate-900">Phê Duyệt & Cấp Quyền</h3>
+                  <p className="text-[10px] text-slate-500 font-medium">Chọn vai trò thành viên trước khi kích hoạt</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setApprovingMember(null)}
+                className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-200 cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-4">
+              {/* Member Details */}
+              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-500">Họ và tên:</span>
+                  <span className="text-xs font-black text-slate-900">{approvingMember.fullName}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-500">Email:</span>
+                  <span className="text-xs font-semibold text-slate-700">{approvingMember.email || "---"}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-500">Nhạc cụ chuyên môn:</span>
+                  <span className="text-xs font-semibold text-slate-700">{approvingMember.instrument || "Chưa phân công"}</span>
+                </div>
+              </div>
+
+              {/* Role Picker (3 choices: Sinh viên, Giảng viên, Quản trị viên) */}
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-slate-700">
+                  Chọn vai trò cấp quyền *
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedRoleForApproval("student")}
+                    className={`p-3 rounded-2xl border text-center transition cursor-pointer flex flex-col items-center gap-1.5 ${
+                      selectedRoleForApproval === "student"
+                        ? "bg-blue-50 border-blue-400 text-blue-700 ring-2 ring-blue-500/20"
+                        : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
+                    }`}
+                  >
+                    <User size={18} className={selectedRoleForApproval === "student" ? "text-blue-600" : "text-slate-400"} />
+                    <span className="text-xs font-bold">Sinh viên</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setSelectedRoleForApproval("lecturer")}
+                    className={`p-3 rounded-2xl border text-center transition cursor-pointer flex flex-col items-center gap-1.5 ${
+                      selectedRoleForApproval === "lecturer"
+                        ? "bg-amber-50 border-amber-400 text-amber-700 ring-2 ring-amber-500/20"
+                        : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
+                    }`}
+                  >
+                    <GraduationCap size={18} className={selectedRoleForApproval === "lecturer" ? "text-amber-600" : "text-slate-400"} />
+                    <span className="text-xs font-bold">Giảng viên</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setSelectedRoleForApproval("admin")}
+                    className={`p-3 rounded-2xl border text-center transition cursor-pointer flex flex-col items-center gap-1.5 ${
+                      selectedRoleForApproval === "admin"
+                        ? "bg-rose-50 border-rose-400 text-rose-700 ring-2 ring-rose-500/20"
+                        : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
+                    }`}
+                  >
+                    <Shield size={18} className={selectedRoleForApproval === "admin" ? "text-rose-600" : "text-slate-400"} />
+                    <span className="text-xs font-bold">Quản trị viên</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="pt-2 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setApprovingMember(null)}
+                  className="flex-1 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition cursor-pointer"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="button"
+                  disabled={submittingApprove}
+                  onClick={handleConfirmApprove}
+                  className="flex-2 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md transition cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  {submittingApprove ? (
+                    <>
+                      <Loader size={14} className="animate-spin" /> Đang duyệt...
+                    </>
+                  ) : (
+                    <>
+                      <Check size={14} /> Xác nhận duyệt & Cấp quyền
+                    </>
+                  )}
                 </button>
               </div>
             </div>

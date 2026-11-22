@@ -25,24 +25,25 @@ export const register = async (req: Request, res: Response): Promise<void> => {
        return;
     }
 
-    // Cho phép người dùng đăng ký theo phân vai (Sinh viên, Giảng viên, Cán bộ phòng ban)
-    const validRoles = ['student', 'lecturer', 'manager', 'staff', 'member'];
-    const assignedRole = role && validRoles.includes(role) ? role : 'student';
-
+    // R3: Người dùng mới không được tự chọn role, mặc định là 'student'
+    // và mặc định ở trạng thái chưa kích hoạt / chờ duyệt (isApproved: false, status: 'pending', isActive: false)
     const user = await User.create({
-      fullName,
-      username,
-      email: email || undefined,
-      phone: phone || "",
+      fullName: fullName.trim(),
+      username: username.trim(),
+      email: email ? email.trim() : undefined,
+      phone: phone ? phone.trim() : "",
       password,
-      role: assignedRole,
+      role: 'student',
+      status: 'pending',
+      isApproved: false,
+      isActive: false,
       instrument: instrument && typeof instrument === 'string' ? instrument.trim() : 'Chưa phân công'
     });
     
     if (user) {
       // Gửi thông báo cho Admin & Cán bộ
       await NotificationService.notifyAdmins({ 
-        message: `👤 Thành viên mới đăng ký (${user.role}): ${fullName}. Đang chờ bạn duyệt!`, 
+        message: `👤 Thành viên mới đăng ký: ${fullName}. Đang chờ bạn duyệt!`, 
         link: '/members',
         type: 'warning'
       });
@@ -53,7 +54,10 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         username: user.username,
         email: user.email,
         role: user.role,
-        token: generateToken(user._id, user.tokenVersion ?? 0),
+        status: user.status,
+        isApproved: user.isApproved,
+        isActive: user.isActive,
+        message: "Đăng ký thành công! Tài khoản của bạn đang chờ quản trị viên phê duyệt."
       });
     } else {
       res.status(400).json({ message: "Dữ liệu không hợp lệ" });
@@ -79,9 +83,19 @@ export const login = async (req: Request, res: Response): Promise<void> => {
        res.status(403).json({ success: false, message: 'Tài khoản của bạn đã bị khóa' });
        return;
     }
-    if (!user.isApproved && user.role !== 'admin' && user.role !== 'system') {
-       res.status(403).json({ message: "Tài khoản của bạn chưa được duyệt hoạt động!" });
+    // R3: Kiểm tra tài khoản chưa được phê duyệt kích hoạt
+    const isApprovedAndActive = (user.isApproved === true && user.status === 'active') || ((user as any).isActive === true && user.status === 'active');
+    if (!isApprovedAndActive && user.role !== 'admin' && user.role !== 'system') {
+       res.status(403).json({ success: false, message: "Tài khoản của bạn đang chờ quản trị viên phê duyệt" });
        return;
+    }
+
+    // Tự động đồng bộ các cờ trạng thái cho tài khoản đã được kích hoạt/phê duyệt
+    if (isApprovedAndActive && (!(user as any).isActive || !user.isApproved || user.status !== 'active')) {
+      user.isApproved = true;
+      user.isActive = true;
+      user.status = 'active';
+      await user.save();
     }
 
     // --- R1: Check Account Lockout ---
@@ -234,7 +248,8 @@ export const adminCreateUser = async (req: Request, res: Response): Promise<void
       instrument: instrument ? instrument.trim() : 'Chưa phân công',
       mustChangePassword: true,
       status: 'active',
-      isApproved: true
+      isApproved: true,
+      isActive: true
     });
 
     await user.save();
@@ -317,6 +332,10 @@ export const resetUserPassword = async (req: Request, res: Response): Promise<vo
     user.password = rawPassword; 
     user.mustChangePassword = true; 
     user.isApproved = true; 
+    user.isActive = true;
+    user.status = 'active';
+    user.failedLoginAttempts = 0;
+    user.lockUntil = null;
     user.tokenVersion = (user.tokenVersion || 0) + 1; // R3: Invalidate previous tokens
     await user.save(); 
     res.json({ 
@@ -332,17 +351,24 @@ export const resetUserPassword = async (req: Request, res: Response): Promise<vo
 
 export const approveUser = async (req: Request, res: Response): Promise<void> => {
   try {
-    const user = await User.findByIdAndUpdate(req.params.id, { isApproved: true, status: 'active' }, { new: true });
+    const { role } = req.body;
+    const updateData: any = { isApproved: true, status: 'active', isActive: true };
+    const validRoles = ['student', 'lecturer', 'admin', 'manager', 'staff', 'member'];
+    if (role && validRoles.includes(role)) {
+      updateData.role = role;
+    }
+
+    const user = await User.findByIdAndUpdate(req.params.id, updateData, { new: true }).select('-password');
     if (!user) {
        res.status(404).json({ message: "Không tìm thấy thành viên" });
        return;
     }
     // Gửi thông báo cho User được duyệt
     await NotificationService.notifyUser(user._id.toString(), { 
-      message: "🎉 Chúc mừng! Tài khoản của bạn đã được duyệt. Hãy bắt đầu hoạt động cùng FPTU Band!", 
+      message: `🎉 Chúc mừng! Tài khoản của bạn đã được duyệt với vai trò "${user.role}". Hãy bắt đầu hoạt động cùng FPTU Band!`, 
       type: 'success' 
     });
-    res.json({ message: `Đã duyệt thành viên: ${user.fullName}` });
+    res.json({ message: `Đã duyệt thành viên: ${user.fullName}`, user });
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }

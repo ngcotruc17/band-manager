@@ -19,6 +19,7 @@ export interface IUser extends Document {
   mustChangePassword: boolean;
   instrument: string;
   isApproved: boolean;
+  isActive?: boolean;
   createdAt: Date;
   
   // R1 & R3: Account Lockout & Token Revocation
@@ -65,6 +66,7 @@ const userSchema = new Schema<IUser>({
   mustChangePassword: { type: Boolean, default: false },
   instrument: { type: String, default: 'Chưa phân công' },
   isApproved: { type: Boolean, default: false },
+  isActive: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
   
   // R1 & R3: Account Lockout & Token Revocation

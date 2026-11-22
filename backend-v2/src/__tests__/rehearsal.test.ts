@@ -265,8 +265,8 @@ export const runRehearsalTests = async (): Promise<{ passed: boolean; details: s
       longitude: campusLon,
       radius: 30
     },
-    date: new Date(Date.now() + 3600000),
-    time: "19:00 - 21:00",
+    date: new Date(),
+    time: `${new Date().getHours().toString().padStart(2, '0')}:${new Date().getMinutes().toString().padStart(2, '0')} - 23:59`,
     attendance: [
       {
         user: testUserId,

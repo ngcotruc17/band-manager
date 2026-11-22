@@ -88,7 +88,11 @@ async function attachTelemetry(page, pageName, allowedErrorFilter = () => false)
     if (regData._id && adminAuth.token) {
       await fetch(`${API_URL}/auth/users/${regData._id}/approve`, {
         method: 'PUT',
-        headers: { 'Authorization': `Bearer ${adminAuth.token}` }
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${adminAuth.token}` 
+        },
+        body: JSON.stringify({ role: 'student' })
       });
     }
 
@@ -349,7 +353,8 @@ async function attachTelemetry(page, pageName, allowedErrorFilter = () => false)
     await page5.fill('input[name="username"]', newRegUsername);
     await page5.fill('input[name="email"]', `${newRegUsername}@fpt.edu.vn`);
     await page5.fill('input[name="phone"]', '0901234567');
-    await page5.selectOption('select[name="role"]', 'student');
+    const roleSelect = await page5.$('select[name="role"]');
+    if (roleSelect) await page5.selectOption('select[name="role"]', 'student');
     await page5.selectOption('select[name="instrument"]', 'Guitar');
     await page5.fill('input[name="password"]', 'FptuBand2026!');
     await page5.fill('input[name="confirmPassword"]', 'FptuBand2026!');
