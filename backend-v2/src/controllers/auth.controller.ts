@@ -43,7 +43,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     if (user) {
       // Gửi thông báo cho Admin & Cán bộ
       await NotificationService.notifyAdmins({ 
-        message: `👤 Thành viên mới đăng ký: ${fullName}. Đang chờ bạn duyệt!`, 
+        message: `Thành viên mới đăng ký: ${fullName}. Đang chờ bạn duyệt!`, 
         link: '/members',
         type: 'warning'
       });
@@ -65,6 +65,39 @@ export const register = async (req: Request, res: Response): Promise<void> => {
   } catch (error: any) {
     res.status(500).json({ message: "Lỗi Server: " + error.message });
   }
+};
+
+// Progressive Lockout Policy Helper
+export interface LockoutTierInfo {
+  isTriggered: boolean;
+  durationMs: number;
+  minutes: number;
+  tierLevel: number;
+}
+
+export const getLockoutTier = (attempts: number): LockoutTierInfo => {
+  if (attempts === 5) {
+    return { isTriggered: true, durationMs: 5 * 60 * 1000, minutes: 5, tierLevel: 1 };
+  }
+  if (attempts === 8) {
+    return { isTriggered: true, durationMs: 15 * 60 * 1000, minutes: 15, tierLevel: 2 };
+  }
+  if (attempts === 11) {
+    return { isTriggered: true, durationMs: 60 * 60 * 1000, minutes: 60, tierLevel: 3 };
+  }
+  if (attempts >= 14 && (attempts - 14) % 3 === 0) {
+    const tierLevel = 4 + Math.floor((attempts - 14) / 3);
+    return { isTriggered: true, durationMs: 24 * 60 * 60 * 1000, minutes: 1440, tierLevel };
+  }
+  return { isTriggered: false, durationMs: 0, minutes: 0, tierLevel: 0 };
+};
+
+export const getNextLockoutThreshold = (attempts: number): number => {
+  if (attempts < 5) return 5;
+  if (attempts < 8) return 8;
+  if (attempts < 11) return 11;
+  const next = 14 + Math.ceil((attempts - 13) / 3) * 3;
+  return next > attempts ? next : attempts + 3;
 };
 
 export const login = async (req: Request, res: Response): Promise<void> => {
@@ -104,42 +137,56 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       const lockDate = new Date(user.lockUntil);
       const pad = (n: number) => n.toString().padStart(2, '0');
       const timeStr = `${pad(lockDate.getHours())}:${pad(lockDate.getMinutes())}:${pad(lockDate.getSeconds())}`;
+      const reason = (user.failedLoginAttempts || 0) <= 5 ? "do nhập sai mật khẩu quá 5 lần" : "do tiếp tục nhập sai mật khẩu quá nhiều lần";
       res.status(429).json({
         success: false,
-        message: `Tài khoản bị tạm khóa đến [${timeStr}] do nhập sai mật khẩu quá 5 lần`
+        message: `Tài khoản bị tạm khóa đến [${timeStr}] ${reason}`
       });
       return;
     }
 
     const isMatch = await user.matchPassword(password); 
     if (!isMatch) {
-      // If previous lock has expired, reset counter before incrementing
+      // Nếu đã quá 24 giờ kể từ lần khóa trước, đặt lại chu kỳ theo dõi
       let attempts = user.failedLoginAttempts || 0;
-      if (user.lockUntil && new Date(user.lockUntil).getTime() <= now) {
+      if (user.lockUntil && (now - new Date(user.lockUntil).getTime() > 24 * 60 * 60 * 1000)) {
         attempts = 0;
       }
       attempts += 1;
       user.failedLoginAttempts = attempts;
 
-      if (attempts >= 5) {
-        const lockUntilDate = new Date(now + 15 * 60 * 1000); // 15 minutes lockout
+      const lockoutTier = getLockoutTier(attempts);
+
+      if (lockoutTier.isTriggered) {
+        const lockUntilDate = new Date(now + lockoutTier.durationMs);
         user.lockUntil = lockUntilDate;
         await user.save();
 
         const pad = (n: number) => n.toString().padStart(2, '0');
         const timeStr = `${pad(lockUntilDate.getHours())}:${pad(lockUntilDate.getMinutes())}:${pad(lockUntilDate.getSeconds())}`;
+        const reason = attempts === 5 
+          ? `do nhập sai mật khẩu quá 5 lần (tạm khóa ${lockoutTier.minutes} phút)`
+          : `do tiếp tục nhập sai mật khẩu (tái phạm lần ${lockoutTier.tierLevel}, tạm khóa ${lockoutTier.minutes >= 60 ? `${lockoutTier.minutes / 60} giờ` : `${lockoutTier.minutes} phút`})`;
+
         res.status(429).json({
           success: false,
-          message: `Tài khoản bị tạm khóa đến [${timeStr}] do nhập sai mật khẩu quá 5 lần`
+          message: `Tài khoản bị tạm khóa đến [${timeStr}] ${reason}`,
+          lockMinutes: lockoutTier.minutes,
+          failedLoginAttempts: attempts
         });
         return;
       } else {
         user.lockUntil = null;
         await user.save();
+
+        const nextThreshold = getNextLockoutThreshold(attempts);
+        const remainingAttempts = nextThreshold - attempts;
+
         res.status(400).json({
           success: false,
-          message: "Mật khẩu không chính xác",
-          failedLoginAttempts: attempts
+          message: `Mật khẩu không chính xác. Bạn còn ${remainingAttempts} lần thử trước khi tài khoản bị tạm khóa!`,
+          failedLoginAttempts: attempts,
+          remainingAttempts
         });
         return;
       }
@@ -365,7 +412,7 @@ export const approveUser = async (req: Request, res: Response): Promise<void> =>
     }
     // Gửi thông báo cho User được duyệt
     await NotificationService.notifyUser(user._id.toString(), { 
-      message: `🎉 Chúc mừng! Tài khoản của bạn đã được duyệt với vai trò "${user.role}". Hãy bắt đầu hoạt động cùng FPTU Band!`, 
+      message: `Chúc mừng! Tài khoản của bạn đã được duyệt với vai trò "${user.role}". Hãy bắt đầu hoạt động cùng FPTU Band!`, 
       type: 'success' 
     });
     res.json({ message: `Đã duyệt thành viên: ${user.fullName}`, user });

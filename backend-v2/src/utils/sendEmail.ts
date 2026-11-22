@@ -27,7 +27,7 @@ export const sendNewShowEmail = async (show: any): Promise<void> => {
     const mailOptions: any = {
       from: `"FPTU Band Manager" <${process.env.EMAIL_USER}>`,
       bcc: emails,
-      subject: `🎸 SHOW MỚI ĐÃ LÊN LỊCH: ${show.title}`,
+      subject: `SHOW MỚI ĐÃ LÊN LỊCH: ${show.title}`,
       html: `
         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;background-color:#F8FAFC;padding:40px 0;margin:0;">
           <tbody>
@@ -114,7 +114,7 @@ export const sendApproveEmail = async (userEmail: string, showTitle: string, use
     const mailOptions = {
       from: `"FPTU Band Manager" <${process.env.EMAIL_USER}>`,
       to: userEmail,
-      subject: `✅ BẠN ĐÃ ĐƯỢC DUYỆT ĐI SHOW: ${showTitle}`,
+      subject: `BẠN ĐÃ ĐƯỢC DUYỆT ĐI SHOW: ${showTitle}`,
       html: `
         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#F8FAFC;padding:40px 0;margin:0;">
           <tr>
@@ -159,7 +159,7 @@ export const sendNewRehearsalEmail = async (rehearsal: any): Promise<void> => {
     const mailOptions = {
       from: `"FPTU Band Manager" <${process.env.EMAIL_USER}>`,
       bcc: emails,
-      subject: `⚡ LỊCH TẬP RÁP MỚI: Ngày ${new Date(rehearsal.date).toLocaleDateString('vi-VN')}`,
+      subject: `LỊCH TẬP RÁP MỚI: Ngày ${new Date(rehearsal.date).toLocaleDateString('vi-VN')}`,
       html: `
         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;background-color:#F8FAFC;padding:40px 0;margin:0;">
           <tbody>
@@ -240,7 +240,7 @@ export const sendSalarySplitEmail = async (show: any): Promise<void> => {
       const mailOptions = {
         from: `"FPTU Band Manager" <${process.env.EMAIL_USER}>`,
         to: user.email,
-        subject: `💸 CÁT-XÊ ĐÃ CHIA VỀ TÀI KHOẢN: Show "${show.title}"`,
+        subject: `CÁT-XÊ ĐÃ CHIA VỀ TÀI KHOẢN: Show "${show.title}"`,
         html: `
           <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#F8FAFC;padding:40px 0;margin:0;">
             <tr>

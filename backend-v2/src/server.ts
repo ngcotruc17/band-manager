@@ -118,7 +118,7 @@ app.use('/uploads', express.static(uploadsPath));
 
 // Kiểm tra trạng thái máy chủ
 app.get('/api/ping', (req, res) => {
-  res.status(200).json({ message: "FPTU Band Backend v2.0 is fully operational! 🚀" });
+  res.status(200).json({ message: "FPTU Band Backend v2.0 is fully operational!" });
 });
 
 // Khai báo Routes

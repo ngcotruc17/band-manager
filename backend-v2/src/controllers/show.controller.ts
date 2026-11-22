@@ -43,7 +43,7 @@ export const createShow = async (req: AuthenticatedRequest, res: Response): Prom
     if (!isManagerOrAdmin) {
       const creatorTitle = req.user?.role === 'lecturer' ? 'Giảng viên' : 'Sinh viên';
       await NotificationService.notifyAdmins({
-        message: `📅 Đơn đặt show mới từ ${creatorTitle} ${req.user?.fullName || ''}: "${newShow.title}". Vui lòng kiểm tra và duyệt xếp lịch!`,
+        message: `Đơn đặt show mới từ ${creatorTitle} ${req.user?.fullName || ''}: "${newShow.title}". Vui lòng kiểm tra và duyệt xếp lịch!`,
         link: `/bookings`,
         type: 'info'
       });
@@ -184,7 +184,7 @@ export const updateShowStatus = async (req: AuthenticatedRequest, res: Response)
     if (oldShow.status === 'pending' && status === 'confirmed') {
       sendNewShowEmail(updatedShow).catch(err => console.error(err));
       await NotificationService.notifyAllMembers({ 
-        message: `🎸 SHOW MỚI: "${updatedShow.title}" đã mở đăng ký. Tham gia ngay!`, 
+        message: `SHOW MỚI: "${updatedShow.title}" đã mở đăng ký. Tham gia ngay!`, 
         link: `/bookings/${updatedShow._id}`,
         type: 'info'
       });
@@ -193,7 +193,7 @@ export const updateShowStatus = async (req: AuthenticatedRequest, res: Response)
     // GỬI THÔNG BÁO KHI SHOW HOÀN THÀNH VÀ CHIA CÁT-XÊ
     if (status === 'completed' && updatedShow.price > 0) {
       await NotificationService.notifyAllMembers({
-        message: `🎉 SHOW HOÀN THÀNH: "${updatedShow.title}" đã được thanh toán & chia cát-xê!`,
+        message: `SHOW HOÀN THÀNH: "${updatedShow.title}" đã được thanh toán & chia cát-xê!`,
         link: `/bookings/${updatedShow._id}`,
         type: 'success'
       });
@@ -267,7 +267,7 @@ export const joinShow = async (req: AuthenticatedRequest, res: Response): Promis
       await show.save();
       
       await NotificationService.notifyAdmins({ 
-        message: `🙋 ${req.user.fullName} vừa đăng ký tham gia show: ${show.title}`, 
+        message: `${req.user.fullName} vừa đăng ký tham gia show: ${show.title}`, 
         link: `/bookings/${show._id}`,
         type: 'info'
       });
@@ -297,7 +297,7 @@ export const approveParticipant = async (req: AuthenticatedRequest, res: Respons
       
       if (user) {
         await NotificationService.notifyUser(user._id.toString(), { 
-          message: `✅ Bạn đã được duyệt vào đội hình chính thức cho show: ${show.title}!`, 
+          message: `Bạn đã được duyệt vào đội hình chính thức cho show: ${show.title}!`, 
           link: `/bookings/${show._id}`,
           type: 'success'
         });

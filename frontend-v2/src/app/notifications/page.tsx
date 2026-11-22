@@ -6,7 +6,7 @@ import { AuthContext } from "../../context/AuthContext";
 import { 
   Bell, Send, Users, User, Mail, FileText, Loader, 
   CheckCircle, Info, Trash2, Calendar, AlertTriangle, 
-  Sparkles, CheckSquare, MessageSquare, ArrowRight, Megaphone
+  Sparkles, CheckSquare, MessageSquare, ArrowRight
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -27,6 +27,12 @@ interface Member {
 }
 
 export type NotificationCategory = "general" | "urgent" | "show" | "rehearsal" | "finance";
+
+const cleanNotificationMessage = (msg: string): string => {
+  if (!msg) return "";
+  const noEmoji = msg.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}\u{FE00}-\u{FE0F}\u{1F900}-\u{1F9FF}\u{1FA70}-\u{1FAFF}]/gu, "").trim();
+  return noEmoji.replace(/^[\s\-•:]+/, "").trim();
+};
 
 export default function NotificationsHubPage() {
   const { user } = useContext(AuthContext);
@@ -131,18 +137,14 @@ export default function NotificationsHubPage() {
       <div className="ui-card p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <span className="px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
-              <Bell className="w-3.5 h-3.5 text-indigo-600" />
-              <span>TRUNG TÂM PHÁT THANH NỘI BỘ</span>
+            <span className="px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-bold uppercase tracking-wider">
+              TRUNG TÂM PHÁT THANH NỘI BỘ
             </span>
           </div>
           <div className="flex items-center gap-2.5">
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
               Thông Báo Ban Nhạc
             </h1>
-            <span className="icon-chip icon-chip-indigo w-8 h-8">
-              <Megaphone className="w-4 h-4" />
-            </span>
           </div>
           <p className="text-xs sm:text-sm font-medium text-slate-600 mt-1">
             Nhận tin báo lịch diễn, lịch tập, quyết toán tài chính và phát thanh chỉ đạo từ Admin.
@@ -218,7 +220,7 @@ export default function NotificationsHubPage() {
                 >
                   <div className="space-y-1">
                     <p className={`text-xs sm:text-sm leading-relaxed ${noti.isRead ? "text-slate-700" : "font-extrabold text-slate-900"}`}>
-                      {noti.message}
+                      {cleanNotificationMessage(noti.message)}
                     </p>
                     <span className="text-[11px] font-mono text-slate-400 block">
                       {new Date(noti.createdAt).toLocaleString("vi-VN")}

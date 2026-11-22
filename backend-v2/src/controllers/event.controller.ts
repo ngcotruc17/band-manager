@@ -149,7 +149,7 @@ export const joinEvent = async (req: AuthenticatedRequest, res: Response): Promi
     await event.save();
 
     await NotificationService.notifyAdmins({
-      message: `👤 ${req.user.username} vừa đăng ký show: ${event.title}`,
+      message: `${req.user.username} vừa đăng ký show: ${event.title}`,
       link: `/events/${event._id}`,
       type: 'info'
     });
@@ -182,7 +182,7 @@ export const togglePerformer = async (req: AuthenticatedRequest, res: Response):
       if (participant.isSelected) {
         try {
           await NotificationService.notifyUser(userId, {
-            message: `🎉 Bạn đã được chọn đi diễn show: ${event.title}!`,
+            message: `Bạn đã được chọn đi diễn show: ${event.title}!`,
             link: `/events/${event._id}`,
             type: 'success'
           });

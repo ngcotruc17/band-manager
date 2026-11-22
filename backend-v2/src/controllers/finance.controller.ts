@@ -199,7 +199,7 @@ export const handleBankWebhook = async (req: Request, res: Response): Promise<vo
           showId: show._id,
           title: show.title,
           amount: parsedAmount,
-          message: `💵 Hệ thống đối soát thành công: Show "${show.title}" đã nhận được ${parsedAmount.toLocaleString('vi-VN')}đ.`
+          message: `Hệ thống đối soát thành công: Show "${show.title}" đã nhận được ${parsedAmount.toLocaleString('vi-VN')}đ.`
         });
 
          res.status(200).json({ 
@@ -248,7 +248,7 @@ export const handleBankWebhook = async (req: Request, res: Response): Promise<vo
           userId: user._id,
           userName: user.fullName,
           amount: parsedAmount,
-          message: `💸 Thành viên ${user.fullName} đã đóng phạt ${parsedAmount.toLocaleString('vi-VN')}đ thành công.`
+          message: `Thành viên ${user.fullName} đã đóng phạt ${parsedAmount.toLocaleString('vi-VN')}đ thành công.`
         });
 
          res.status(200).json({ 

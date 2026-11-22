@@ -95,7 +95,7 @@ export const sendCustomNotification = async (req: AuthenticatedRequest, res: Res
     const notis = recipients.map(u => ({
       recipient: u._id,
       sender: senderName,
-      message: `📢 [Thông báo]: ${title} - ${plainTextContent.substring(0, 80)}${plainTextContent.length > 80 ? '...' : ''}`,
+      message: `[Thông báo]: ${title} - ${plainTextContent.substring(0, 80)}${plainTextContent.length > 80 ? '...' : ''}`,
       link: '#',
       type: 'info'
     }));

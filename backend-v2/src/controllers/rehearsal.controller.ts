@@ -315,7 +315,7 @@ export const requestGPSBypass = async (req: AuthenticatedRequest, res: Response)
     
     // Gửi thông báo đến toàn bộ Admin
     await NotificationService.notifyAdmins({
-      message: `🚨 [Điểm danh GPS Bypass] Thành viên ${req.user.fullName} yêu cầu duyệt có mặt thủ công cho buổi tập ngày ${dateStr} (${rehearsal.time}) do sự cố định vị.`,
+      message: `[Điểm danh GPS Bypass] Thành viên ${req.user.fullName} yêu cầu duyệt có mặt thủ công cho buổi tập ngày ${dateStr} (${rehearsal.time}) do sự cố định vị.`,
       link: '/bookings',
       type: 'warning'
     });

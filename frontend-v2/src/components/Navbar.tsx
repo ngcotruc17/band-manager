@@ -8,8 +8,8 @@ import api from "../services/api";
 import { 
   Music, LogOut, Menu, X, Bell, ChevronDown, ChevronRight,
   Settings, Calendar, DollarSign, BookOpen, 
-  CheckSquare, ShieldCheck, Sparkles, Layers, MessageSquare, 
-  Users, CalendarDays, Music2, Coins, Flame, Clock
+  CheckSquare, ShieldCheck, Sparkles, Layers, 
+  Users, CalendarDays, Music2, Coins, Flame
 } from "lucide-react";
 import ProfileModal from "./ProfileModal";
 
@@ -37,6 +37,12 @@ interface NavGroup {
   icon: React.ElementType;
   items: SubNavItem[];
 }
+
+const cleanNotificationMessage = (msg: string): string => {
+  if (!msg) return "";
+  const noEmoji = msg.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}\u{FE00}-\u{FE0F}\u{1F900}-\u{1F9FF}\u{1FA70}-\u{1FAFF}]/gu, "").trim();
+  return noEmoji.replace(/^[\s\-•:]+/, "").trim();
+};
 
 export default function Navbar() {
   const { user, logout, updateUser } = useContext(AuthContext);
@@ -412,12 +418,9 @@ export default function Navbar() {
               <div className="hidden sm:block absolute right-0 mt-3 w-80 sm:w-96 max-w-[calc(100vw-2rem)] bg-white/95 backdrop-blur-2xl border border-white/90 shadow-[0_20px_45px_-10px_rgba(15,23,42,0.18)] rounded-2xl p-4 z-50 animate-in fade-in zoom-in-95 duration-150">
                 <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-lg bg-orange-100 text-[#F27024] flex items-center justify-center">
-                      <Bell className="w-3.5 h-3.5" />
-                    </div>
-                    <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Thông báo FPTU Band</h4>
+                    <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Thông báo</h4>
                     {unreadCount > 0 && (
-                      <span className="px-1.5 py-0.2 rounded-full bg-rose-50 text-rose-600 border border-rose-200 text-[9px] font-black">
+                      <span className="px-1.5 py-0.5 rounded-full bg-orange-50 text-orange-600 border border-orange-200 text-[10px] font-black">
                         {unreadCount > 9 ? "9+" : unreadCount}
                       </span>
                     )}
@@ -451,7 +454,7 @@ export default function Navbar() {
                         <div className="flex items-start gap-2">
                           <span className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${noti.isRead ? "bg-slate-300" : "bg-[#F27024]"}`} />
                           <div className="flex-1 min-w-0">
-                            <p className="text-xs leading-relaxed break-words">{noti.message}</p>
+                            <p className="text-xs leading-relaxed break-words">{cleanNotificationMessage(noti.message)}</p>
                             <span className="text-[10px] text-slate-400 mt-1 block font-mono">
                               {new Date(noti.createdAt).toLocaleString("vi-VN")}
                             </span>
@@ -466,10 +469,9 @@ export default function Navbar() {
                   <Link
                     href="/notifications"
                     onClick={() => setIsNotiOpen(false)}
-                    className="text-xs font-bold text-[#F27024] hover:text-orange-700 flex items-center gap-1.5"
+                    className="text-xs font-bold text-[#F27024] hover:text-orange-700"
                   >
-                    <MessageSquare className="w-3.5 h-3.5" />
-                    <span>Xem toàn bộ thông báo</span>
+                    Xem toàn bộ thông báo
                   </Link>
                 </div>
               </div>
@@ -757,21 +759,16 @@ export default function Navbar() {
 
             {/* Header */}
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#F27024] to-[#EA580C] text-white flex items-center justify-center shadow-xs">
-                  <Bell className="w-4 h-4 text-white" />
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <h4 className="font-extrabold text-sm text-slate-900 tracking-tight">Thông báo Ban Nhạc</h4>
+                  {unreadCount > 0 && (
+                    <span className="px-2 py-0.5 rounded-full bg-[#F27024] text-white font-black text-[10px] shadow-2xs">
+                      {unreadCount > 9 ? "9+" : unreadCount} mới
+                    </span>
+                  )}
                 </div>
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <h4 className="font-extrabold text-sm text-slate-900 tracking-tight">Thông báo Ban Nhạc</h4>
-                    {unreadCount > 0 && (
-                      <span className="px-2 py-0.5 rounded-full bg-rose-500 text-white font-black text-[10px] shadow-2xs">
-                        {unreadCount > 9 ? "9+" : unreadCount} mới
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-[10px] text-slate-400 font-medium">Trung tâm tin tức & thông báo FPTU Band</p>
-                </div>
+                <p className="text-[10px] text-slate-400 font-medium">Trung tâm tin tức & thông báo FPTU Band</p>
               </div>
 
               <div className="flex items-center gap-1.5">
@@ -797,9 +794,6 @@ export default function Navbar() {
             <div className="max-h-[55vh] overflow-y-auto space-y-2 pr-0.5">
               {notifications.length === 0 ? (
                 <div className="text-center py-10 text-slate-400">
-                  <div className="w-12 h-12 rounded-2xl bg-orange-50 border border-orange-200/60 flex items-center justify-center mx-auto mb-2 text-[#F27024]">
-                    <Bell className="w-5 h-5" />
-                  </div>
                   <p className="text-xs font-bold text-slate-700">Không có thông báo mới</p>
                   <p className="text-[11px] text-slate-400 mt-0.5">Bạn đã nắm bắt mọi thông tin mới nhất!</p>
                 </div>
@@ -817,15 +811,14 @@ export default function Navbar() {
                     <div className="flex items-start gap-2.5">
                       <span className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${noti.isRead ? "bg-slate-300" : "bg-[#F27024] ring-2 ring-orange-200"}`} />
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs leading-relaxed break-words">{noti.message}</p>
+                        <p className="text-xs leading-relaxed break-words">{cleanNotificationMessage(noti.message)}</p>
                         <div className="flex items-center justify-between mt-1">
-                          <span className="text-[10px] text-slate-400 font-mono flex items-center gap-1">
-                            <Clock className="w-3 h-3 text-slate-400 inline" />
+                          <span className="text-[10px] text-slate-400 font-mono">
                             {new Date(noti.createdAt).toLocaleString("vi-VN")}
                           </span>
                           {noti.link && (
                             <span className="text-[10px] font-bold text-[#F27024] flex items-center gap-0.5">
-                              Chi tiết <ChevronRight className="w-3 h-3" />
+                              Chi tiết →
                             </span>
                           )}
                         </div>
@@ -841,10 +834,9 @@ export default function Navbar() {
               <Link
                 href="/notifications"
                 onClick={() => setIsNotiOpen(false)}
-                className="text-xs font-bold text-[#F27024] hover:text-orange-700 flex items-center gap-1.5 py-1"
+                className="text-xs font-bold text-[#F27024] hover:text-orange-700 py-1"
               >
-                <MessageSquare className="w-3.5 h-3.5" />
-                <span>Xem toàn bộ trung tâm thông báo</span>
+                Xem toàn bộ trung tâm thông báo
               </Link>
               <button
                 onClick={() => setIsNotiOpen(false)}

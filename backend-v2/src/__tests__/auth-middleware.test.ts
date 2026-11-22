@@ -416,8 +416,83 @@ export const runAuthMiddlewareTests = async (): Promise<{ passed: boolean; detai
         const lockTimeValid = mockLockoutUser.lockUntil && (mockLockoutUser.lockUntil.getTime() > Date.now());
         const msgMatches = /Tài khoản bị tạm khóa đến \[\d{2}:\d{2}:\d{2}\] do nhập sai mật khẩu quá 5 lần/.test(res5._jsonData?.message || '');
 
-        if (res5.statusCode === 429 && mockLockoutUser.failedLoginAttempts === 5 && lockTimeValid && msgMatches) {
-          details.push("✅ Test 13 Passed: Account locked for 15 minutes with HTTP 429 and [HH:mm:ss] message on 5th consecutive wrong password.");
+        if (res5.statusCode === 429 && mockLockoutUser.failedLoginAttempts === 5 && lockTimeValid && msgMatches && res5._jsonData?.lockMinutes === 5) {
+          // Verify progressive tiers: 3 more attempts -> 15 min; 3 more -> 60 min; 3 more -> 24h
+          let progressiveTiersPassed = true;
+
+          // Simulate lock expiration after tier 1 (5 min)
+          mockLockoutUser.lockUntil = new Date(Date.now() - 1000);
+
+          // Attempts 6 and 7 should return 400 (not locked yet)
+          for (let att = 6; att <= 7; att++) {
+            const reqAtt = createMockRequest({ body: { username: "victim_user", password: "wrong_password" } });
+            const resAtt = createMockResponse();
+            await login(reqAtt as any, resAtt as any);
+            if (resAtt.statusCode !== 400 || mockLockoutUser.failedLoginAttempts !== att) {
+              progressiveTiersPassed = false;
+              break;
+            }
+          }
+
+          // Attempt 8 (3 more attempts) -> 15 minutes lockout
+          const req8 = createMockRequest({ body: { username: "victim_user", password: "wrong_password" } });
+          const res8 = createMockResponse();
+          await login(req8 as any, res8 as any);
+          if (res8.statusCode !== 429 || res8._jsonData?.lockMinutes !== 15 || mockLockoutUser.failedLoginAttempts !== 8) {
+            progressiveTiersPassed = false;
+          }
+
+          // Simulate lock expiration after tier 2 (15 min)
+          mockLockoutUser.lockUntil = new Date(Date.now() - 1000);
+
+          // Attempts 9 and 10 should return 400
+          for (let att = 9; att <= 10; att++) {
+            const reqAtt = createMockRequest({ body: { username: "victim_user", password: "wrong_password" } });
+            const resAtt = createMockResponse();
+            await login(reqAtt as any, resAtt as any);
+            if (resAtt.statusCode !== 400 || mockLockoutUser.failedLoginAttempts !== att) {
+              progressiveTiersPassed = false;
+              break;
+            }
+          }
+
+          // Attempt 11 -> 60 minutes lockout
+          const req11 = createMockRequest({ body: { username: "victim_user", password: "wrong_password" } });
+          const res11 = createMockResponse();
+          await login(req11 as any, res11 as any);
+          if (res11.statusCode !== 429 || res11._jsonData?.lockMinutes !== 60 || mockLockoutUser.failedLoginAttempts !== 11) {
+            progressiveTiersPassed = false;
+          }
+
+          // Simulate lock expiration after tier 3 (60 min)
+          mockLockoutUser.lockUntil = new Date(Date.now() - 1000);
+
+          // Attempts 12 and 13 should return 400
+          for (let att = 12; att <= 13; att++) {
+            const reqAtt = createMockRequest({ body: { username: "victim_user", password: "wrong_password" } });
+            const resAtt = createMockResponse();
+            await login(reqAtt as any, resAtt as any);
+            if (resAtt.statusCode !== 400 || mockLockoutUser.failedLoginAttempts !== att) {
+              progressiveTiersPassed = false;
+              break;
+            }
+          }
+
+          // Attempt 14 -> 24 hours (1440 min) lockout
+          const req14 = createMockRequest({ body: { username: "victim_user", password: "wrong_password" } });
+          const res14 = createMockResponse();
+          await login(req14 as any, res14 as any);
+          if (res14.statusCode !== 429 || res14._jsonData?.lockMinutes !== 1440 || mockLockoutUser.failedLoginAttempts !== 14) {
+            progressiveTiersPassed = false;
+          }
+
+          if (progressiveTiersPassed) {
+            details.push("✅ Test 13 Passed: Progressive lockout tiers enforced: 5 min at 5 attempts, 15 min at 8 attempts, 60 min at 11 attempts, and 24h at 14+ attempts.");
+          } else {
+            test13AllAttemptsPassed = false;
+            passed = false;
+            details.push("❌ Test 13 Failed: Progressive tiers evaluation mismatch.");
+          }
         } else {
           test13AllAttemptsPassed = false;
           passed = false;
