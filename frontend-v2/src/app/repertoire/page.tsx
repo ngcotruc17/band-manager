@@ -1,7 +1,7 @@
 "use client";
 
 import React, { Suspense } from "react";
-import SongLibraryAndRepertoire from "../library/page";
+import SongLibraryAndRepertoire from "../../components/SongLibraryAndRepertoire";
 
 export default function RepertoirePage() {
   return (
