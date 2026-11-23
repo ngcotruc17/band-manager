@@ -268,7 +268,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return res.data;
     } catch (err: unknown) {
       const axiosError = err as AxiosErrorLike;
-      const errMsg = axiosError.response?.data?.message || "Sai tên đăng nhập hoặc mật khẩu";
+      let errMsg = "Sai tên đăng nhập hoặc mật khẩu";
+      if (axiosError.response?.data?.message) {
+        errMsg = axiosError.response.data.message;
+      } else if (!axiosError.response) {
+        errMsg = "Không thể kết nối đến máy chủ backend (lỗi mạng hoặc CORS). Vui lòng thử lại sau vài giây!";
+      } else if (axiosError.response.status && axiosError.response.status >= 500) {
+        errMsg = `Máy chủ đang gặp sự cố (${axiosError.response.status}). Vui lòng kiểm tra lại log hệ thống!`;
+      }
       toast.error(errMsg);
       throw err;
     } finally {

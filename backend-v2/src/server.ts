@@ -34,6 +34,9 @@ connectDB();
 const app = express();
 const server = http.createServer(app);
 
+// 🛡️ Bật Trust Proxy khi chạy sau Reverse Proxy (Render, Cloudflare, Vercel)
+app.set('trust proxy', 1);
+
 // Khởi tạo WebSockets
 const io = SocketService.init(server);
 
@@ -66,6 +69,7 @@ const isAllowedOrigin = (origin: string | undefined, callback: (err: Error | nul
     if (
       hostname === 'localhost' ||
       hostname === '127.0.0.1' ||
+      hostname.endsWith('.vercel.app') ||
       isPrivateIP
     ) {
       return callback(null, true);
@@ -90,12 +94,14 @@ const apiLimiter = rateLimit({
   max: env.IS_PRODUCTION ? 300 : 5000,
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
   message: { message: "Quá nhiều yêu cầu từ IP của bạn, vui lòng thử lại sau 15 phút!" }
 });
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 phút
   max: env.IS_PRODUCTION ? 50 : 1000,
+  validate: { xForwardedForHeader: false },
   message: { message: "Quá nhiều lần thử đăng nhập. Vui lòng thử lại sau 15 phút!" }
 });
 

@@ -14,7 +14,8 @@ const parseOrigins = (rawOrigins?: string): string[] => {
   const defaults = [
     'http://localhost:3000',
     'http://localhost:5173',
-    'https://sacband.vercel.app'
+    'https://sacband.vercel.app',
+    'https://fptuband.vercel.app'
   ];
 
   if (!rawOrigins) return defaults;
